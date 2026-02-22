@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📊 プロジェクト管理 | yuuve Project Manager</title>
+<style>
+:root {
+  --bg: #0d1117; --bg2: #161b22; --card: #21262d;
+  --border: #30363d; --text: #e6edf3; --muted: #8b949e;
+  --primary: #58a6ff; --success: #3fb950; --warning: #d29922;
+  --danger: #f85149; --purple: #bc8cff;
+  --radius: 8px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Segoe UI',sans-serif; min-height:100vh; }
+
+/* レイアウト */
+.app { display:grid; grid-template-columns:240px 1fr; min-height:100vh; }
+.sidebar { background:var(--bg2); border-right:1px solid var(--border); padding:1.5rem 1rem; display:flex; flex-direction:column; gap:0.5rem; }
+.main { padding:2rem; overflow-y:auto; }
+
+/* サイドバー */
+.sidebar-logo { font-size:1.2rem; font-weight:700; color:var(--primary); padding:0 0.5rem 1rem; border-bottom:1px solid var(--border); margin-bottom:0.5rem; }
+.sidebar-btn { width:100%; text-align:left; background:none; border:none; color:var(--muted); padding:0.5rem 0.75rem; border-radius:var(--radius); cursor:pointer; font-size:0.9rem; transition:all 0.15s; display:flex; align-items:center; gap:0.5rem; }
+.sidebar-btn:hover, .sidebar-btn.active { background:rgba(88,166,255,0.1); color:var(--primary); }
+.sidebar-project-item { width:100%; text-align:left; background:none; border:none; color:var(--muted); padding:0.4rem 0.75rem; border-radius:var(--radius); cursor:pointer; font-size:0.85rem; transition:all 0.15s; display:flex; align-items:center; gap:0.5rem; overflow:hidden; }
+.sidebar-project-item:hover { color:var(--text); background:rgba(255,255,255,0.05); }
+.sidebar-project-item.active { color:var(--primary); }
+.sidebar-section-title { font-size:0.75rem; color:var(--muted); padding:0.5rem 0.75rem; text-transform:uppercase; letter-spacing:0.05em; }
+
+/* ダッシュボード */
+.stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; margin-bottom:2rem; }
+.stat-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:1.2rem; }
+.stat-value { font-size:2rem; font-weight:700; line-height:1; }
+.stat-label { color:var(--muted); font-size:0.85rem; margin-top:0.3rem; }
+
+/* プロジェクトカード */
+.projects-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1rem; }
+.project-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:1.2rem; cursor:pointer; transition:border-color 0.2s, transform 0.15s; }
+.project-card:hover { border-color:var(--primary); transform:translateY(-2px); }
+.project-card h3 { font-size:1rem; margin-bottom:0.4rem; }
+.project-card .desc { color:var(--muted); font-size:0.83rem; margin-bottom:1rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.progress-bar { height:4px; background:rgba(255,255,255,0.08); border-radius:2px; overflow:hidden; margin-bottom:0.4rem; }
+.progress-fill { height:100%; border-radius:2px; transition:width 0.4s ease; }
+.progress-text { font-size:0.78rem; color:var(--muted); }
+.project-meta { display:flex; gap:0.5rem; margin-top:0.8rem; flex-wrap:wrap; }
+
+/* バッジ */
+.badge { padding:0.15rem 0.5rem; border-radius:4px; font-size:0.75rem; font-weight:600; }
+.badge-blue { background:rgba(88,166,255,0.15); color:var(--primary); }
+.badge-green { background:rgba(63,185,80,0.15); color:var(--success); }
+.badge-yellow { background:rgba(210,153,34,0.15); color:var(--warning); }
+.badge-red { background:rgba(248,81,73,0.15); color:var(--danger); }
+
+/* ヘッダー */
+.page-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
+.page-title { font-size:1.4rem; font-weight:700; }
+.btn { padding:0.5rem 1rem; border-radius:var(--radius); border:none; cursor:pointer; font-size:0.87rem; font-weight:600; transition:all 0.15s; }
+.btn-primary { background:var(--primary); color:#000; }
+.btn-primary:hover { filter:brightness(1.1); }
+.btn-ghost { background:rgba(255,255,255,0.05); color:var(--text); border:1px solid var(--border); }
+.btn-ghost:hover { background:rgba(255,255,255,0.1); }
+.btn-danger { background:rgba(248,81,73,0.15); color:var(--danger); border:1px solid rgba(248,81,73,0.2); }
+
+/* カンバン */
+.kanban { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; }
+.kanban-col { background:var(--bg2); border-radius:var(--radius); padding:1rem; border:1px solid var(--border); min-height:400px; }
+.kanban-col-header { font-size:0.87rem; font-weight:600; margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center; }
+.task-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:0.8rem; margin-bottom:0.6rem; cursor:grab; transition:border-color 0.15s; }
+.task-card:hover { border-color:rgba(88,166,255,0.4); }
+.task-card h4 { font-size:0.88rem; margin-bottom:0.3rem; }
+.task-card p { font-size:0.8rem; color:var(--muted); }
+.task-actions { display:flex; gap:0.4rem; margin-top:0.5rem; }
+.task-btn { background:none; border:none; color:var(--muted); cursor:pointer; padding:0.2rem 0.4rem; border-radius:4px; font-size:0.75rem; transition:all 0.15s; }
+.task-btn:hover { background:rgba(255,255,255,0.08); color:var(--text); }
+
+/* モーダル */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center; }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:1.5rem; width:90%; max-width:480px; }
+.modal h2 { margin-bottom:1rem; font-size:1.1rem; }
+.form-group { margin-bottom:1rem; }
+.form-group label { display:block; font-size:0.85rem; color:var(--muted); margin-bottom:0.4rem; }
+.form-group input, .form-group textarea, .form-group select {
+  width:100%; background:var(--card); border:1px solid var(--border); color:var(--text); padding:0.6rem 0.8rem;
+  border-radius:var(--radius); font-size:0.9rem; outline:none; transition:border-color 0.15s;
+}
+.form-group input:focus, .form-group textarea:focus { border-color:var(--primary); }
+.form-group textarea { resize:vertical; min-height:80px; }
+.modal-actions { display:flex; gap:0.5rem; justify-content:flex-end; margin-top:1rem; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- サイドバー -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">📊 Project Manager</div>
+    <button class="sidebar-btn active" onclick="showDashboard()">🏠 ダッシュボード</button>
+    <div class="sidebar-section-title">プロジェクト</div>
+    <div id="sidebar-projects"></div>
+    <button class="sidebar-btn" onclick="openNewProjectModal()" style="margin-top:auto; color:var(--primary)">＋ 新規プロジェクト</button>
+  </aside>
+
+  <!-- メイン -->
+  <main class="main" id="main-content">
+    <!-- ダッシュボード (初期表示) -->
+    <div id="view-dashboard">
+      <div class="page-header">
+        <div class="page-title">🏠 ダッシュボード</div>
+        <button class="btn btn-primary" onclick="openNewProjectModal()">＋ 新規プロジェクト</button>
+      </div>
+      <div class="stats-grid" id="stats-grid"></div>
+      <div class="section-title" style="margin-bottom:1rem; font-size:1rem; color:var(--muted);">すべてのプロジェクト</div>
+      <div class="projects-grid" id="projects-grid"></div>
+      <div id="empty-state" style="display:none; text-align:center; padding:4rem; color:var(--muted);">
+        <div style="font-size:3rem; margin-bottom:1rem">📋</div>
+        <p>プロジェクトがまだありません。「＋ 新規プロジェクト」から作成しましょう！</p>
+      </div>
+    </div>
+
+    <!-- プロジェクト詳細 -->
+    <div id="view-project" style="display:none">
+      <div class="page-header">
+        <div>
+          <button class="btn btn-ghost" onclick="showDashboard()" style="margin-bottom:0.5rem; font-size:0.8rem">← 戻る</button>
+          <div class="page-title" id="project-detail-title"></div>
+          <div id="project-detail-desc" style="color:var(--muted); font-size:0.9rem;"></div>
+        </div>
+        <div style="display:flex; gap:0.5rem;">
+          <button class="btn btn-primary" onclick="openNewTaskModal()">＋ タスク追加</button>
+          <button class="btn btn-danger" onclick="deleteCurrentProject()">🗑 削除</button>
+        </div>
+      </div>
+      <div class="kanban" id="kanban-board"></div>
+    </div>
+  </main>
+</div>
+
+<!-- モーダル: 新規プロジェクト -->
+<div class="modal-overlay" id="modal-project">
+  <div class="modal">
+    <h2>📁 新規プロジェクト</h2>
+    <div class="form-group"><label>プロジェクト名</label><input id="proj-name" placeholder="例: 酔い止めアプリ v2"></div>
+    <div class="form-group"><label>説明</label><textarea id="proj-desc" placeholder="どんなプロジェクト？"></textarea></div>
+    <div class="form-group"><label>ステータス</label>
+      <select id="proj-status"><option value="active">進行中</option><option value="planning">計画中</option><option value="done">完了</option><option value="pause">一時停止</option></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-project')">キャンセル</button>
+      <button class="btn btn-primary" onclick="createProject()">作成</button>
+    </div>
+  </div>
+</div>
+
+<!-- モーダル: 新規タスク -->
+<div class="modal-overlay" id="modal-task">
+  <div class="modal">
+    <h2>✅ タスク追加</h2>
+    <div class="form-group"><label>タスク名</label><input id="task-name" placeholder="例: ログイン画面を実装する"></div>
+    <div class="form-group"><label>詳細（任意）</label><textarea id="task-desc" placeholder="詳しい内容..."></textarea></div>
+    <div class="form-group"><label>優先度</label>
+      <select id="task-priority"><option value="high">🔴 高</option><option value="medium" selected>🟡 中</option><option value="low">🟢 低</option></select>
+    </div>
+    <div class="form-group"><label>列</label>
+      <select id="task-col"><option value="todo">未着手</option><option value="doing">進行中</option><option value="done">完了</option></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modal-task')">キャンセル</button>
+      <button class="btn btn-primary" onclick="createTask()">追加</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let state = { projects: [], currentProjectId: null };
+
+// 初期化
+function init() {
+  const saved = localStorage.getItem('pm-state');
+  if (saved) state = JSON.parse(saved);
+  if (state.projects.length === 0) {
+    // サンプルデータ
+    state.projects = [{
+      id: 'p1', name: '酔い止め照準器アプリ', desc: 'VR酔いを軽減するオーバーレイアプリ', status: 'active',
+      tasks: [
+        { id:'t1', name:'要件定義を書く', desc:'', priority:'high', col:'done' },
+        { id:'t2', name:'UIデザインを決める', desc:'', priority:'high', col:'done' },
+        { id:'t3', name:'照準器SVG描画', desc:'', priority:'medium', col:'doing' },
+        { id:'t4', name:'設定保存機能', desc:'', priority:'medium', col:'todo' },
+        { id:'t5', name:'テスト・デバッグ', desc:'', priority:'low', col:'todo' },
+      ]
+    }];
+    save();
+  }
+  renderDashboard();
+}
+
+function save() { localStorage.setItem('pm-state', JSON.stringify(state)); }
+
+function getProgress(project) {
+  const total = project.tasks.length;
+  if (!total) return 0;
+  return Math.round(project.tasks.filter(t => t.col === 'done').length / total * 100);
+}
+
+function statusBadge(s) {
+  const map = { active:'badge-blue', planning:'badge-yellow', done:'badge-green', pause:'badge-red' };
+  const label = { active:'進行中', planning:'計画中', done:'完了', pause:'一時停止' };
+  return `<span class="badge ${map[s]}">${label[s]}</span>`;
+}
+
+function priorityColor(p) { return {high:'var(--danger)',medium:'var(--warning)',low:'var(--success)'}[p]; }
+
+function renderDashboard() {
+  document.getElementById('view-dashboard').style.display = '';
+  document.getElementById('view-project').style.display = 'none';
+  document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.sidebar-btn').classList.add('active');
+
+  // Stats
+  const total = state.projects.length;
+  const active = state.projects.filter(p => p.status === 'active').length;
+  const done = state.projects.filter(p => p.status === 'done').length;
+  const tasks = state.projects.reduce((s,p) => s + p.tasks.length, 0);
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-card"><div class="stat-value" style="color:var(--primary)">${total}</div><div class="stat-label">総プロジェクト数</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--success)">${active}</div><div class="stat-label">進行中</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--purple)">${done}</div><div class="stat-label">完了済み</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--warning)">${tasks}</div><div class="stat-label">総タスク数</div></div>
+  `;
+
+  // Projects grid
+  const grid = document.getElementById('projects-grid');
+  if (state.projects.length === 0) {
+    grid.innerHTML = ''; document.getElementById('empty-state').style.display = '';
+  } else {
+    document.getElementById('empty-state').style.display = 'none';
+    grid.innerHTML = state.projects.map(p => {
+      const prog = getProgress(p);
+      const color = prog === 100 ? 'var(--success)' : 'var(--primary)';
+      return `<div class="project-card" onclick="showProject('${p.id}')">
+        <h3>${p.name}</h3>
+        <div class="desc">${p.desc || '説明なし'}</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${prog}%;background:${color}"></div></div>
+        <div class="progress-text">進捗: ${prog}%（${p.tasks.filter(t=>t.col==='done').length}/${p.tasks.length} タスク完了）</div>
+        <div class="project-meta">${statusBadge(p.status)}<span class="badge badge-blue">${p.tasks.length} タスク</span></div>
+      </div>`;
+    }).join('');
+  }
+
+  // Sidebar
+  document.getElementById('sidebar-projects').innerHTML = state.projects.map(p =>
+    `<button class="sidebar-project-item" onclick="showProject('${p.id}')">📁 ${p.name}</button>`
+  ).join('');
+}
+
+function showProject(id) {
+  state.currentProjectId = id;
+  const p = state.projects.find(p => p.id === id);
+  document.getElementById('view-dashboard').style.display = 'none';
+  document.getElementById('view-project').style.display = '';
+  document.getElementById('project-detail-title').textContent = p.name;
+  document.getElementById('project-detail-desc').textContent = p.desc || '';
+  renderKanban(p);
+}
+
+function renderKanban(p) {
+  const cols = [
+    { id:'todo', label:'📋 未着手', color:'var(--muted)' },
+    { id:'doing', label:'⚡ 進行中', color:'var(--primary)' },
+    { id:'done', label:'✅ 完了', color:'var(--success)' },
+  ];
+  document.getElementById('kanban-board').innerHTML = cols.map(col => {
+    const tasks = p.tasks.filter(t => t.col === col.id);
+    return `<div class="kanban-col">
+      <div class="kanban-col-header"><span style="color:${col.color}">${col.label}</span><span style="color:var(--muted)">${tasks.length}</span></div>
+      ${tasks.map(t => `
+        <div class="task-card">
+          <h4>${t.name}</h4>
+          ${t.desc ? `<p>${t.desc}</p>` : ''}
+          <div class="task-actions">
+            <span style="font-size:0.75rem; color:${priorityColor(t.priority)}">${{high:'🔴高',medium:'🟡中',low:'🟢低'}[t.priority]}</span>
+            ${col.id !== 'doing' ? `<button class="task-btn" onclick="moveTask('${t.id}','doing')">▶ 進行</button>` : ''}
+            ${col.id !== 'done' ? `<button class="task-btn" onclick="moveTask('${t.id}','done')" style="color:var(--success)">✓ 完了</button>` : ''}
+            ${col.id !== 'todo' ? `<button class="task-btn" onclick="moveTask('${t.id}','todo')">↩ 戻す</button>` : ''}
+            <button class="task-btn" onclick="deleteTask('${t.id}')" style="color:var(--danger); margin-left:auto">🗑</button>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+function moveTask(taskId, newCol) {
+  const p = state.projects.find(p => p.id === state.currentProjectId);
+  const t = p.tasks.find(t => t.id === taskId);
+  t.col = newCol; save(); renderKanban(p);
+}
+
+function deleteTask(taskId) {
+  const p = state.projects.find(p => p.id === state.currentProjectId);
+  p.tasks = p.tasks.filter(t => t.id !== taskId); save(); renderKanban(p);
+}
+
+function deleteCurrentProject() {
+  if (!confirm('このプロジェクトを削除しますか？')) return;
+  state.projects = state.projects.filter(p => p.id !== state.currentProjectId);
+  save(); showDashboard();
+}
+
+function showDashboard() { state.currentProjectId = null; renderDashboard(); }
+
+function openNewProjectModal() {
+  document.getElementById('proj-name').value = '';
+  document.getElementById('proj-desc').value = '';
+  document.getElementById('modal-project').classList.add('open');
+}
+
+function openNewTaskModal() { document.getElementById('modal-task').classList.add('open'); }
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function createProject() {
+  const name = document.getElementById('proj-name').value.trim();
+  if (!name) { alert('プロジェクト名を入力してください'); return; }
+  const p = { id: 'p' + Date.now(), name, desc: document.getElementById('proj-desc').value.trim(), status: document.getElementById('proj-status').value, tasks: [] };
+  state.projects.push(p); save(); closeModal('modal-project'); renderDashboard();
+}
+
+function createTask() {
+  const name = document.getElementById('task-name').value.trim();
+  if (!name) { alert('タスク名を入力してください'); return; }
+  const p = state.projects.find(p => p.id === state.currentProjectId);
+  const t = { id: 't' + Date.now(), name, desc: document.getElementById('task-desc').value.trim(), priority: document.getElementById('task-priority').value, col: document.getElementById('task-col').value };
+  p.tasks.push(t); save(); closeModal('modal-task'); renderKanban(p);
+}
+
+// モーダル外クリックで閉じる
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>車酔い軽減オーバーレイ - MVP</title>
+<style>
+:root {
+  --marker-color: #6a8ac8;
+  --bg: #0a0e15;
+  --text: #e8ecf5;
+  --panel: rgba(15,20,30,0.92);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* キャンバス（常に最前面） */
+#overlay-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* コントロールパネル（開発用・本番では非表示） */
+#control-panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--panel);
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding: 16px;
+  max-height: 50vh;
+  overflow-y: auto;
+  z-index: 10000;
+  transition: transform 0.3s;
+}
+
+#control-panel.hidden {
+  transform: translateY(100%);
+}
+
+.toggle-btn {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--marker-color);
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 10001;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.section {
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.section:last-child {
+  border-bottom: none;
+}
+
+h2 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--marker-color);
+}
+
+.test-mode-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.mode-btn {
+  padding: 12px;
+  border: 2px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.mode-btn.active {
+  background: var(--marker-color);
+  border-color: var(--marker-color);
+  color: white;
+}
+
+.rating-group {
+  margin: 12px 0;
+}
+
+.rating-label {
+  font-size: 13px;
+  margin-bottom: 8px;
+  color: rgba(255,255,255,0.8);
+}
+
+.rating-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.rating-btn {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.rating-btn.selected {
+  background: var(--marker-color);
+  border-color: var(--marker-color);
+  color: white;
+}
+
+.action-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  background: var(--marker-color);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.action-btn:active {
+  transform: scale(0.98);
+}
+
+.info-text {
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+  line-height: 1.5;
+  margin-top: 8px;
+}
+
+.log-display {
+  background: rgba(0,0,0,0.3);
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-family: monospace;
+  max-height: 150px;
+  overflow-y: auto;
+  margin-top: 8px;
+}
+
+.sensor-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff4444;
+}
+
+.status-indicator.active {
+  background: #44ff44;
+}
+</style>
+</head>
+<body>
+
+<!-- オーバーレイキャンバス -->
+<canvas id="overlay-canvas"></canvas>
+
+<!-- トグルボタン -->
+<button class="toggle-btn" id="toggle-panel">⚙️</button>
+
+<!-- コントロールパネル -->
+<div id="control-panel" class="hidden">
+  
+  <!-- A/Bテストモード選択 -->
+  <div class="section">
+    <h2>テストモード</h2>
+    <div class="test-mode-buttons">
+      <button class="mode-btn" data-mode="A">A: なし</button>
+      <button class="mode-btn active" data-mode="B">B: 静的</button>
+      <button class="mode-btn" data-mode="C">C: 動的</button>
+    </div>
+    <p class="info-text">A=オーバーレイなし / B=固定円 / C=ロール連動</p>
+  </div>
+
+  <!-- センサー状態 -->
+  <div class="section">
+    <h2>センサー状態</h2>
+    <button class="action-btn" id="enable-sensor">センサーを有効化</button>
+    <div class="sensor-status">
+      <span>DeviceOrientation</span>
+      <div class="status-indicator" id="sensor-indicator"></div>
+    </div>
+    <p class="info-text" id="sensor-value">ロール: 0.0°</p>
+  </div>
+
+  <!-- 評価記録 -->
+  <div class="section">
+    <h2>酔い度合い評価</h2>
+    
+    <div class="rating-group">
+      <div class="rating-label">使用前（1=快適 ⇔ 5=強い酔い）</div>
+      <div class="rating-buttons" id="rating-before">
+        <button class="rating-btn" data-rating="1">1</button>
+        <button class="rating-btn" data-rating="2">2</button>
+        <button class="rating-btn" data-rating="3">3</button>
+        <button class="rating-btn" data-rating="4">4</button>
+        <button class="rating-btn" data-rating="5">5</button>
+      </div>
+    </div>
+
+    <div class="rating-group">
+      <div class="rating-label">使用後（1=快適 ⇔ 5=強い酔い）</div>
+      <div class="rating-buttons" id="rating-after">
+        <button class="rating-btn" data-rating="1">1</button>
+        <button class="rating-btn" data-rating="2">2</button>
+        <button class="rating-btn" data-rating="3">3</button>
+        <button class="rating-btn" data-rating="4">4</button>
+        <button class="rating-btn" data-rating="5">5</button>
+      </div>
+    </div>
+
+    <button class="action-btn" id="save-log">記録を保存</button>
+  </div>
+
+  <!-- ログ表示 -->
+  <div class="section">
+    <h2>記録ログ（コピー用）</h2>
+    <div class="log-display" id="log-display">ログがありません</div>
+    <button class="action-btn" id="copy-log">クリップボードにコピー</button>
+  </div>
+
+</div>
+
+<script>
+// ========================================
+// 設定とグローバル変数
+// ========================================
+
+let TEST_MODE = 'B';  // A, B, C
+let sensorEnabled = false;
+let currentRoll = 0;
+
+// 評価データ
+let evaluation = {
+  mode: TEST_MODE,
+  before: 0,
+  after: 0,
+  timestamp: null,
+  duration: 0,
+  startTime: null
+};
+
+// ログ履歴
+let logHistory = [];
+
+// ========================================
+// Canvas セットアップ
+// ========================================
+
+const canvas = document.getElementById('overlay-canvas');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth * devicePixelRatio;
+  canvas.height = window.innerHeight * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+}
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// ========================================
+// 描画関数
+// ========================================
+
+function drawStaticMarker(x, y, size, opacity) {
+  ctx.globalAlpha = opacity;
+  ctx.fillStyle = '#6a8ac8';
+  ctx.beginPath();
+  ctx.arc(x, y, size, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function draw() {
+  const w = canvas.width / devicePixelRatio;
+  const h = canvas.height / devicePixelRatio;
+
+  ctx.clearRect(0, 0, w, h);
+
+  if (TEST_MODE === 'A') {
+    // なし：何も描画しない
+    
+  } else if (TEST_MODE === 'B') {
+    // 静的：固定位置に3つの円
+    drawStaticMarker(w * 0.5, h * 0.25, 20, 0.40);
+    drawStaticMarker(w * 0.4, h * 0.30, 15, 0.35);
+    drawStaticMarker(w * 0.6, h * 0.30, 15, 0.35);
+    
+  } else if (TEST_MODE === 'C') {
+    // 動的：ロールに応じて横移動（最小限）
+    const offsetX = currentRoll * 0.3;  // ±4.5px max
+    drawStaticMarker(w * 0.5 + offsetX, h * 0.25, 20, 0.40);
+    drawStaticMarker(w * 0.4 + offsetX * 0.8, h * 0.30, 15, 0.35);
+    drawStaticMarker(w * 0.6 + offsetX * 0.8, h * 0.30, 15, 0.35);
+  }
+
+  requestAnimationFrame(draw);
+}
+
+draw();
+
+// ========================================
+// センサー制御
+// ========================================
+
+document.getElementById('enable-sensor').addEventListener('click', async () => {
+  try {
+    if (typeof DeviceOrientationEvent !== 'undefined' &&
+        typeof DeviceOrientationEvent.requestPermission === 'function') {
+      const permission = await DeviceOrientationEvent.requestPermission();
+      if (permission !== 'granted') {
+        alert('センサーの許可が得られませんでした');
+        return;
+      }
+    }
+
+    window.addEventListener('deviceorientation', handleOrientation, { passive: true });
+    sensorEnabled = true;
+    document.getElementById('sensor-indicator').classList.add('active');
+    document.getElementById('enable-sensor').textContent = 'センサー: 接続済み';
+    
+    // 使用開始時刻を記録
+    if (!evaluation.startTime) {
+      evaluation.startTime = Date.now();
+    }
+    
+  } catch (err) {
+    alert('センサーにアクセスできませんでした: ' + err.message);
+  }
+});
+
+function handleOrientation(e) {
+  console.log("gamma:", e.gamma, "beta:", e.beta);
+
+  const gamma = e.gamma ?? 0;
+  currentRoll = Math.max(-15, Math.min(15, gamma));
+
+  document.getElementById('sensor-value').textContent =
+    `ロール: ${currentRoll.toFixed(1)}°`;
+}
+
+// ========================================
+// UI制御
+// ========================================
+
+// パネルトグル
+document.getElementById('toggle-panel').addEventListener('click', () => {
+  document.getElementById('control-panel').classList.toggle('hidden');
+});
+
+// テストモード切り替え
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    TEST_MODE = btn.dataset.mode;
+    evaluation.mode = TEST_MODE;
+  });
+});
+
+// 評価ボタン（使用前）
+document.querySelectorAll('#rating-before .rating-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#rating-before .rating-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    evaluation.before = parseInt(btn.dataset.rating);
+  });
+});
+
+// 評価ボタン（使用後）
+document.querySelectorAll('#rating-after .rating-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#rating-after .rating-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    evaluation.after = parseInt(btn.dataset.rating);
+  });
+});
+
+// ログ保存
+document.getElementById('save-log').addEventListener('click', () => {
+  if (evaluation.before === 0 || evaluation.after === 0) {
+    alert('使用前と使用後の評価を両方入力してください');
+    return;
+  }
+
+  evaluation.timestamp = new Date().toISOString();
+  evaluation.duration = evaluation.startTime ? 
+    Math.floor((Date.now() - evaluation.startTime) / 1000) : 0;
+
+  const improvement = evaluation.before > 0 ? 
+    ((evaluation.before - evaluation.after) / evaluation.before * 100).toFixed(1) : 0;
+
+  const logEntry = {
+    ...evaluation,
+    improvement: improvement + '%'
+  };
+
+  logHistory.push(logEntry);
+  updateLogDisplay();
+
+  // リセット
+  evaluation = {
+    mode: TEST_MODE,
+    before: 0,
+    after: 0,
+    timestamp: null,
+    duration: 0,
+    startTime: Date.now()
+  };
+
+  document.querySelectorAll('.rating-btn').forEach(b => b.classList.remove('selected'));
+  
+  alert(`記録を保存しました（改善度: ${improvement}%）`);
+});
+
+// ログ表示更新
+function updateLogDisplay() {
+  const logDisplay = document.getElementById('log-display');
+  
+  if (logHistory.length === 0) {
+    logDisplay.textContent = 'ログがありません';
+    return;
+  }
+
+  // CSV形式
+  let csvText = '日時,モード,使用前,使用後,改善度,使用時間(秒)\n';
+  logHistory.forEach(log => {
+    csvText += `${log.timestamp},${log.mode},${log.before},${log.after},${log.improvement},${log.duration}\n`;
+  });
+
+  logDisplay.textContent = csvText;
+}
+
+// クリップボードコピー
+document.getElementById('copy-log').addEventListener('click', () => {
+  const logText = document.getElementById('log-display').textContent;
+  
+  if (logText === 'ログがありません') {
+    alert('コピーするログがありません');
+    return;
+  }
+
+  navigator.clipboard.writeText(logText).then(() => {
+    alert('ログをクリップボードにコピーしました');
+  }).catch(err => {
+    alert('コピーに失敗しました: ' + err);
+  });
+});
+
+// ========================================
+// 初期化
+// ========================================
+
+console.log('車酔い軽減オーバーレイ MVP - 起動完了');
+console.log('現在のモード:', TEST_MODE);
+
+</script>
+</body>
+</html>

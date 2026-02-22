@@ -1,0 +1,950 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>Android Reticle Overlay Mock</title>
+  <style>
+    :root{
+      --bg:#0b0f19;
+      --card:#121a2a;
+      --text:#e9eefc;
+      --muted:#a9b4d0;
+      --accent:#6aa6ff;
+      --ok:#35d07f;
+      --warn:#ffcc66;
+      --danger:#ff5d5d;
+
+      --reticle-color: rgba(255,255,255,0.9);
+      --reticle-size: 180px;
+      --reticle-thickness: 2px;
+      --reticle-gap: 14px;
+      --reticle-dot: 6px;
+      --reticle-opacity: 0.85;
+
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Noto Sans JP", "Roboto", "Hiragino Sans", sans-serif;
+      background: linear-gradient(180deg, #050814, #0b0f19 35%, #070a12);
+      color: var(--text);
+      height:100svh;
+      overflow:hidden;
+    }
+    .app{
+      height:100svh;
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* Top App Bar */
+    .topbar{
+      padding: calc(12px + var(--safe-top)) 16px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: rgba(10,14,26,0.72);
+      backdrop-filter: blur(10px);
+    }
+    .brand{ display:flex; align-items:center; gap:10px; min-width:0; }
+    .logo{
+      width:34px; height:34px; border-radius:10px;
+      background: radial-gradient(circle at 30% 30%, #8fd3ff, #3e6bff 55%, #1b2a66);
+      box-shadow: 0 8px 24px rgba(62,107,255,0.35);
+      flex:0 0 auto;
+    }
+    .brand h1{
+      margin:0; font-size:14px; letter-spacing:.2px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .brand .sub{ font-size:12px; color: var(--muted); margin-top:2px; }
+    .pill{
+      padding:8px 10px;
+      border-radius:999px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.08);
+      display:flex; gap:8px; align-items:center;
+      font-size:12px; color: var(--muted);
+      user-select:none; cursor:pointer;
+    }
+    .dot{ width:8px; height:8px; border-radius:50%; background: rgba(255,255,255,0.25); }
+    .dot.on{ background: var(--ok); box-shadow: 0 0 18px rgba(53,208,127,0.45); }
+
+    /* Layout */
+    .content{
+      flex:1;
+      display:grid;
+      grid-template-columns: 1.25fr 0.95fr;
+      gap:14px;
+      padding:14px 14px calc(14px + var(--safe-bottom));
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    @media (max-width: 920px){
+      .content{ grid-template-columns: 1fr; }
+    }
+    .panel{
+      background: rgba(18,26,42,0.82);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      overflow:hidden;
+      box-shadow: 0 18px 50px rgba(0,0,0,0.35);
+    }
+
+    /* Preview: "Other app behind" + overlay */
+    .preview{ position:relative; min-height: 520px; }
+    .fake-os{
+      position:absolute; inset:0;
+      padding:14px;
+      background:
+        radial-gradient(1200px 600px at 20% 10%, rgba(106,166,255,0.22), transparent 55%),
+        radial-gradient(900px 500px at 80% 40%, rgba(255,120,190,0.14), transparent 55%),
+        linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+    }
+
+    .statusbar{
+      display:flex; justify-content:space-between; align-items:center;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.10);
+      font-size: 12px;
+      color: rgba(233,238,252,0.85);
+      backdrop-filter: blur(10px);
+    }
+
+    .phone{
+      margin-top: 12px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.25);
+      overflow:hidden;
+    }
+
+    .yt{
+      height: 320px;
+      position:relative;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04)),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='720' height='360'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1'%3E%3Cstop offset='0' stop-color='%23131a2a'/%3E%3Cstop offset='1' stop-color='%23080b14'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='720' height='360' fill='url(%23g)'/%3E%3Ccircle cx='190' cy='170' r='110' fill='%232a3b7a' opacity='.55'/%3E%3Ccircle cx='420' cy='170' r='130' fill='%233a2a7a' opacity='.30'/%3E%3Ccircle cx='560' cy='140' r='80' fill='%232a7a6a' opacity='.28'/%3E%3C/svg%3E");
+    }
+    .yt::after{
+      content:"YouTube等（別アプリ）を想定：この上にレティクルが最前面";
+      position:absolute; left:12px; bottom:12px;
+      font-size:12px; color: rgba(233,238,252,0.78);
+      background: rgba(0,0,0,0.38);
+      padding:6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(8px);
+    }
+    .list{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 12px;
+    }
+    .tile{
+      height: 110px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.05);
+      padding: 10px;
+      display:flex; flex-direction:column; justify-content:space-between;
+    }
+    .tile .t1{ font-size:12px; color: rgba(233,238,252,0.85); }
+    .tile .t2{ font-size:11px; color: var(--muted); }
+
+    /* SYSTEM overlay layer */
+    .overlay-layer{
+      position:absolute; inset:0;
+      pointer-events:none; /* taps go through */
+      display:none;
+    }
+    .overlay-badge{
+      position:absolute;
+      right:14px; top:14px;
+      padding:8px 10px;
+      border-radius: 12px;
+      font-size:12px;
+      color: rgba(233,238,252,0.80);
+      background: rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(8px);
+    }
+    .reticle-wrap{
+      position:absolute;
+      left:50%; top:50%;
+      transform: translate(-50%, -50%);
+      width: var(--reticle-size);
+      height: var(--reticle-size);
+      opacity: var(--reticle-opacity);
+      filter: drop-shadow(0 8px 18px rgba(0,0,0,0.35));
+      pointer-events:auto;
+      touch-action:none;
+      transform-origin: center center;
+      will-change: transform;
+    }
+
+    /* Reticle styles */
+    .reticle{ position:relative; width:100%; height:100%; }
+    .reticle.cross .seg{ position:absolute; background: var(--reticle-color); border-radius:999px; }
+    .reticle.cross .seg.h{
+      height: var(--reticle-thickness);
+      left:0; right:0;
+      top: calc(50% - (var(--reticle-thickness)/2));
+    }
+    .reticle.cross .seg.v{
+      width: var(--reticle-thickness);
+      top:0; bottom:0;
+      left: calc(50% - (var(--reticle-thickness)/2));
+    }
+    .reticle.cross .mask{
+      position:absolute; left:50%; top:50%;
+      width: calc(var(--reticle-gap) * 2);
+      height: calc(var(--reticle-gap) * 2);
+      transform: translate(-50%,-50%);
+      background: rgba(0,0,0,0.25);
+      border-radius: 999px;
+      backdrop-filter: blur(2px);
+    }
+    .reticle .dot{
+      position:absolute; left:50%; top:50%;
+      width: var(--reticle-dot); height: var(--reticle-dot);
+      transform: translate(-50%,-50%);
+      border-radius:50%;
+      background: var(--reticle-color);
+      box-shadow: 0 0 0 6px rgba(255,255,255,0.08);
+    }
+
+    .reticle.ring .ring{
+      position:absolute; inset:0;
+      border-radius:50%;
+      border: var(--reticle-thickness) solid var(--reticle-color);
+      opacity: .85;
+    }
+
+    .reticle.horizon .line{
+      position:absolute; left:0; right:0; top:50%;
+      height: var(--reticle-thickness);
+      transform: translateY(-50%);
+      background: var(--reticle-color);
+      border-radius:999px;
+      opacity:.9;
+    }
+    .tick{
+      position:absolute;
+      top: calc(50% - 10px);
+      width: var(--reticle-thickness);
+      height: 20px;
+      background: rgba(255,255,255,0.55);
+      border-radius: 999px;
+      opacity: .9;
+    }
+    .tick.left{ left: 18%; }
+    .tick.right{ right: 18%; }
+
+    /* Controls */
+    .controls{ padding: 14px; }
+    .section{ padding:14px; border-top: 1px solid rgba(255,255,255,0.06); }
+    .section:first-child{ border-top:none; }
+    .h2{ margin:0 0 10px 0; font-size:14px; letter-spacing:.2px; }
+    .row{
+      display:flex; justify-content:space-between; gap:12px; align-items:center;
+      margin: 10px 0;
+    }
+    .label .t{ margin:0; font-size:13px; }
+    .label .d{ margin:4px 0 0 0; font-size:12px; color: var(--muted); line-height:1.35; }
+
+    .switch{
+      position:relative;
+      width: 54px; height: 32px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.12);
+      cursor:pointer;
+      flex:0 0 auto;
+    }
+    .switch::after{
+      content:"";
+      position:absolute;
+      top:4px; left:4px;
+      width:24px; height:24px;
+      border-radius:50%;
+      background: rgba(255,255,255,0.85);
+      transition: transform .18s ease, background .18s ease;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+    }
+    .switch.on{
+      background: rgba(53,208,127,0.25);
+      border-color: rgba(53,208,127,0.35);
+    }
+    .switch.on::after{ transform: translateX(22px); background: #e9fff2; }
+
+    input[type="range"]{ width: 170px; accent-color: var(--accent); }
+    select{
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 10px;
+      font-size: 12px;
+      outline:none;
+    }
+
+    .btn{
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .btn.primary{
+      background: rgba(106,166,255,0.18);
+      border-color: rgba(106,166,255,0.35);
+    }
+    .btn.warn{
+      background: rgba(255,204,102,0.14);
+      border-color: rgba(255,204,102,0.35);
+      color: rgba(255,240,210,0.95);
+    }
+    .btn.danger{
+      background: rgba(255,93,93,0.14);
+      border-color: rgba(255,93,93,0.35);
+    }
+    .btns{ display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
+
+    .banner{
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.25);
+      font-size: 12px;
+      color: rgba(233,238,252,0.82);
+    }
+    .banner strong{ color: #fff; }
+    .banner.warn{ border-color: rgba(255,204,102,0.22); }
+    .banner.danger{ border-color: rgba(255,93,93,0.22); }
+
+    /* Bottom nav mock */
+    .bottom{
+      padding: 10px 12px calc(10px + var(--safe-bottom));
+      border-top: 1px solid rgba(255,255,255,0.06);
+      background: rgba(10,14,26,0.72);
+      backdrop-filter: blur(10px);
+      display:flex;
+      justify-content:space-around;
+      gap:10px;
+    }
+    .tab{
+      width: 33%;
+      text-align:center;
+      padding: 10px 8px;
+      border-radius: 14px;
+      color: rgba(233,238,252,0.75);
+      font-size: 12px;
+      border: 1px solid transparent;
+      cursor:pointer;
+      user-select:none;
+    }
+    .tab.active{
+      background: rgba(106,166,255,0.16);
+      border-color: rgba(106,166,255,0.28);
+      color: var(--text);
+    }
+  </style>
+</head>
+
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div style="min-width:0">
+        <h1>Android：レティクル最前面オーバーレイ（モック）</h1>
+        <div class="sub">SYSTEM_ALERT_WINDOW想定（YouTube等の上に重ねる）</div>
+      </div>
+    </div>
+
+    <div id="statusPill" class="pill" title="オーバーレイ状態">
+      <span id="statusDot" class="dot"></span>
+      <span id="statusText">Overlay: OFF</span>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Preview -->
+    <div class="panel preview">
+      <div class="fake-os">
+        <div class="statusbar">
+          <div>12:34</div>
+          <div>LTE ▪︎ 🔋 78%</div>
+        </div>
+
+        <div class="phone">
+          <div class="yt"></div>
+          <div class="list">
+            <div class="tile">
+              <div class="t1">関連動画</div>
+              <div class="t2">別アプリ上でも中央固定点を表示</div>
+            </div>
+            <div class="tile">
+              <div class="t1">コメント</div>
+              <div class="t2">「視線の拠り所」を作る想定</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- System overlay -->
+      <div class="overlay-layer" id="overlayLayer" aria-hidden="true">
+        <div class="overlay-badge">SYSTEM OVERLAY（タップ透過想定）</div>
+
+        <div class="reticle-wrap" id="reticleWrap">
+          <div class="reticle cross" id="reticle">
+            <div class="seg h"></div>
+            <div class="seg v"></div>
+            <div class="mask"></div>
+            <div class="dot"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="panel">
+      <div class="controls">
+        <div class="banner warn">
+          <strong>許可フロー想定：</strong>
+          1) 「他のアプリの上に表示」許可 → 2) オーバーレイ開始 → 3) バックグラウンドでも継続（前面サービス想定）
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="h2">権限（モック）</h2>
+
+        <div class="row">
+          <div class="label">
+            <p class="t">「他のアプリの上に表示」許可</p>
+            <p class="d">Android設定へ誘導して許可取得（Settings.ACTION_MANAGE_OVERLAY_PERMISSION想定）</p>
+          </div>
+          <div class="btns">
+            <button class="btn warn" id="grantBtn">許可したことにする</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="label">
+            <p class="t">前面サービス（通知）</p>
+            <p class="d">常駐のため通知を表示する想定（ユーザーが停止しやすい）</p>
+          </div>
+          <div class="switch" id="fgSwitch" role="switch" aria-checked="false"></div>
+        </div>
+
+        <div class="row">
+          <div class="label">
+            <p class="t">ジャイロセンサー</p>
+            <p class="d">3軸センサーで車の揺れを検知し、レティクルを安定表示</p>
+          </div>
+          <div class="btns">
+            <button class="btn primary" id="sensorBtn">究極の酔い止めON</button>
+          </div>
+        </div>
+
+        <div class="banner danger" style="margin-top:12px;">
+          <strong>安全注意：</strong>運転者向けではありません。同乗者の車酔い軽減用途のUI想定です。
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="h2">オーバーレイ操作</h2>
+
+        <div class="row">
+          <div class="label">
+            <p class="t">オーバーレイ表示</p>
+            <p class="d">許可が無い場合は開始できない想定</p>
+          </div>
+          <div class="switch" id="overlaySwitch" role="switch" aria-checked="false"></div>
+        </div>
+
+        <div class="row">
+          <div class="label">
+            <p class="t">レティクル種類</p>
+            <p class="d">十字 / 円 / 水平線（水平儀風）</p>
+          </div>
+          <select id="styleSelect">
+            <option value="cross" selected>十字＋中心点</option>
+            <option value="ring">円＋中心点</option>
+            <option value="horizon">水平線（水平儀風）</option>
+          </select>
+        </div>
+
+        <div class="row">
+          <div class="label">
+            <p class="t">サイズ</p>
+            <p class="d">中央固定点の大きさ</p>
+          </div>
+          <input id="sizeRange" type="range" min="90" max="320" value="180"/>
+        </div>
+
+        <div class="row">
+          <div class="label">
+            <p class="t">不透明度</p>
+            <p class="d">動画視聴の邪魔をしない程度に</p>
+          </div>
+          <input id="opacityRange" type="range" min="10" max="100" value="85"/>
+        </div>
+
+        <div class="row">
+          <div class="label">
+            <p class="t">線の太さ</p>
+            <p class="d">見やすさ重視なら上げる</p>
+          </div>
+          <input id="thicknessRange" type="range" min="1" max="6" value="2"/>
+        </div>
+
+        <div class="row">
+          <div class="label">
+            <p class="t">中央に戻す</p>
+            <p class="d">レティクル位置をリセット</p>
+          </div>
+          <div class="btns">
+            <button class="btn primary" id="centerBtn">中央リセット</button>
+            <button class="btn danger" id="stopBtn">停止</button>
+          </div>
+        </div>
+
+        <div class="banner" id="hintBanner" style="display:none;">
+          <strong>ヒント：</strong>モックではレティクルをドラッグして位置調整できます（実装でも可能）。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom">
+    <div class="tab active">ホーム</div>
+    <div class="tab">オーバーレイ</div>
+    <div class="tab">設定</div>
+  </div>
+</div>
+
+<script>
+  const overlayLayer = document.getElementById('overlayLayer');
+  const overlaySwitch = document.getElementById('overlaySwitch');
+  const fgSwitch = document.getElementById('fgSwitch');
+
+  const grantBtn = document.getElementById('grantBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const centerBtn = document.getElementById('centerBtn');
+
+  const statusPill = document.getElementById('statusPill');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+
+  const styleSelect = document.getElementById('styleSelect');
+  const sizeRange = document.getElementById('sizeRange');
+  const opacityRange = document.getElementById('opacityRange');
+  const thicknessRange = document.getElementById('thicknessRange');
+
+  const reticleWrap = document.getElementById('reticleWrap');
+  const reticle = document.getElementById('reticle');
+
+  const hintBanner = document.getElementById('hintBanner');
+  const sensorBtn = document.getElementById('sensorBtn');
+
+  let overlayPermissionGranted = false;
+  let overlayOn = false;
+  let fgOn = false;
+  let sensorActive = false;
+  let sensorPermissionGranted = false;
+
+  //究極の酔い止めロジック - 物理演算変数
+  const physics = {
+    // 生データ（センサーから直接）
+    raw: { roll: 0, pitch: 0, zAccel: 0 },
+    
+    // 基準角度（初期水平状態）
+    baseline: { roll: 0, pitch: 0 },
+    
+    // フィルター済みデータ（滑らかにしたもの）
+    filtered: { roll: 0, pitch: 0, zAccel: 0 },
+    
+    // 速度（慣性計算用）
+    velocity: { roll: 0, pitch: 0, zAccel: 0 },
+    
+    // 補正値（表示に使う最終値）
+    compensation: { roll: 0, pitch: 0, scale: 1 },
+    
+    // ローパスフィルター係数（0-1、小さいほど滑らか）
+    lerpFactor: 0.12,
+    
+    // 慣性減衰係数（0-1、小さいほど減衰が強い）
+    damping: 0.88,
+    
+    // ノイズ除去閾値
+    noiseThreshold: 0.5,
+    
+    // 各軸の感度
+    sensitivity: { roll: 1.2, pitch: 1.0, zAccel: 0.2 }
+  };
+
+  // アニメーション管理
+  let animationId = null;
+
+  function setCSSVar(name, value){
+    document.documentElement.style.setProperty(name, value);
+  }
+
+  function setStatus(){
+    statusDot.classList.toggle('on', overlayOn);
+    statusText.textContent = `Overlay: ${overlayOn ? 'ON' : 'OFF'}  /  Permission: ${overlayPermissionGranted ? 'OK' : 'NG'}`;
+  }
+
+  function setSwitch(el, on){
+    el.classList.toggle('on', on);
+    el.setAttribute('aria-checked', String(on));
+  }
+
+  function setOverlay(on){
+    if(on && !overlayPermissionGranted){
+      alert('オーバーレイ権限が必要です（モック）。先に「許可したことにする」を押してください。');
+      setSwitch(overlaySwitch, false);
+      overlayOn = false;
+      overlayLayer.style.display = 'none';
+      setStatus();
+      return;
+    }
+    overlayOn = on;
+    overlayLayer.style.display = on ? 'block' : 'none';
+    setSwitch(overlaySwitch, on);
+    hintBanner.style.display = on ? 'block' : 'none';
+    
+    if (!on && sensorActive) {
+      // オーバーレイオフ時も物理演算は続けるが、表示はリセット
+      updateReticleTransform();
+    }
+    setStatus();
+  }
+
+  function setForegroundService(on){
+    fgOn = on;
+    setSwitch(fgSwitch, on);
+  }
+
+  async function requestSensorPermission(){
+    // iOS 13+ の権限リクエスト対応
+    if (typeof DeviceOrientationEvent !== 'undefined' && 
+        typeof DeviceOrientationEvent.requestPermission === 'function') {
+      try {
+        // ユーザージェスチャーが必要なため、ボタンクリックから呼び出す
+        const permission = await DeviceOrientationEvent.requestPermission();
+        sensorPermissionGranted = permission === 'granted';
+        
+        if (!sensorPermissionGranted) {
+          alert('センサー権限が拒否されました。設定から許可してください。');
+        }
+        return sensorPermissionGranted;
+      } catch (error) {
+        console.error('Sensor permission error:', error);
+        alert('センサー権限の取得に失敗しました');
+        return false;
+      }
+    }
+    
+    // Androidや古いiOSは自動的に許可
+    sensorPermissionGranted = true;
+    return true;
+  }
+
+  function startSensor(){
+    if (sensorActive) return;
+    
+    requestSensorPermission().then(granted => {
+      if (granted) {
+        sensorActive = true;
+        sensorBtn.textContent = '究極の酔い止めOFF';
+        sensorBtn.classList.remove('primary');
+        sensorBtn.classList.add('danger');
+        
+        // センサーイベントリスナー登録
+        window.addEventListener('deviceorientation', handleOrientation);
+        window.addEventListener('devicemotion', handleMotion);
+        
+        // アニメーションループ開始
+        startAnimationLoop();
+        
+        console.log('究極の酔い止めセンサー起動');
+      } else {
+        alert('センサー権限が必要です');
+      }
+    });
+  }
+
+  function stopSensor(){
+    sensorActive = false;
+    sensorBtn.textContent = '究極の酔い止めON';
+    sensorBtn.classList.add('primary');
+    sensorBtn.classList.remove('danger');
+    
+    // イベントリスナー解除
+    window.removeEventListener('deviceorientation', handleOrientation);
+    window.removeEventListener('devicemotion', handleMotion);
+    
+    // アニメーション停止
+    if (animationId) {
+      cancelAnimationFrame(animationId);
+      animationId = null;
+    }
+    
+    // リセット
+    resetPhysics();
+    updateReticleTransform();
+    
+    console.log('究極の酔い止めセンサー停止');
+  }
+
+  // センサーデータ処理
+  function handleOrientation(event) {
+    if (!sensorActive) return;
+    
+    const beta = event.beta || 0;  // 前後の傾き (-180 to 180)
+    const gamma = event.gamma || 0; // 左右の傾き (-90 to 90)
+    const alpha = event.alpha || 0; // 方位 (0 to 360)
+    
+    // 最初の読み取りで基準角度を設定
+    if (physics.baseline.roll === 0 && physics.baseline.pitch === 0) {
+      physics.baseline.roll = gamma;
+      physics.baseline.pitch = beta;
+      console.log('基準角度設定:', physics.baseline);
+    }
+    
+    // 基準角度からの相対角度を計算（センター回帰対応）
+    const relativeRoll = gamma - physics.baseline.roll;
+    const relativePitch = beta - physics.baseline.pitch;
+    
+    // 生データを保存
+    physics.raw.roll = relativeRoll;
+    physics.raw.pitch = relativePitch;
+  }
+
+  function handleMotion(event) {
+    if (!sensorActive) return;
+    
+    // Z軸加速度（上下の揺れ）を取得
+    const accel = event.accelerationIncludingGravity;
+    if (accel && accel.z !== null) {
+      physics.raw.zAccel = accel.z;
+    }
+  }
+
+  // 物理演算リセット
+  function resetPhysics() {
+    Object.keys(physics.raw).forEach(key => {
+      physics.raw[key] = 0;
+      physics.filtered[key] = 0;
+      physics.velocity[key] = 0;
+    });
+    physics.compensation.roll = 0;
+    physics.compensation.pitch = 0;
+    physics.compensation.scale = 1;
+    
+    // 基準角度もリセット
+    physics.baseline.roll = 0;
+    physics.baseline.pitch = 0;
+  }
+
+  // ノイズ除去とローパスフィルター
+  function applyLowPassFilter() {
+    Object.keys(physics.raw).forEach(key => {
+      const raw = physics.raw[key];
+      const filtered = physics.filtered[key];
+      
+      // ノイズ除去：小さな変動を無視
+      const noiseThreshold = physics.noiseThreshold;
+      const diff = Math.abs(raw - filtered);
+      
+      if (diff < noiseThreshold) {
+        // 変化が小さい場合は現状維持（ドリフト防止）
+        return;
+      }
+      
+      // ローパスフィルター適用
+      const lerpFactor = physics.lerpFactor;
+      physics.filtered[key] = filtered + (raw - filtered) * lerpFactor;
+    });
+  }
+
+  // 慣性計算
+  function calculateInertia() {
+    Object.keys(physics.filtered).forEach(key => {
+      const target = physics.filtered[key] * physics.sensitivity[key];
+      const current = physics.compensation[key] || (key === 'scale' ? 1 : 0);
+      
+      // 目標値との差から加速度を計算
+      const acceleration = (target - current) * 0.15;
+      
+      // 速度に加速度を加算
+      physics.velocity[key] += acceleration;
+      
+      // 減衰を適用
+      physics.velocity[key] *= physics.damping;
+      
+      // 位置を更新
+      if (key === 'scale') {
+        physics.compensation[key] = 1 + physics.velocity[key];
+      } else {
+        physics.compensation[key] += physics.velocity[key];
+      }
+    });
+    
+    // 制限を適用
+    physics.compensation.roll = Math.max(-30, Math.min(30, physics.compensation.roll));
+    physics.compensation.pitch = Math.max(-20, Math.min(20, physics.compensation.pitch));
+    physics.compensation.scale = Math.max(0.9, Math.min(1.1, physics.compensation.scale));
+  }
+
+  // レティクルの変換を更新
+  function updateReticleTransform() {
+    if (!overlayOn) return;
+    
+    const { roll, pitch, scale } = physics.compensation;
+    
+    // 3D変換を適用（軸の適合を修正）
+    const transform = `
+      translate(-50%, -50%)
+      rotateX(${-pitch}deg)  // 前後の傾き：ピッチでX軸回転
+      rotateZ(${-roll}deg)    // 左右の傾き：ロールでZ軸回転（修正）
+      scale(${scale})
+    `;
+    
+    reticleWrap.style.transform = transform;
+  }
+
+  // アニメーションループ
+  function startAnimationLoop() {
+    function animate() {
+      if (!sensorActive) return;
+      
+      // 物理演算
+      applyLowPassFilter();
+      calculateInertia();
+      
+      // 表示更新
+      updateReticleTransform();
+      
+      // 次のフレーム
+      animationId = requestAnimationFrame(animate);
+    }
+    
+    animate();
+  }
+
+  function setStyle(style){
+    reticle.className = `reticle ${style}`;
+    reticle.innerHTML = '';
+    if(style === 'cross'){
+      reticle.innerHTML = `
+        <div class="seg h"></div>
+        <div class="seg v"></div>
+        <div class="mask"></div>
+        <div class="dot"></div>
+      `;
+    }else if(style === 'ring'){
+      reticle.innerHTML = `
+        <div class="ring"></div>
+        <div class="dot"></div>
+      `;
+    }else if(style === 'horizon'){
+      reticle.innerHTML = `
+        <div class="line"></div>
+        <div class="tick left"></div>
+        <div class="tick right"></div>
+      `;
+    }
+  }
+
+  grantBtn.addEventListener('click', ()=>{
+    overlayPermissionGranted = true;
+    alert('（モック）オーバーレイ権限を許可しました');
+    setStatus();
+  });
+
+  overlaySwitch.addEventListener('click', ()=> setOverlay(!overlayOn));
+  statusPill.addEventListener('click', ()=> setOverlay(!overlayOn));
+  fgSwitch.addEventListener('click', ()=> setForegroundService(!fgOn));
+  sensorBtn.addEventListener('click', ()=> sensorActive ? stopSensor() : startSensor());
+
+  stopBtn.addEventListener('click', ()=>{
+    setOverlay(false);
+  });
+
+  centerBtn.addEventListener('click', ()=>{
+    reticleWrap.style.left = '50%';
+    reticleWrap.style.top = '50%';
+    
+    // 物理演算もリセット
+    resetPhysics();
+    updateReticleTransform();
+  });
+
+  styleSelect.addEventListener('change', e=> setStyle(e.target.value));
+  sizeRange.addEventListener('input', e=> setCSSVar('--reticle-size', `${e.target.value}px`));
+  opacityRange.addEventListener('input', e=> setCSSVar('--reticle-opacity', (e.target.value/100).toFixed(2)));
+  thicknessRange.addEventListener('input', e=> setCSSVar('--reticle-thickness', `${e.target.value}px`));
+
+  // Drag mock
+  let dragging = false;
+  let offsetX = 0, offsetY = 0;
+
+  function point(e){
+    if(e.touches && e.touches[0]) return {x:e.touches[0].clientX, y:e.touches[0].clientY};
+    return {x:e.clientX, y:e.clientY};
+  }
+
+  function onDown(e){
+    if(!overlayOn) return;
+    dragging = true;
+    const r = reticleWrap.getBoundingClientRect();
+    const p = point(e);
+    offsetX = p.x - (r.left + r.width/2);
+    offsetY = p.y - (r.top + r.height/2);
+    e.preventDefault?.();
+  }
+
+  function onMove(e){
+    if(!dragging || !overlayOn) return;
+    const p = point(e);
+    reticleWrap.style.left = `${p.x - offsetX}px`;
+    reticleWrap.style.top  = `${p.y - offsetY}px`;
+    reticleWrap.style.transform = 'translate(-50%, -50%)';
+    e.preventDefault?.();
+  }
+
+  function onUp(){ dragging = false; }
+
+  reticleWrap.addEventListener('mousedown', onDown);
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+
+  reticleWrap.addEventListener('touchstart', onDown, {passive:false});
+  window.addEventListener('touchmove', onMove, {passive:false});
+  window.addEventListener('touchend', onUp);
+
+  // init
+  setStyle('cross');
+  setForegroundService(false);
+  setOverlay(false);
+  setStatus();
+</script>
+</body>
+</html>

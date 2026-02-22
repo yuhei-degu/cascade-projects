@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>酔い止め軽減レティクル</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            touch-action: none;
+            user-select: none;
+        }
+
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .control-btn:hover {
+            background: #555;
+        }
+
+        .control-btn.active {
+            background: #007bff;
+        }
+
+        .settings {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            color: white;
+            display: none;
+        }
+
+        .settings.show {
+            display: block;
+        }
+
+        .setting-item {
+            margin: 10px 0;
+        }
+
+        .setting-item label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .setting-item input[type="range"] {
+            width: 100%;
+        }
+
+        .setting-item input[type="color"] {
+            width: 50px;
+            height: 30px;
+            border: none;
+            border-radius: 3px;
+        }
+
+        .info {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            color: white;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    
+    <div class="info">
+        <div>酔い止め軽減レティクル</div>
+        <div>画面中央の固定点に視点を合わせてください</div>
+    </div>
+
+    <div class="controls">
+        <button class="control-btn" id="toggleReticle">レティクル表示/非表示</button>
+        <button class="control-btn" id="toggleSettings">設定</button>
+        <button class="control-btn" id="toggleGrid">グリッド</button>
+        <button class="control-btn" id="toggleCrosshair">クロスヘア</button>
+    </div>
+
+    <div class="settings" id="settings">
+        <h3>設定</h3>
+        <div class="setting-item">
+            <label for="reticleSize">レティクルサイズ</label>
+            <input type="range" id="reticleSize" min="10" max="100" value="30">
+            <span id="reticleSizeValue">30</span>
+        </div>
+        <div class="setting-item">
+            <label for="reticleColor">レティクル色</label>
+            <input type="color" id="reticleColor" value="#00ff00">
+        </div>
+        <div class="setting-item">
+            <label for="reticleOpacity">透明度</label>
+            <input type="range" id="reticleOpacity" min="0" max="100" value="80">
+            <span id="reticleOpacityValue">80%</span>
+        </div>
+        <div class="setting-item">
+            <label for="animationSpeed">アニメーション速度</label>
+            <input type="range" id="animationSpeed" min="0" max="100" value="50">
+            <span id="animationSpeedValue">50</span>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        let settings = {
+            showReticle: true,
+            showGrid: false,
+            showCrosshair: false,
+            reticleSize: 30,
+            reticleColor: '#00ff00',
+            reticleOpacity: 0.8,
+            animationSpeed: 50,
+            animationPhase: 0
+        };
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function drawReticle() {
+            if (!settings.showReticle) return;
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            ctx.save();
+            ctx.globalAlpha = settings.reticleOpacity;
+            ctx.strokeStyle = settings.reticleColor;
+            ctx.fillStyle = settings.reticleColor;
+            ctx.lineWidth = 2;
+
+            // アニメーション効果
+            const pulse = Math.sin(settings.animationPhase) * 0.2 + 1;
+            const size = settings.reticleSize * pulse;
+
+            // 外円
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, size, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // 内円
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, size * 0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 十字線
+            if (settings.showCrosshair) {
+                ctx.beginPath();
+                ctx.moveTo(centerX - size * 1.5, centerY);
+                ctx.lineTo(centerX + size * 1.5, centerY);
+                ctx.moveTo(centerX, centerY - size * 1.5);
+                ctx.lineTo(centerX, centerY + size * 1.5);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+
+        function drawGrid() {
+            if (!settings.showGrid) return;
+
+            ctx.save();
+            ctx.strokeStyle = settings.reticleColor;
+            ctx.globalAlpha = 0.2;
+            ctx.lineWidth = 1;
+
+            const gridSize = 50;
+            
+            // 垂直線
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+
+            // 水平線
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawGrid();
+            drawReticle();
+            
+            // アニメーション更新
+            settings.animationPhase += (settings.animationSpeed / 1000);
+            
+            requestAnimationFrame(animate);
+        }
+
+        // イベントリスナー
+        document.getElementById('toggleReticle').addEventListener('click', function() {
+            settings.showReticle = !settings.showReticle;
+            this.classList.toggle('active');
+        });
+
+        document.getElementById('toggleSettings').addEventListener('click', function() {
+            document.getElementById('settings').classList.toggle('show');
+            this.classList.toggle('active');
+        });
+
+        document.getElementById('toggleGrid').addEventListener('click', function() {
+            settings.showGrid = !settings.showGrid;
+            this.classList.toggle('active');
+        });
+
+        document.getElementById('toggleCrosshair').addEventListener('click', function() {
+            settings.showCrosshair = !settings.showCrosshair;
+            this.classList.toggle('active');
+        });
+
+        // 設定コントロール
+        document.getElementById('reticleSize').addEventListener('input', function(e) {
+            settings.reticleSize = parseInt(e.target.value);
+            document.getElementById('reticleSizeValue').textContent = e.target.value;
+        });
+
+        document.getElementById('reticleColor').addEventListener('input', function(e) {
+            settings.reticleColor = e.target.value;
+        });
+
+        document.getElementById('reticleOpacity').addEventListener('input', function(e) {
+            settings.reticleOpacity = parseInt(e.target.value) / 100;
+            document.getElementById('reticleOpacityValue').textContent = e.target.value + '%';
+        });
+
+        document.getElementById('animationSpeed').addEventListener('input', function(e) {
+            settings.animationSpeed = parseInt(e.target.value);
+            document.getElementById('animationSpeedValue').textContent = e.target.value;
+        });
+
+        // ウィンドウリサイズ対応
+        window.addEventListener('resize', resizeCanvas);
+
+        // 初期化
+        resizeCanvas();
+        animate();
+
+        // 最初のボタン状態を設定
+        document.getElementById('toggleReticle').classList.add('active');
+    </script>
+</body>
+</html>

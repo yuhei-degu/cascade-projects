@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🤖 My Secretary | yuuve's Personal Assistant</title>
+<style>
+:root {
+  --bg: #0a0a0f; --bg2: #12121a; --card: #1a1a26;
+  --border: rgba(255,255,255,0.07); --text: #e8e8f0;
+  --muted: #8888aa; --primary: #7c6aff; --accent: #ff6aac;
+  --success: #4ade80; --warning: #fbbf24; --danger: #f87171;
+  --radius: 14px; --glow: rgba(124,106,255,0.3);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Segoe UI',sans-serif; min-height:100vh; }
+
+/* グリッドレイアウト */
+.app { display:grid; grid-template-rows:auto 1fr; min-height:100vh; }
+.topbar { background:var(--bg2); border-bottom:1px solid var(--border); padding:1rem 2rem; display:flex; align-items:center; gap:1.5rem; }
+.topbar-logo { font-size:1.2rem; font-weight:700; background:linear-gradient(135deg,var(--primary),var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.topbar-clock { font-size:1.8rem; font-weight:300; letter-spacing:0.05em; }
+.topbar-date { color:var(--muted); font-size:0.9rem; }
+.topbar-quote { margin-left:auto; color:var(--muted); font-size:0.85rem; font-style:italic; max-width:300px; text-align:right; }
+
+.content { display:grid; grid-template-columns:280px 1fr 260px; gap:1.5rem; padding:1.5rem 2rem; overflow-y:auto; }
+
+/* カード共通 */
+.card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:1.2rem; }
+.card-title { font-size:0.82rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:1rem; display:flex; align-items:center; gap:0.4rem; }
+
+/* 習慣トラッカー */
+.habit-item { display:flex; align-items:center; gap:0.75rem; padding:0.5rem 0; border-bottom:1px solid var(--border); }
+.habit-item:last-child { border-bottom:none; }
+.habit-check { width:22px; height:22px; border-radius:50%; border:2px solid var(--border); cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.2s; }
+.habit-check.done { background:var(--success); border-color:var(--success); }
+.habit-name { flex:1; font-size:0.9rem; }
+.habit-name.done { text-decoration:line-through; color:var(--muted); }
+.streak { font-size:0.78rem; color:var(--warning); }
+
+/* TODO */
+.todo-input-row { display:flex; gap:0.5rem; margin-bottom:1rem; }
+.todo-input { flex:1; background:var(--bg2); border:1px solid var(--border); color:var(--text); padding:0.5rem 0.75rem; border-radius:8px; font-size:0.9rem; outline:none; transition:border-color 0.15s; }
+.todo-input:focus { border-color:var(--primary); }
+.icon-btn { background:var(--primary); border:none; color:white; width:34px; height:34px; border-radius:8px; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:filter 0.15s; }
+.icon-btn:hover { filter:brightness(1.15); }
+.todo-item { display:flex; align-items:flex-start; gap:0.6rem; padding:0.5rem 0; border-bottom:1px solid var(--border); }
+.todo-item:last-child { border-bottom:none; }
+.todo-cb { width:18px; height:18px; border-radius:4px; border:2px solid var(--border); cursor:pointer; flex-shrink:0; margin-top:2px; transition:all 0.15s; display:flex; align-items:center; justify-content:center; }
+.todo-cb.done { background:var(--success); border-color:var(--success); }
+.todo-cb.done::after { content:'✓'; font-size:0.7rem; color:white; }
+.todo-text { flex:1; font-size:0.88rem; }
+.todo-text.done { text-decoration:line-through; color:var(--muted); }
+.todo-del { background:none; border:none; color:var(--muted); cursor:pointer; font-size:0.8rem; opacity:0; transition:opacity 0.15s; }
+.todo-item:hover .todo-del { opacity:1; }
+.priority-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-top:5px; }
+
+/* メモ */
+.memo-area { width:100%; background:var(--bg2); border:1px solid var(--border); color:var(--text); padding:0.75rem; border-radius:8px; font-size:0.88rem; resize:none; outline:none; line-height:1.6; min-height:120px; transition:border-color 0.15s; }
+.memo-area:focus { border-color:var(--primary); }
+.memo-saved { font-size:0.75rem; color:var(--success); text-align:right; margin-top:0.3rem; height:1em; }
+
+/* スケジュール */
+.schedule-input-row { display:flex; gap:0.4rem; margin-bottom:0.8rem; flex-wrap:wrap; }
+.schedule-time { width:85px; background:var(--bg2); border:1px solid var(--border); color:var(--text); padding:0.45rem 0.5rem; border-radius:8px; font-size:0.85rem; outline:none; }
+.schedule-text { flex:1; min-width:120px; background:var(--bg2); border:1px solid var(--border); color:var(--text); padding:0.45rem 0.6rem; border-radius:8px; font-size:0.85rem; outline:none; }
+.schedule-item { display:flex; align-items:center; gap:0.6rem; padding:0.4rem 0.5rem; border-radius:8px; background:rgba(124,106,255,0.08); margin-bottom:0.4rem; }
+.schedule-time-label { font-size:0.78rem; color:var(--primary); font-weight:600; min-width:40px; }
+.schedule-label { font-size:0.87rem; flex:1; }
+.schedule-del { background:none; border:none; color:var(--muted); cursor:pointer; font-size:0.75rem; }
+
+/* タイマー */
+.timer-display { font-size:3rem; font-weight:300; text-align:center; letter-spacing:0.05em; color:var(--text); margin:1rem 0; font-variant-numeric:tabular-nums; }
+.timer-controls { display:flex; gap:0.5rem; justify-content:center; margin-bottom:1rem; }
+.timer-preset { background:var(--bg2); border:1px solid var(--border); color:var(--muted); padding:0.3rem 0.7rem; border-radius:6px; cursor:pointer; font-size:0.8rem; transition:all 0.15s; }
+.timer-preset:hover, .timer-preset.active { border-color:var(--primary); color:var(--primary); background:rgba(124,106,255,0.1); }
+.timer-btns { display:flex; gap:0.5rem; justify-content:center; }
+.timer-circle { width:140px; height:140px; border-radius:50%; border:4px solid var(--border); margin:0 auto; position:relative; display:flex; align-items:center; justify-content:center; }
+.timer-svg { position:absolute; top:-4px; left:-4px; transform:rotate(-90deg); }
+
+/* 統計 */
+.stat-row { display:flex; justify-content:space-between; align-items:center; padding:0.4rem 0; }
+.stat-row-label { font-size:0.85rem; color:var(--muted); }
+.stat-row-val { font-size:0.95rem; font-weight:600; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div>
+      <div class="topbar-logo">🤖 My Secretary</div>
+    </div>
+    <div>
+      <div class="topbar-clock" id="clock">--:--:--</div>
+      <div class="topbar-date" id="date-display"></div>
+    </div>
+    <div class="topbar-quote" id="quote"></div>
+  </div>
+
+  <div class="content">
+    <!-- 左カラム -->
+    <div style="display:flex; flex-direction:column; gap:1.2rem;">
+
+      <!-- 今日の習慣 -->
+      <div class="card">
+        <div class="card-title">💪 今日の習慣</div>
+        <div id="habits-list"></div>
+        <div style="display:flex; gap:0.5rem; margin-top:0.8rem;">
+          <input class="todo-input" id="habit-input" placeholder="習慣を追加..." onkeydown="if(event.key==='Enter')addHabit()">
+          <button class="icon-btn" onclick="addHabit()">＋</button>
+        </div>
+      </div>
+
+      <!-- 今日のスケジュール -->
+      <div class="card" style="flex:1;">
+        <div class="card-title">📅 今日の予定</div>
+        <div class="schedule-input-row">
+          <input class="schedule-time" type="time" id="sched-time">
+          <input class="schedule-text" id="sched-text" placeholder="予定を追加..." onkeydown="if(event.key==='Enter')addSchedule()">
+          <button class="icon-btn" onclick="addSchedule()">＋</button>
+        </div>
+        <div id="schedule-list"></div>
+      </div>
+    </div>
+
+    <!-- 中央カラム -->
+    <div style="display:flex; flex-direction:column; gap:1.2rem;">
+
+      <!-- クイックメモ -->
+      <div class="card">
+        <div class="card-title">📝 クイックメモ</div>
+        <textarea class="memo-area" id="memo" placeholder="今すぐメモしたいことを書こう..." oninput="saveMemo(this)"></textarea>
+        <div class="memo-saved" id="memo-saved"></div>
+      </div>
+
+      <!-- TODO -->
+      <div class="card" style="flex:1;">
+        <div class="card-title">✅ TODOリスト</div>
+        <div class="todo-input-row">
+          <input class="todo-input" id="todo-input" placeholder="タスクを入力... (Enter で追加)" onkeydown="if(event.key==='Enter')addTodo()">
+          <select id="todo-priority" style="background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:0.4rem;border-radius:8px;font-size:0.8rem;outline:none;">
+            <option value="high">🔴</option>
+            <option value="medium" selected>🟡</option>
+            <option value="low">🟢</option>
+          </select>
+          <button class="icon-btn" onclick="addTodo()">＋</button>
+        </div>
+        <div id="todo-list"></div>
+      </div>
+    </div>
+
+    <!-- 右カラム -->
+    <div style="display:flex; flex-direction:column; gap:1.2rem;">
+
+      <!-- タイマー -->
+      <div class="card">
+        <div class="card-title">⏱ フォーカスタイマー</div>
+        <div style="display:flex; gap:0.4rem; flex-wrap:wrap; justify-content:center; margin-bottom:0.5rem;">
+          <button class="timer-preset" onclick="setTimer(25*60)">25分</button>
+          <button class="timer-preset" onclick="setTimer(15*60)">15分</button>
+          <button class="timer-preset" onclick="setTimer(5*60)">5分</button>
+          <button class="timer-preset" onclick="setTimer(1*60)">1分</button>
+        </div>
+        <div class="timer-circle">
+          <svg class="timer-svg" width="148" height="148" viewBox="0 0 148 148">
+            <circle id="timer-arc" cx="74" cy="74" r="66" fill="none" stroke="var(--primary)" stroke-width="4" stroke-linecap="round"
+              stroke-dasharray="414.69" stroke-dashoffset="0" style="transition:stroke-dashoffset 1s linear"/>
+          </svg>
+          <div class="timer-display" id="timer-display">25:00</div>
+        </div>
+        <div class="timer-btns" style="margin-top:1rem;">
+          <button class="timer-preset" id="timer-start-btn" onclick="toggleTimer()">▶ スタート</button>
+          <button class="timer-preset" onclick="resetTimer()">↺ リセット</button>
+        </div>
+      </div>
+
+      <!-- 統計 -->
+      <div class="card" style="flex:1;">
+        <div class="card-title">📊 今日の統計</div>
+        <div id="stats-display"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const QUOTES = [
+  "今日もコードを書いて、未来を作ろう 💻",
+  "失敗は成長の証。エラーを恐れるな ⚡",
+  "1行ずつ、着実に前進しよう 🚀",
+  "昨日より少しだけ上手くなれば十分 ✨",
+  "コードは詩だ。美しく書こう 🎨",
+  "疑問を持つことが学びの始まり 🔍",
+  "今日のバグは、明日の知恵になる 💡",
+];
+
+let state = { todos: [], habits: [], schedules: [], memo: '', timerTotal: 25*60, timerLeft: 25*60, timerRunning: false, lastDate: '' };
+let timerInterval = null;
+
+function getToday() { return new Date().toISOString().split('T')[0]; }
+
+function init() {
+  const saved = localStorage.getItem('secretary-state');
+  if (saved) state = JSON.parse(saved);
+
+  // 日付が変わったらTODO・習慣の完了をリセット
+  const today = getToday();
+  if (state.lastDate !== today) {
+    state.habits.forEach(h => { h.doneToday = false; });
+    state.todos.forEach(t => { if (!t.keepDone) t.done = false; });
+    state.lastDate = today;
+    save();
+  }
+
+  startClock();
+  document.getElementById('quote').textContent = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+  document.getElementById('memo').value = state.memo || '';
+  render();
+}
+
+function save() { localStorage.setItem('secretary-state', JSON.stringify(state)); }
+
+function startClock() {
+  function tick() {
+    const now = new Date();
+    document.getElementById('clock').textContent = now.toLocaleTimeString('ja-JP');
+    document.getElementById('date-display').textContent = now.toLocaleDateString('ja-JP', { year:'numeric', month:'long', day:'numeric', weekday:'long' });
+  }
+  tick(); setInterval(tick, 1000);
+}
+
+// TODO
+function addTodo() {
+  const val = document.getElementById('todo-input').value.trim();
+  if (!val) return;
+  state.todos.unshift({ id: Date.now(), text: val, done: false, priority: document.getElementById('todo-priority').value });
+  document.getElementById('todo-input').value = '';
+  save(); renderTodos();
+}
+
+function toggleTodo(id) {
+  const t = state.todos.find(t => t.id === id);
+  t.done = !t.done; save(); renderTodos(); renderStats();
+}
+
+function deleteTodo(id) { state.todos = state.todos.filter(t => t.id !== id); save(); renderTodos(); renderStats(); }
+
+function renderTodos() {
+  const pc = { high:'var(--danger)', medium:'var(--warning)', low:'var(--success)' };
+  document.getElementById('todo-list').innerHTML = state.todos.map(t =>
+    `<div class="todo-item">
+      <div class="todo-cb ${t.done?'done':''}" onclick="toggleTodo(${t.id})"></div>
+      <div class="priority-dot" style="background:${pc[t.priority]}"></div>
+      <div class="todo-text ${t.done?'done':''}">${t.text}</div>
+      <button class="todo-del" onclick="deleteTodo(${t.id})">✕</button>
+    </div>`
+  ).join('');
+}
+
+// 習慣
+function addHabit() {
+  const val = document.getElementById('habit-input').value.trim();
+  if (!val) return;
+  state.habits.push({ id: Date.now(), name: val, doneToday: false, streak: 0 });
+  document.getElementById('habit-input').value = '';
+  save(); renderHabits();
+}
+
+function toggleHabit(id) {
+  const h = state.habits.find(h => h.id === id);
+  h.doneToday = !h.doneToday;
+  if (h.doneToday) h.streak = (h.streak || 0) + 1;
+  else h.streak = Math.max(0, (h.streak || 1) - 1);
+  save(); renderHabits(); renderStats();
+}
+
+function renderHabits() {
+  if (state.habits.length === 0) {
+    document.getElementById('habits-list').innerHTML = '<div style="color:var(--muted);font-size:0.85rem;text-align:center;padding:1rem">習慣を追加してみよう！</div>';
+    return;
+  }
+  document.getElementById('habits-list').innerHTML = state.habits.map(h =>
+    `<div class="habit-item">
+      <div class="habit-check ${h.doneToday?'done':''}" onclick="toggleHabit(${h.id})">${h.doneToday?'✓':''}</div>
+      <div class="habit-name ${h.doneToday?'done':''}">${h.name}</div>
+      ${h.streak > 1 ? `<div class="streak">🔥 ${h.streak}日</div>` : ''}
+    </div>`
+  ).join('');
+}
+
+// スケジュール
+function addSchedule() {
+  const time = document.getElementById('sched-time').value;
+  const text = document.getElementById('sched-text').value.trim();
+  if (!text) return;
+  state.schedules.push({ id: Date.now(), time: time || '??:??', text });
+  state.schedules.sort((a, b) => a.time.localeCompare(b.time));
+  document.getElementById('sched-text').value = '';
+  save(); renderSchedules();
+}
+
+function deleteSchedule(id) { state.schedules = state.schedules.filter(s => s.id !== id); save(); renderSchedules(); }
+
+function renderSchedules() {
+  if (state.schedules.length === 0) {
+    document.getElementById('schedule-list').innerHTML = '<div style="color:var(--muted);font-size:0.85rem;text-align:center;padding:0.5rem">予定なし — のんびり日ですね 😊</div>';
+    return;
+  }
+  document.getElementById('schedule-list').innerHTML = state.schedules.map(s =>
+    `<div class="schedule-item">
+      <div class="schedule-time-label">${s.time}</div>
+      <div class="schedule-label">${s.text}</div>
+      <button class="schedule-del" onclick="deleteSchedule(${s.id})">✕</button>
+    </div>`
+  ).join('');
+}
+
+// メモ
+let memoTimer;
+function saveMemo(el) {
+  state.memo = el.value; save();
+  document.getElementById('memo-saved').textContent = '保存済み ✓';
+  clearTimeout(memoTimer);
+  memoTimer = setTimeout(() => document.getElementById('memo-saved').textContent = '', 2000);
+}
+
+// タイマー
+function setTimer(secs) {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  state.timerTotal = secs; state.timerLeft = secs; state.timerRunning = false;
+  document.getElementById('timer-start-btn').textContent = '▶ スタート';
+  renderTimer();
+}
+
+function toggleTimer() {
+  if (state.timerRunning) {
+    clearInterval(timerInterval); timerInterval = null;
+    state.timerRunning = false;
+    document.getElementById('timer-start-btn').textContent = '▶ 再開';
+  } else {
+    if (state.timerLeft <= 0) { resetTimer(); return; }
+    state.timerRunning = true;
+    document.getElementById('timer-start-btn').textContent = '⏸ 一時停止';
+    timerInterval = setInterval(() => {
+      state.timerLeft--;
+      if (state.timerLeft <= 0) {
+        clearInterval(timerInterval); state.timerRunning = false;
+        document.getElementById('timer-start-btn').textContent = '▶ スタート';
+        document.title = '⏰ 時間です！ | My Secretary';
+        setTimeout(() => document.title = '🤖 My Secretary | yuuve\'s Personal Assistant', 3000);
+      }
+      renderTimer(); save();
+    }, 1000);
+  }
+}
+
+function resetTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  state.timerLeft = state.timerTotal; state.timerRunning = false;
+  document.getElementById('timer-start-btn').textContent = '▶ スタート';
+  renderTimer();
+}
+
+function renderTimer() {
+  const m = Math.floor(state.timerLeft / 60);
+  const s = state.timerLeft % 60;
+  document.getElementById('timer-display').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const ratio = state.timerLeft / state.timerTotal;
+  const circ = 2 * Math.PI * 66;
+  document.getElementById('timer-arc').style.strokeDashoffset = circ * (1 - ratio);
+  const hue = ratio > 0.5 ? 260 : ratio > 0.25 ? 40 : 0;
+  document.getElementById('timer-arc').style.stroke = `hsl(${hue},100%,65%)`;
+}
+
+// 統計
+function renderStats() {
+  const doneT = state.todos.filter(t => t.done).length;
+  const totalT = state.todos.length;
+  const doneH = state.habits.filter(h => h.doneToday).length;
+  const totalH = state.habits.length;
+  document.getElementById('stats-display').innerHTML = `
+    <div class="stat-row"><span class="stat-row-label">📋 TODO完了</span><span class="stat-row-val" style="color:var(--success)">${doneT} / ${totalT}</span></div>
+    <div class="stat-row"><span class="stat-row-label">💪 習慣達成</span><span class="stat-row-val" style="color:var(--warning)">${doneH} / ${totalH}</span></div>
+    <div class="stat-row"><span class="stat-row-label">📅 今日の予定</span><span class="stat-row-val" style="color:var(--primary)">${state.schedules.length}件</span></div>
+    <div class="stat-row"><span class="stat-row-label">📝 メモ文字数</span><span class="stat-row-val">${(state.memo||'').length}文字</span></div>
+    <div style="margin-top:1rem; padding:0.75rem; background:rgba(124,106,255,0.08); border-radius:8px; text-align:center;">
+      <div style="font-size:0.8rem; color:var(--muted)">今日の達成率</div>
+      <div style="font-size:2rem; font-weight:700; color:var(--primary)">${totalT+totalH > 0 ? Math.round((doneT+doneH)/(totalT+totalH)*100) : 0}%</div>
+    </div>
+  `;
+}
+
+function render() { renderTodos(); renderHabits(); renderSchedules(); renderTimer(); renderStats(); }
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>車酔い軽減オーバーレイ - 視覚と三半規管の同期</title>
+<style>
+  :root{
+    --bg:#0a0e15;
+    --panel: rgba(15,20,30,0.88);
+    --text:#e8ecf5;
+    --muted:#95a3c0;
+    --birdOpacity: 0.38;
+    --formationScale: 1.0;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    height:100vh;
+    overflow:hidden;
+    font-family: system-ui, -apple-system, "Noto Sans JP", sans-serif;
+    background: linear-gradient(180deg, #050810, #0a0e15);
+    color: var(--text);
+  }
+
+  .wrap{
+    height:100vh;
+    display:grid;
+    grid-template-columns: 1fr;
+    gap:16px;
+    padding:16px;
+    max-width:480px;
+    margin:0 auto;
+  }
+  @media (min-width: 960px){ 
+    .wrap{ 
+      grid-template-columns: 1.4fr 1fr; 
+      max-width:1300px;
+    } 
+  }
+
+  .panel{
+    background: var(--panel);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius:20px;
+    overflow:hidden;
+    backdrop-filter: blur(12px);
+  }
+
+  /* Preview */
+  .preview{ position:relative; min-height:500px; }
+  .behind{
+    position:absolute; inset:0; padding:16px;
+    background: radial-gradient(800px 600px at 50% 30%, rgba(80,120,200,0.12), transparent 65%);
+  }
+  .statusbar{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 12px;
+    border-radius:14px;
+    background: rgba(0,0,0,0.3);
+    border:1px solid rgba(255,255,255,0.08);
+    font-size:12px;
+    backdrop-filter: blur(10px);
+  }
+  .appBehind{
+    margin-top:14px;
+    height:calc(100vh - 180px);
+    max-height:600px;
+    border-radius:20px;
+    border:1px solid rgba(255,255,255,0.08);
+    background: linear-gradient(135deg, rgba(40,50,70,0.4), rgba(20,25,35,0.6));
+    position:relative;
+  }
+  @media (min-width: 960px){
+    .appBehind{ height:400px; }
+  }
+  .appBehind::after{
+    content:"YouTube等のコンテンツ表示エリア（鳥は透過オーバーレイ）";
+    position:absolute; left:14px; bottom:14px;
+    font-size:11px; color: rgba(255,255,255,0.65);
+    background: rgba(0,0,0,0.4);
+    padding:8px 12px;
+    border-radius:20px;
+    backdrop-filter: blur(6px);
+  }
+
+  .overlay{
+    position:absolute; inset:0;
+    pointer-events:none;
+  }
+  .info{
+    position:absolute; left:16px; top:16px;
+    padding:10px 14px;
+    border-radius:14px;
+    font-size:11px;
+    color: rgba(255,255,255,0.7);
+    background: rgba(0,0,0,0.35);
+    border:1px solid rgba(255,255,255,0.1);
+    backdrop-filter: blur(8px);
+    line-height:1.5;
+  }
+
+  /* Controls */
+  .controls{ padding:20px; }
+  .section{ padding:18px 0; border-top:1px solid rgba(255,255,255,0.05); }
+  .section:first-child{ border-top:none; padding-top:0; }
+  .h2{ margin:0 0 14px 0; font-size:15px; font-weight:600; letter-spacing:0.3px; }
+  .row{ display:flex; justify-content:space-between; gap:14px; align-items:center; margin:12px 0; }
+  .label .t{ margin:0; font-size:13px; font-weight:500; }
+  .label .d{ margin:4px 0 0 0; font-size:11px; color:var(--muted); line-height:1.4; }
+  input[type="range"]{ 
+    width: 180px; 
+    height:6px;
+    border-radius:3px;
+    background: rgba(255,255,255,0.1);
+    outline:none;
+  }
+  .btn{
+    border:1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.08);
+    color: var(--text);
+    padding:10px 14px;
+    border-radius:12px;
+    font-size:12px;
+    cursor:pointer;
+    transition: all 0.2s;
+  }
+  .btn:hover{ background: rgba(255,255,255,0.12); }
+  .btn.primary{ background: rgba(80,140,220,0.25); border-color: rgba(80,140,220,0.4); }
+  .btn.primary:hover{ background: rgba(80,140,220,0.35); }
+  .note{ font-size:11px; color: var(--muted); line-height:1.5; }
+  .status{ 
+    padding:12px; 
+    background: rgba(0,0,0,0.25); 
+    border-radius:12px; 
+    font-size:12px;
+    margin-top:14px;
+    border:1px solid rgba(255,255,255,0.06);
+  }
+  .status-row{ display:flex; justify-content:space-between; margin:6px 0; }
+  .status-label{ color: var(--muted); }
+  .status-value{ font-weight:500; font-family: 'Courier New', monospace; }
+</style>
+</head>
+
+<body>
+<div class="wrap">
+  <div class="panel preview">
+    <div class="behind">
+      <div class="statusbar"><div>12:34</div><div>LTE ▪︎ 🔋 78%</div></div>
+      <div class="appBehind"></div>
+    </div>
+
+    <div class="overlay">
+      <div class="info">
+        視覚基準点（鳥の編隊）<br/>
+        三半規管の感覚と同期
+      </div>
+      <canvas id="cv"></canvas>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="controls">
+      <div class="note">
+        このオーバーレイは車の動きを視覚的に再現し、三半規管との感覚のズレを軽減します。
+        DeviceOrientationを有効にすると、実際の車の動きに追従します。
+      </div>
+
+      <div class="section">
+        <h2 class="h2">センサー入力</h2>
+        <div class="row">
+          <div class="label"><p class="t">DeviceOrientation（推奨）</p><p class="d">実機の傾きセンサーを使用</p></div>
+          <button class="btn primary" id="ori">センサーを有効化</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="h2">手動テスト（センサー未使用時）</h2>
+
+        <div class="row">
+          <div class="label"><p class="t">左右の傾き（ロール）</p><p class="d">カーブ時の横G</p></div>
+          <input id="roll" type="range" min="-30" max="30" value="0"/>
+        </div>
+
+        <div class="row">
+          <div class="label"><p class="t">加速度（前後G）</p><p class="d">アクセル・ブレーキ</p></div>
+          <input id="accel" type="range" min="-100" max="100" value="0"/>
+        </div>
+
+        <div class="row">
+          <div class="label"><p class="t">段差・バンプ</p><p class="d">上下の衝撃</p></div>
+          <button class="btn" id="bump">段差シミュレート</button>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2 class="h2">表示設定</h2>
+
+        <div class="row">
+          <div class="label"><p class="t">透明度</p><p class="d">35〜45%推奨</p></div>
+          <input id="opacity" type="range" min="30" max="50" value="38"/>
+        </div>
+
+        <div class="row">
+          <div class="label"><p class="t">サイズ</p><p class="d">コンテンツを邪魔しない範囲</p></div>
+          <input id="scale" type="range" min="60" max="140" value="100"/>
+        </div>
+      </div>
+
+      <div class="status">
+        <div class="status-row">
+          <span class="status-label">ロール角:</span>
+          <span class="status-value" id="rollVal">0.0°</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">前後G:</span>
+          <span class="status-value" id="accelVal">0.00g</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">上下変位:</span>
+          <span class="status-value" id="vertVal">0.0px</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">センサー:</span>
+          <span class="status-value" id="sensorStatus">未接続</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const canvas = document.getElementById('cv');
+  const ctx = canvas.getContext('2d');
+
+  // UI elements
+  const rollEl = document.getElementById('roll');
+  const accelEl = document.getElementById('accel');
+  const bumpBtn = document.getElementById('bump');
+  const opacityEl = document.getElementById('opacity');
+  const scaleEl = document.getElementById('scale');
+  const oriBtn = document.getElementById('ori');
+
+  // Status display
+  const rollVal = document.getElementById('rollVal');
+  const accelVal = document.getElementById('accelVal');
+  const vertVal = document.getElementById('vertVal');
+  const sensorStatus = document.getElementById('sensorStatus');
+
+  let useSensor = false;
+
+  // 物理パラメータ（実車の動きに基づく）
+  const PHYSICS = {
+    // 慣性係数（滑らかさ）
+    rollInertia: 0.12,        // ロールの追従速度
+    lateralInertia: 0.10,     // 横方向の慣性
+    verticalInertia: 0.15,    // 上下の慣性
+    
+    // 重力・加速度係数
+    gravity: 0.18,            // 上下バウンドの復元力
+    damping: 0.82,            // 減衰係数
+    
+    // スケール係数（動きを控えめに調整）
+    rollToLateral: 12,        // ロール角から横変位への変換（35→12に削減）
+    accelToVertical: 0.35,    // 加速度から上下変位（0.8→0.35に削減）
+    maxVerticalDisp: 40,      // 最大上下変位(px)（60→40に削減）
+    
+    // 中央復帰
+    centeringForce: 0.02,     // 中央に戻る力（ゆっくり）
+  };
+
+  // 物理状態
+  let state = {
+    // 入力値（目標値）
+    rollTarget: 0,           // -30..30 deg
+    accelTarget: 0,          // -1..1 (g)
+    
+    // 現在値（スムーズに追従）
+    roll: 0,                 // deg
+    accel: 0,                // g
+    
+    // 位置・速度
+    lateralDisp: 0,          // 横方向変位
+    verticalDisp: 0,         // 上下変位
+    verticalVel: 0,          // 上下速度
+    
+    // バンプ（段差）
+    bumpVel: 0,
+    bumpDisp: 0,
+  };
+
+  // 鳥の編隊データ
+  const birds = [
+    {id:'leader', fx: 0.0,  fy: 0.0,  size: 1.08, phase: Math.random()*10},
+    {id:'left',   fx: -0.7, fy: 1.15, size: 0.96, phase: Math.random()*10},
+    {id:'right',  fx: 0.7,  fy: 1.15, size: 0.96, phase: Math.random()*10},
+  ];
+
+  // Canvas setup
+  function resize(){
+    const r = canvas.parentElement.getBoundingClientRect();
+    canvas.width = Math.floor(r.width * devicePixelRatio);
+    canvas.height = Math.floor(r.height * devicePixelRatio);
+    canvas.style.width = r.width + 'px';
+    canvas.style.height = r.height + 'px';
+    ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // Utility
+  function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+  function lerp(a,b,t){ return a + (b-a)*t; }
+
+  // 物理演算更新
+  function updatePhysics(dt){
+    // ロールの慣性追従（実車のロール感覚）
+    state.roll = lerp(state.roll, state.rollTarget, PHYSICS.rollInertia);
+    
+    // 加速度の慣性追従
+    state.accel = lerp(state.accel, state.accelTarget, PHYSICS.verticalInertia);
+    
+    // 横方向変位（ロールに応じた横G）
+    const lateralTarget = -state.roll * PHYSICS.rollToLateral;
+    state.lateralDisp = lerp(state.lateralDisp, lateralTarget, PHYSICS.lateralInertia);
+    
+    // 上下変位（加速時に頭が後ろに、減速時に前に）
+    const vertTarget = -state.accel * PHYSICS.accelToVertical * 50;
+    state.verticalDisp = lerp(state.verticalDisp, vertTarget, PHYSICS.verticalInertia);
+    
+    // バンプのバネ物理
+    state.bumpVel += (0 - state.bumpDisp) * PHYSICS.gravity;
+    state.bumpVel *= PHYSICS.damping;
+    state.bumpDisp += state.bumpVel;
+    
+    // 上下変位を制限
+    const totalVertical = state.verticalDisp + state.bumpDisp;
+    if(Math.abs(totalVertical) > PHYSICS.maxVerticalDisp){
+      const sign = Math.sign(totalVertical);
+      const excess = Math.abs(totalVertical) - PHYSICS.maxVerticalDisp;
+      state.bumpDisp -= sign * excess * 0.5;
+    }
+    
+    // 中央復帰：動きが小さいときにゆっくり中央に戻る
+    const movementIntensity = Math.abs(state.roll) + Math.abs(state.accel) * 10;
+    if(movementIntensity < 2) {
+      // ほぼ静止状態なら中央に戻る
+      state.lateralDisp *= (1 - PHYSICS.centeringForce);
+      state.verticalDisp *= (1 - PHYSICS.centeringForce);
+    }
+  }
+
+  // 鳥の描画（ぼかしたおしゃれなデザイン）
+  function drawBird(x, y, scale, angle, flapPhase, opacity){
+    const flap = (flapPhase - 0.5) * 2;  // -1..1
+    const wingSpan = 26 + flap * 8;      // 羽ばたき幅を控えめに（12→8）
+    const wingForward = 18;
+    const bodyLen = 36;
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.scale(scale, scale);
+
+    // より柔らかいぼかし効果
+    ctx.filter = 'blur(2.5px)';
+
+    // 外側のグロー（柔らかい光）
+    ctx.globalAlpha = opacity * 0.25;
+    ctx.fillStyle = 'rgba(100, 130, 160, 0.6)';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 14, 30, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.filter = 'blur(1.8px)';
+
+    // 影（さらに柔らかく）
+    ctx.globalAlpha = opacity * 0.15;
+    ctx.fillStyle = 'rgba(50, 70, 90, 0.45)';
+    ctx.beginPath();
+    ctx.ellipse(2, 4, 10, 26, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    ctx.filter = 'blur(1.2px)';
+
+    // 体のグラデーション（より透明感のある色）
+    const grad = ctx.createLinearGradient(0, -22, 0, 22);
+    grad.addColorStop(0, "rgba(110, 135, 160, 0.75)");
+    grad.addColorStop(0.4, "rgba(85, 110, 135, 0.65)");
+    grad.addColorStop(1, "rgba(60, 85, 110, 0.45)");
+
+    ctx.globalAlpha = opacity * 0.85;
+    ctx.fillStyle = grad;
+
+    // 翼と体（よりシンプルで流線的）
+    ctx.beginPath();
+    ctx.moveTo(0, bodyLen - 6);
+    // 左翼
+    ctx.quadraticCurveTo(-wingSpan * 0.65, bodyLen * 0.4, -wingSpan, 2);
+    ctx.quadraticCurveTo(-wingSpan * 0.6, -wingForward * 0.8, -7, -5);
+    // 頭部
+    ctx.bezierCurveTo(-3, -bodyLen + 5, 3, -bodyLen + 5, 7, -5);
+    // 右翼
+    ctx.quadraticCurveTo(wingSpan * 0.6, -wingForward * 0.8, wingSpan, 2);
+    ctx.quadraticCurveTo(wingSpan * 0.65, bodyLen * 0.4, 0, bodyLen - 6);
+    ctx.fill();
+
+    // 頭部の柔らかいハイライト
+    ctx.globalAlpha = opacity * 0.5;
+    const headGrad = ctx.createRadialGradient(0, -bodyLen - 2, 0, 0, -bodyLen - 2, 8);
+    headGrad.addColorStop(0, "rgba(120, 145, 170, 0.7)");
+    headGrad.addColorStop(1, "rgba(80, 105, 130, 0.3)");
+    ctx.fillStyle = headGrad;
+    ctx.beginPath();
+    ctx.ellipse(0, -bodyLen - 3, 6, 7, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    // くちばし（ほんのり見える程度）
+    ctx.globalAlpha = opacity * 0.35;
+    ctx.fillStyle = "rgba(130, 110, 70, 0.5)";
+    ctx.beginPath();
+    ctx.moveTo(-1.5, -bodyLen - 8);
+    ctx.lineTo(0, -bodyLen - 15);
+    ctx.lineTo(1.5, -bodyLen - 8);
+    ctx.closePath();
+    ctx.fill();
+
+    // 翼のソフトなハイライト
+    ctx.globalAlpha = opacity * 0.22;
+    ctx.strokeStyle = "rgba(130, 155, 180, 0.6)";
+    ctx.lineWidth = 1.5;
+    ctx.lineCap = "round";
+    ctx.filter = 'blur(0.8px)';
+
+    ctx.beginPath();
+    ctx.moveTo(-10, 0);
+    ctx.quadraticCurveTo(-20, bodyLen * 0.28, -28, 2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(10, 0);
+    ctx.quadraticCurveTo(20, bodyLen * 0.28, 28, 2);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  // UI bindings
+  rollEl.addEventListener('input', ()=> {
+    if(!useSensor) state.rollTarget = parseFloat(rollEl.value);
+  });
+  accelEl.addEventListener('input', ()=> {
+    if(!useSensor) state.accelTarget = parseFloat(accelEl.value) / 100;
+  });
+  opacityEl.addEventListener('input', ()=>{
+    document.documentElement.style.setProperty('--birdOpacity', (opacityEl.value/100).toFixed(2));
+  });
+  scaleEl.addEventListener('input', ()=>{
+    document.documentElement.style.setProperty('--formationScale', (scaleEl.value/100).toFixed(2));
+  });
+  bumpBtn.addEventListener('click', ()=>{
+    state.bumpVel -= 18;
+  });
+
+  // DeviceOrientation
+  oriBtn.addEventListener('click', async ()=>{
+    try{
+      if (typeof DeviceOrientationEvent !== 'undefined' &&
+          typeof DeviceOrientationEvent.requestPermission === 'function') {
+        const p = await DeviceOrientationEvent.requestPermission();
+        if(p !== 'granted') throw new Error('permission denied');
+      }
+      useSensor = true;
+      oriBtn.textContent = 'センサー: 接続中';
+      sensorStatus.textContent = '接続済み';
+      
+      window.addEventListener('deviceorientation', (e)=>{
+        if(!useSensor) return;
+        
+        // gamma: 左右傾き, beta: 前後傾き
+        const gamma = e.gamma ?? 0;  // -90..90
+        const beta = e.beta ?? 0;    // -180..180
+        
+        // ロール（カーブ時の傾き）
+        state.rollTarget = clamp(gamma, -30, 30);
+        rollEl.value = state.rollTarget.toFixed(0);
+        
+        // 前後加速度の推定（betaの変化率から）
+        // 実装簡略化のため、betaの値から推定
+        const pitchEffect = clamp((beta - 90) / 15, -1, 1);
+        state.accelTarget = pitchEffect * 0.3;
+        
+      }, {passive:true});
+    }catch(err){
+      alert('センサーにアクセスできませんでした。手動操作で動作を確認してください。');
+    }
+  });
+
+  // メインループ
+  let lastTime = performance.now();
+  let t = 0;
+
+  function frame(now){
+    const dt = Math.min((now - lastTime) / 1000, 0.1);
+    lastTime = now;
+    t += dt;
+
+    const w = canvas.clientWidth;
+    const h = canvas.clientHeight;
+
+    // 物理演算更新
+    updatePhysics(dt);
+
+    // ステータス表示更新
+    rollVal.textContent = state.roll.toFixed(1) + '°';
+    accelVal.textContent = state.accel.toFixed(2) + 'g';
+    vertVal.textContent = (state.verticalDisp + state.bumpDisp).toFixed(1) + 'px';
+
+    // Canvas クリア
+    ctx.clearRect(0, 0, w, h);
+
+    // 編隊の基準位置（画面中央上部）
+    const baseX = w * 0.5 + state.lateralDisp;
+    const baseY = h * 0.30 + state.verticalDisp + state.bumpDisp;
+
+    // 編隊の回転（ロール角に応じて）
+    const formationAngle = -state.roll * Math.PI / 180 * 0.9;
+
+    // 設定値
+    const opacity = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--birdOpacity')) || 0.38;
+    const formationScale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--formationScale')) || 1.0;
+
+    // 羽ばたき速度（大幅に減らして穏やかに）
+    const flapSpeed = 1.2 + Math.abs(state.accel) * 0.8;
+
+    // 編隊間隔
+    const dx = 56 * formationScale;
+    const dy = 52 * formationScale;
+
+    // 鳥を描画
+    birds.forEach((bird, i)=>{
+      // ローカル座標
+      const localX = bird.fx * dx;
+      const localY = bird.fy * dy;
+
+      // 編隊回転を適用
+      const rx = localX * Math.cos(formationAngle) - localY * Math.sin(formationAngle);
+      const ry = localX * Math.sin(formationAngle) + localY * Math.cos(formationAngle);
+
+      // 各鳥のバンク角（編隊回転 + 個別の微調整）
+      const bankAngle = formationAngle * 0.75 + (bird.fx * -formationAngle * 0.15);
+
+      // 微細な浮遊感（リジッドに見えないように）
+      const floatY = Math.sin(t * 1.5 + bird.phase) * 2.5;
+      const floatX = Math.cos(t * 1.2 + bird.phase) * 1.8;
+
+      // 羽ばたきフェーズ（追従者は少し遅れる）
+      const flapPhase = (Math.sin(t * flapSpeed + bird.phase + i * 0.7) + 1) / 2;
+
+      drawBird(
+        baseX + rx + floatX,
+        baseY + ry + floatY,
+        formationScale * bird.size,
+        bankAngle,
+        flapPhase,
+        opacity
+      );
+    });
+
+    requestAnimationFrame(frame);
+  }
+  
+  requestAnimationFrame(frame);
+</script>
+</body>
+</html>

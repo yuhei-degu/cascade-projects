@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🚀 コーディング学習ハブ | yuuve's Learning Space</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<style>
+  :root {
+    --primary: #6C63FF;
+    --secondary: #FF6584;
+    --bg: #0F0E17;
+    --bg2: #1a1928;
+    --card: #232136;
+    --text: #FFFFFE;
+    --muted: #a7a9be;
+    --accent: #A7FF83;
+    --warning: #FFD166;
+    --radius: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; line-height: 1.7; }
+  a { color: var(--primary); text-decoration: none; }
+
+  /* ナビ */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(15,14,23,0.9); backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(108,99,255,0.2);
+    padding: 1rem 2rem; display: flex; align-items: center; gap: 2rem;
+  }
+  .nav-logo { font-size: 1.3rem; font-weight: 700; background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .nav-links { display: flex; gap: 1.5rem; margin-left: auto; }
+  .nav-links a { color: var(--muted); transition: color 0.2s; }
+  .nav-links a:hover { color: var(--text); }
+
+  /* ヒーロー */
+  .hero {
+    text-align: center; padding: 5rem 2rem 3rem;
+    background: radial-gradient(ellipse at 50% 0%, rgba(108,99,255,0.15) 0%, transparent 70%);
+  }
+  .hero-badge { display: inline-block; background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.3); color: var(--primary); padding: 0.3rem 1rem; border-radius: 20px; font-size: 0.85rem; margin-bottom: 1.5rem; }
+  .hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; line-height: 1.2; margin-bottom: 1rem; }
+  .hero h1 span { background: linear-gradient(135deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero p { color: var(--muted); max-width: 600px; margin: 0 auto 2rem; font-size: 1.1rem; }
+  .hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+  .btn { padding: 0.75rem 2rem; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; font-size: 1rem; transition: all 0.2s; }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: #7c74ff; transform: translateY(-2px); }
+  .btn-outline { background: transparent; color: var(--text); border: 1px solid rgba(255,255,255,0.2); }
+  .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+  /* セクション共通 */
+  section { padding: 4rem 2rem; max-width: 1100px; margin: 0 auto; }
+  .section-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .section-sub { color: var(--muted); margin-bottom: 2.5rem; }
+
+  /* タブ */
+  .tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap; }
+  .tab { padding: 0.6rem 1.5rem; border-radius: 8px; cursor: pointer; background: var(--card); color: var(--muted); border: 1px solid transparent; transition: all 0.2s; font-weight: 500; }
+  .tab.active { background: var(--primary); color: white; }
+  .tab:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+</style>
+</head>
+<body>
+
+<style>
+  /* 学習カード */
+  .learn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px,1fr)); gap: 1.5rem; }
+  .learn-card { background: var(--card); border-radius: var(--radius); padding: 1.5rem; border: 1px solid rgba(255,255,255,0.05); }
+  .learn-card-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+  .learn-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+  .learn-card h3 { font-size: 1.1rem; font-weight: 600; }
+  .learn-card p { color: var(--muted); font-size: 0.9rem; margin-bottom: 1rem; }
+  .progress-bar { height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+  .progress-label { font-size: 0.8rem; color: var(--muted); margin-top: 0.4rem; }
+
+  /* コードブロック */
+  .code-example { background: var(--card); border-radius: var(--radius); overflow: hidden; margin-bottom: 1.5rem; border: 1px solid rgba(255,255,255,0.05); }
+  .code-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; background: rgba(0,0,0,0.3); }
+  .code-lang { font-size: 0.8rem; color: var(--primary); font-weight: 600; }
+  .copy-btn { background: rgba(108,99,255,0.2); color: var(--primary); border: none; padding: 0.3rem 0.8rem; border-radius: 5px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
+  .copy-btn:hover { background: var(--primary); color: white; }
+  .code-example pre { margin: 0; padding: 1.2rem; overflow-x: auto; font-size: 0.88rem; }
+
+  /* ポートフォリオ */
+  .portfolio-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap: 1.5rem; }
+  .portfolio-card { background: var(--card); border-radius: var(--radius); overflow: hidden; border: 1px solid rgba(255,255,255,0.05); transition: transform 0.2s, border-color 0.2s; }
+  .portfolio-card:hover { transform: translateY(-4px); border-color: rgba(108,99,255,0.4); }
+  .portfolio-img { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 4rem; }
+  .portfolio-body { padding: 1.2rem; }
+  .portfolio-body h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+  .portfolio-body p { color: var(--muted); font-size: 0.87rem; margin-bottom: 1rem; }
+  .tag { display: inline-block; background: rgba(108,99,255,0.15); color: var(--primary); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; margin-right: 0.4rem; }
+
+  /* リソース */
+  .resource-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px,1fr)); gap: 1rem; }
+  .resource-card { background: var(--card); border-radius: var(--radius); padding: 1.2rem; border: 1px solid rgba(255,255,255,0.05); display: flex; gap: 1rem; align-items: flex-start; transition: border-color 0.2s; }
+  .resource-card:hover { border-color: rgba(108,99,255,0.4); }
+  .resource-card .icon { font-size: 1.8rem; flex-shrink: 0; }
+  .resource-card h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; }
+  .resource-card p { font-size: 0.82rem; color: var(--muted); }
+
+  /* フッター */
+  footer { text-align: center; padding: 2rem; color: var(--muted); border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
+</style>
+
+<nav>
+  <div class="nav-logo">⚡ yuuve's Learning Hub</div>
+  <div class="nav-links">
+    <a href="#learn">学習</a>
+    <a href="#portfolio">作品</a>
+    <a href="#resources">リソース</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-badge">🎓 初心者から成長中！</div>
+  <h1>コードを書いて<br><span>未来を作ろう</span></h1>
+  <p>HTML / CSS / JavaScript を学びながら、自分のアプリを作っていく学習記録スペース。失敗しても大丈夫、それも学びのひとつ！</p>
+  <div class="hero-buttons">
+    <button class="btn btn-primary" onclick="document.getElementById('learn').scrollIntoView({behavior:'smooth'})">学習を始める 🚀</button>
+    <button class="btn btn-outline" onclick="document.getElementById('portfolio').scrollIntoView({behavior:'smooth'})">作品を見る 👀</button>
+  </div>
+</div>
+
+<!-- 学習セクション -->
+<section id="learn">
+  <div class="section-title">📖 学習コンテンツ</div>
+  <div class="section-sub">基礎から実践まで、ステップバイステップで学ぼう</div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('html')">🟠 HTML</div>
+    <div class="tab" onclick="switchTab('css')">🔵 CSS</div>
+    <div class="tab" onclick="switchTab('js')">🟡 JavaScript</div>
+  </div>
+
+  <!-- HTML タブ -->
+  <div class="tab-content active" id="tab-html">
+    <div class="learn-grid">
+      <div class="learn-card">
+        <div class="learn-card-header">
+          <div class="learn-icon" style="background:#FF6B6B22">🏷️</div>
+          <h3>HTMLタグの基本</h3>
+        </div>
+        <p>HTMLはWebページの「骨格」。タグで文章に意味を持たせる言語。</p>
+        <div class="code-example">
+          <div class="code-header"><span class="code-lang">HTML</span><button class="copy-btn" onclick="copyCode(this)">コピー</button></div>
+          <pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang="ja"&gt;
+  &lt;head&gt;
+    &lt;title&gt;はじめてのHTML&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;h1&gt;こんにちは！&lt;/h1&gt;
+    &lt;p&gt;これは段落です。&lt;/p&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:80%;background:#FF6B6B"></div></div>
+        <div class="progress-label">理解度: 80%</div>
+      </div>
+      <div class="learn-card">
+        <div class="learn-card-header">
+          <div class="learn-icon" style="background:#FF6B6B22">📝</div>
+          <h3>フォーム要素</h3>
+        </div>
+        <p>input、button、select などユーザーが入力できる要素。</p>
+        <div class="code-example">
+          <div class="code-header"><span class="code-lang">HTML</span><button class="copy-btn" onclick="copyCode(this)">コピー</button></div>
+          <pre><code class="language-html">&lt;form&gt;
+  &lt;label&gt;名前:&lt;/label&gt;
+  &lt;input type="text" placeholder="例: yuuve"&gt;
+  &lt;button type="submit"&gt;送信&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:60%;background:#FF6B6B"></div></div>
+        <div class="progress-label">理解度: 60%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CSS タブ -->
+  <div class="tab-content" id="tab-css">
+    <div class="learn-grid">
+      <div class="learn-card">
+        <div class="learn-card-header">
+          <div class="learn-icon" style="background:#6C63FF22">🎨</div>
+          <h3>Flexboxレイアウト</h3>
+        </div>
+        <p>要素を横並びや縦並びに整列させる、最重要CSSレイアウト技術！</p>
+        <div class="code-example">
+          <div class="code-header"><span class="code-lang">CSS</span><button class="copy-btn" onclick="copyCode(this)">コピー</button></div>
+          <pre><code class="language-css">.container {
+  display: flex;
+  justify-content: center; /* 横方向の整列 */
+  align-items: center;     /* 縦方向の整列 */
+  gap: 16px;               /* 要素間のスペース */
+}</code></pre>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:70%;background:#6C63FF"></div></div>
+        <div class="progress-label">理解度: 70%</div>
+      </div>
+      <div class="learn-card">
+        <div class="learn-card-header">
+          <div class="learn-icon" style="background:#6C63FF22">✨</div>
+          <h3>CSS変数とアニメーション</h3>
+        </div>
+        <p>変数で色を管理、transitionやkeyframesで動きをつける！</p>
+        <div class="code-example">
+          <div class="code-header"><span class="code-lang">CSS</span><button class="copy-btn" onclick="copyCode(this)">コピー</button></div>
+          <pre><code class="language-css">:root { --color: #6C63FF; }
+.btn {
+  background: var(--color);
+  transition: transform 0.2s;
+}
+.btn:hover { transform: scale(1.05); }</code></pre>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:50%;background:#6C63FF"></div></div>
+        <div class="progress-label">理解度: 50%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS タブ -->
+  <div class="tab-content" id="tab-js">
+    <div class="learn-grid">
+      <div class="learn-card">
+        <div class="learn-card-header">
+          <div class="learn-icon" style="background:#FFD16622">⚡</div>
+          <h3>DOM操作の基本</h3>
+        </div>
+        <p>JavaScriptでHTMLの要素を取得・変更する最重要スキル！</p>
+        <div class="code-example">
+          <div class="code-header"><span class="code-lang">JavaScript</span><button class="copy-btn" onclick="copyCode(this)">コピー</button></div>
+          <pre><code class="language-javascript">// 要素を取得
+const btn = document.getElementById('myBtn');
+// クリックイベントを設定
+btn.addEventListener('click', () => {
+  document.body.style.background = 'purple';
+  console.log('クリックされた！');
+});</code></pre>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:65%;background:#FFD166"></div></div>
+        <div class="progress-label">理解度: 65%</div>
+      </div>
+      <div class="learn-card">
+        <div class="learn-card-header">
+          <div class="learn-icon" style="background:#FFD16622">💾</div>
+          <h3>localStorage（データ保存）</h3>
+        </div>
+        <p>ブラウザにデータを保存！設定やメモをページ閉じても覚えておける。</p>
+        <div class="code-example">
+          <div class="code-header"><span class="code-lang">JavaScript</span><button class="copy-btn" onclick="copyCode(this)">コピー</button></div>
+          <pre><code class="language-javascript">// 保存
+localStorage.setItem('name', 'yuuve');
+// 読み込み
+const name = localStorage.getItem('name');
+// 削除
+localStorage.removeItem('name');</code></pre>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:45%;background:#FFD166"></div></div>
+        <div class="progress-label">理解度: 45%</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ポートフォリオ -->
+<section id="portfolio" style="background: var(--bg2); max-width:100%; padding:4rem 2rem;">
+<div style="max-width:1100px; margin:0 auto;">
+  <div class="section-title">🎨 作品ポートフォリオ</div>
+  <div class="section-sub">自分で作ったアプリたち — 失敗も全部成長の証！</div>
+  <div class="portfolio-grid">
+    <div class="portfolio-card">
+      <div class="portfolio-img" style="background:linear-gradient(135deg,#1a1a2e,#16213e)">🎯</div>
+      <div class="portfolio-body">
+        <h3>酔い止め照準器アプリ</h3>
+        <p>VR・FPSゲーム中の酔いを軽減するオーバーレイ照準器。色・サイズ・形状をカスタマイズ可能。</p>
+        <span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JS</span>
+      </div>
+    </div>
+    <div class="portfolio-card">
+      <div class="portfolio-img" style="background:linear-gradient(135deg,#232136,#2d2b55)">📊</div>
+      <div class="portfolio-body">
+        <h3>プロジェクト管理アプリ</h3>
+        <p>複数プロジェクトの進捗をカンバン形式で管理。タスクのドラッグ＆ドロップ対応。</p>
+        <span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JS</span>
+      </div>
+    </div>
+    <div class="portfolio-card">
+      <div class="portfolio-img" style="background:linear-gradient(135deg,#1c2333,#2d3748)">🤖</div>
+      <div class="portfolio-body">
+        <h3>秘書AIアシスタント</h3>
+        <p>スケジュール管理・メモ・タスクを一元管理する個人秘書アプリ。</p>
+        <span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JS</span>
+      </div>
+    </div>
+    <div class="portfolio-card" style="border:2px dashed rgba(255,255,255,0.1)">
+      <div class="portfolio-img" style="background:transparent">➕</div>
+      <div class="portfolio-body">
+        <h3 style="color:var(--muted)">次の作品（開発中）</h3>
+        <p>アイデアを温め中... 何を作ろうかな？</p>
+        <span class="tag" style="background:rgba(167,255,131,0.1);color:var(--accent)">Coming Soon</span>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- リソース -->
+<section id="resources">
+  <div class="section-title">🔗 おすすめリソース</div>
+  <div class="section-sub">学習に役立つ厳選サイト・ツール</div>
+  <div class="resource-grid">
+    <a href="https://developer.mozilla.org/ja/" target="_blank" class="resource-card" style="color:inherit">
+      <div class="icon">📖</div>
+      <div><h4>MDN Web Docs</h4><p>HTML/CSS/JSの公式リファレンス。困ったらまずここ！</p></div>
+    </a>
+    <a href="https://ja.javascript.info/" target="_blank" class="resource-card" style="color:inherit">
+      <div class="icon">⚡</div>
+      <div><h4>JavaScript.info</h4><p>日本語で読めるJS完全ガイド。基礎から応用まで体系的に学べる。</p></div>
+    </a>
+    <a href="https://flexboxfroggy.com/#ja" target="_blank" class="resource-card" style="color:inherit">
+      <div class="icon">🐸</div>
+      <div><h4>Flexbox Froggy</h4><p>カエルを動かしながらFlexboxを楽しく学べるゲーム！</p></div>
+    </a>
+    <a href="https://cssgridgarden.com/#ja" target="_blank" class="resource-card" style="color:inherit">
+      <div class="icon">🌱</div>
+      <div><h4>Grid Garden</h4><p>畑を育てながらCSS Gridを学ぶゲーム形式の学習サイト。</p></div>
+    </a>
+    <a href="https://github.com/" target="_blank" class="resource-card" style="color:inherit">
+      <div class="icon">🐙</div>
+      <div><h4>GitHub</h4><p>コードを保存・管理・公開できる開発者必須プラットフォーム。</p></div>
+    </a>
+    <a href="https://code.visualstudio.com/" target="_blank" class="resource-card" style="color:inherit">
+      <div class="icon">💙</div>
+      <div><h4>VS Code</h4><p>無料の高機能コードエディタ。拡張機能で無限に便利になる！</p></div>
+    </a>
+  </div>
+</section>
+
+<footer>
+  <p>⚡ yuuve's Coding Learning Hub — 毎日ちょっとずつ成長中！</p>
+  <p style="margin-top:0.5rem; font-size:0.8rem;">HTML · CSS · JavaScript で作られています</p>
+</footer>
+
+<script>
+  // タブ切替
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('tab-' + name).classList.add('active');
+  }
+
+  // コードコピー
+  function copyCode(btn) {
+    const code = btn.closest('.code-example').querySelector('code').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+      btn.textContent = '✅ コピー完了!';
+      setTimeout(() => btn.textContent = 'コピー', 2000);
+    });
+  }
+
+  // Highlight.js 初期化
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+  });
+</script>
+</body>
+</html>

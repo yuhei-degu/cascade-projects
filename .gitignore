@@ -1,0 +1,32 @@
+# Git管理除外ファイル設定
+# ===========================
+
+# OS生成ファイル
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# エディタ設定
+.vscode/settings.json
+.cursor/
+*.swp
+*.swo
+
+# 一時ファイル
+*.tmp
+*.log
+*~
+
+# Node.js（将来使う場合）
+node_modules/
+npm-debug.log
+
+# Python（将来使う場合）
+__pycache__/
+*.pyc
+.env
+venv/
+
+# ビルド成果物
+dist/
+build/
