@@ -3,226 +3,500 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🚀 AI×コード入門 | PC初心者からアプリ開発者へ</title>
-<meta name="description" content="AIとモダンエディタを使って、プログラミング未経験でも自分だけのアプリが作れるようになる実践ガイド">
+<title>🚀 AI×コード入門 | PC初心者からアプリ開発者へ【完全無料】</title>
+<meta name="description" content="AIとモダンエディタを使って、プログラミング未経験でも自分だけのアプリが作れるようになる実践ガイド。動画・音声解説付き。">
 <style>
+/* ========================================
+   DESIGN SYSTEM
+   ======================================== */
 :root {
-  --bg: #08080f; --bg2: #0f0f1a; --card: #14141f;
-  --card2: #1a1a2e; --border: rgba(255,255,255,0.06);
-  --text: #e8e8f5; --muted: #9090b8; --faint: #555580;
-  --p1: #7c6aff; --p2: #ff6aac; --p3: #4adebb;
-  --gold: #fbbf24; --green: #4ade80; --red: #f87171;
-  --radius: 16px; --radius-sm: 10px;
-  --shadow: 0 8px 32px rgba(0,0,0,0.5);
+  --bg: #07070e;
+  --bg2: #0d0d1a;
+  --card: #121220;
+  --card2: #181830;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(124,106,255,0.2);
+  --text: #eeeeff;
+  --muted: #9090bb;
+  --faint: #44446a;
+  --p1: #7c6aff;
+  --p2: #ff6aac;
+  --p3: #3de8c8;
+  --gold: #fbbf24;
+  --green: #4ade80;
+  --red: #f87171;
+  --radius: 18px;
+  --radius-sm: 10px;
+  --shadow: 0 8px 40px rgba(0,0,0,0.6);
+  --glow1: 0 0 40px rgba(124,106,255,0.25);
+  --glow2: 0 0 40px rgba(255,106,172,0.2);
 }
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html { scroll-behavior: smooth; }
-body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; line-height:1.7; overflow-x:hidden; }
-a { color:var(--p1); text-decoration:none; }
-a:hover { text-decoration:underline; }
-img { max-width:100%; }
+html { scroll-behavior:smooth; }
+body {
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Segoe UI',system-ui,sans-serif;
+  line-height:1.7;
+  overflow-x:hidden;
+}
+a { color:var(--p1); text-decoration:none; transition:opacity 0.2s; }
+a:hover { opacity:0.8; }
 
 /* ===== ユーティリティ ===== */
-.container { max-width:1080px; margin:0 auto; padding:0 1.5rem; }
-.gradient-text { background:linear-gradient(135deg,var(--p1),var(--p2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
-.gradient-text-2 { background:linear-gradient(135deg,var(--p3),var(--p1)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.container { max-width:1100px; margin:0 auto; padding:0 1.5rem; }
+.grad { background:linear-gradient(135deg,var(--p1),var(--p2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.grad2 { background:linear-gradient(135deg,var(--p3),var(--p1)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.grad3 { background:linear-gradient(135deg,var(--gold),var(--p2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
 .section { padding:5rem 0; }
-.section-eyebrow { font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:var(--p1); margin-bottom:0.75rem; }
-.section-title { font-size:clamp(1.8rem,4vw,2.8rem); font-weight:800; line-height:1.2; margin-bottom:1rem; }
-.section-sub { color:var(--muted); font-size:1.05rem; max-width:600px; margin-bottom:3rem; }
-.divider { height:1px; background:var(--border); margin:0; }
+.section-eye { font-size:0.76rem; font-weight:700; text-transform:uppercase; letter-spacing:0.14em; color:var(--p1); margin-bottom:0.75rem; display:flex; align-items:center; gap:0.5rem; }
+.section-eye::before, .section-eye::after { content:''; flex:1; height:1px; background:var(--border); }
+.section-eye::before { max-width:3rem; }
+.section-title { font-size:clamp(1.9rem,4vw,2.8rem); font-weight:900; line-height:1.15; margin-bottom:1rem; }
+.section-sub { color:var(--muted); font-size:1.05rem; margin-bottom:3rem; line-height:1.8; }
+.divider { height:1px; background:linear-gradient(90deg,transparent,var(--border),transparent); }
+.btn { display:inline-flex; align-items:center; gap:0.5rem; padding:0.8rem 1.6rem; border-radius:10px; font-weight:700; font-size:0.95rem; cursor:pointer; border:none; transition:all 0.25s; text-decoration:none !important; white-space:nowrap; }
+.btn-primary { background:linear-gradient(135deg,var(--p1),#9b8fff); color:white; box-shadow:0 4px 24px rgba(124,106,255,0.4); }
+.btn-primary:hover { transform:translateY(-3px); box-shadow:0 8px 32px rgba(124,106,255,0.55); opacity:1; }
+.btn-outline { background:rgba(255,255,255,0.04); color:var(--text); border:1px solid var(--border2); }
+.btn-outline:hover { background:rgba(124,106,255,0.1); opacity:1; }
+.btn-green { background:linear-gradient(135deg,#22c55e,#16a34a); color:white; box-shadow:0 4px 20px rgba(34,197,94,0.3); }
+.btn-green:hover { transform:translateY(-2px); opacity:1; }
+
+/* ===== NOISE TEXTURE OVERLAY ===== */
+body::before {
+  content:''; position:fixed; inset:0; z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none; opacity:0.4;
+}
+section, nav, footer { position:relative; z-index:1; }
 
 /* ===== NAVBAR ===== */
 .navbar {
   position:sticky; top:0; z-index:999;
-  background:rgba(8,8,15,0.85); backdrop-filter:blur(16px);
+  background:rgba(7,7,14,0.85); backdrop-filter:blur(20px);
   border-bottom:1px solid var(--border);
-  padding:0.9rem 0;
+  padding:1rem 0;
+  transition:all 0.3s;
 }
-.nav-inner { display:flex; align-items:center; gap:2rem; }
-.nav-logo { font-size:1.1rem; font-weight:800; white-space:nowrap; }
-.nav-links { display:flex; gap:1.5rem; margin-left:auto; }
-.nav-links a { color:var(--muted); font-size:0.9rem; transition:color 0.2s; }
-.nav-links a:hover { color:var(--text); text-decoration:none; }
-.nav-cta { background:var(--p1); color:white !important; padding:0.4rem 1rem; border-radius:8px; font-weight:600; transition:filter 0.2s !important; }
-.nav-cta:hover { filter:brightness(1.15); text-decoration:none !important; }
-
-/* ===== HERO ===== */
-.hero {
-  min-height:92vh; display:flex; align-items:center;
-  background:
-    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(124,106,255,0.12) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(255,106,172,0.08) 0%, transparent 60%),
-    var(--bg);
-  padding:5rem 0;
+.nav-inner { display:flex; align-items:center; gap:1.5rem; }
+.nav-logo { font-size:1.15rem; font-weight:900; white-space:nowrap; display:flex; align-items:center; gap:0.4rem; }
+.nav-links { display:flex; gap:1.2rem; margin-left:auto; align-items:center; }
+.nav-links a { color:var(--muted); font-size:0.88rem; transition:color 0.2s; }
+.nav-links a:hover { color:var(--text); opacity:1; }
+.nav-cta { background:linear-gradient(135deg,var(--p1),var(--p2)); color:white !important; padding:0.4rem 1rem; border-radius:8px; font-weight:700; }
+/* 音声ナレーターボタン */
+.narrator-btn {
+  display:flex; align-items:center; gap:0.4rem;
+  background:rgba(124,106,255,0.12); border:1px solid var(--border2);
+  color:var(--p1); padding:0.35rem 0.8rem; border-radius:8px;
+  cursor:pointer; font-size:0.8rem; font-weight:600;
+  transition:all 0.2s; white-space:nowrap;
 }
-.hero-inner { display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center; }
-.hero-badge { display:inline-flex; align-items:center; gap:0.5rem; background:rgba(124,106,255,0.1); border:1px solid rgba(124,106,255,0.25); color:var(--p1); padding:0.35rem 0.9rem; border-radius:20px; font-size:0.8rem; font-weight:600; margin-bottom:1.5rem; }
-.hero h1 { font-size:clamp(2.2rem,5vw,3.5rem); font-weight:900; line-height:1.15; margin-bottom:1.2rem; }
-.hero-sub { color:var(--muted); font-size:1.1rem; margin-bottom:2rem; line-height:1.8; }
-.hero-btns { display:flex; gap:1rem; flex-wrap:wrap; }
-.btn { display:inline-flex; align-items:center; gap:0.4rem; padding:0.75rem 1.5rem; border-radius:10px; font-weight:700; font-size:0.95rem; cursor:pointer; border:none; transition:all 0.2s; text-decoration:none !important; }
-.btn-primary { background:linear-gradient(135deg,var(--p1),#9b8fff); color:white; box-shadow:0 4px 20px rgba(124,106,255,0.35); }
-.btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(124,106,255,0.5); }
-.btn-outline { background:rgba(255,255,255,0.04); color:var(--text); border:1px solid var(--border); }
-.btn-outline:hover { border-color:rgba(124,106,255,0.5); background:rgba(124,106,255,0.06); }
-
-/* ヒーロー右側のビジュアル */
-.hero-visual { position:relative; }
-.code-window { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); }
-.code-window-bar { background:rgba(255,255,255,0.04); padding:0.75rem 1rem; display:flex; gap:0.4rem; align-items:center; }
-.dot { width:12px; height:12px; border-radius:50%; }
-.code-window-body { padding:1.2rem 1.5rem; font-family:'Cascadia Code','Consolas',monospace; font-size:0.82rem; line-height:1.9; }
-.c-keyword { color:#c792ea; } .c-fn { color:#82aaff; } .c-string { color:#c3e88d; }
-.c-comment { color:#546e7a; font-style:italic; } .c-num { color:#f78c6c; }
-.floating-badge { position:absolute; background:var(--card2); border:1px solid var(--border); border-radius:10px; padding:0.5rem 0.9rem; font-size:0.8rem; font-weight:600; box-shadow:var(--shadow); display:flex; align-items:center; gap:0.4rem; }
-
-/* ===== ステップ ===== */
-.steps-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1.5rem; }
-.step-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:1.8rem 1.5rem; position:relative; transition:border-color 0.2s, transform 0.2s; }
-.step-card:hover { border-color:rgba(124,106,255,0.3); transform:translateY(-4px); }
-.step-num { font-size:3rem; font-weight:900; line-height:1; margin-bottom:1rem; opacity:0.15; font-variant-numeric:tabular-nums; }
-.step-icon { font-size:2rem; margin-bottom:0.75rem; }
-.step-card h3 { font-size:1.05rem; font-weight:700; margin-bottom:0.5rem; }
-.step-card p { color:var(--muted); font-size:0.88rem; }
-.step-connector { display:none; }
-
-/* ===== ツール紹介 ===== */
-.tools-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1.5rem; }
-.tool-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:1.8rem; display:flex; gap:1.2rem; transition:border-color 0.2s; }
-.tool-card:hover { border-color:rgba(124,106,255,0.3); }
-.tool-icon-wrap { width:52px; height:52px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.6rem; flex-shrink:0; }
-.tool-card h3 { font-size:1.05rem; font-weight:700; margin-bottom:0.3rem; }
-.tool-card p { color:var(--muted); font-size:0.87rem; margin-bottom:0.75rem; }
-.tool-tag { display:inline-block; font-size:0.72rem; font-weight:600; padding:0.2rem 0.55rem; border-radius:5px; margin-right:0.3rem; margin-bottom:0.3rem; }
-.tag-free { background:rgba(74,222,128,0.12); color:var(--green); }
-.tag-ai { background:rgba(124,106,255,0.12); color:var(--p1); }
-.tag-must { background:rgba(251,191,36,0.12); color:var(--gold); }
-.tag-optional { background:rgba(255,255,255,0.06); color:var(--muted); }
+.narrator-btn:hover { background:rgba(124,106,255,0.2); }
+.narrator-btn.speaking { background:rgba(255,106,172,0.15); border-color:rgba(255,106,172,0.3); color:var(--p2); animation:pulse-border 1.5s infinite; }
+@keyframes pulse-border { 0%,100%{box-shadow:0 0 0 0 rgba(255,106,172,0.3)} 50%{box-shadow:0 0 0 6px rgba(255,106,172,0)} }
+.sound-btn { background:rgba(255,255,255,0.05); border:1px solid var(--border); color:var(--muted); padding:0.35rem 0.6rem; border-radius:8px; cursor:pointer; font-size:0.9rem; transition:all 0.2s; }
+.sound-btn:hover { color:var(--text); background:rgba(255,255,255,0.1); }
+.sound-btn.muted { opacity:0.4; }
 </style>
-</head>
-<body>
 
 <style>
-/* ===== チェックリスト ===== */
-.checklist { list-style:none; display:flex; flex-direction:column; gap:0.75rem; }
-.checklist li { display:flex; align-items:flex-start; gap:0.75rem; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:1rem 1.2rem; }
-.check-icon { font-size:1.1rem; flex-shrink:0; margin-top:0.1rem; }
-.check-text { font-size:0.92rem; }
-.check-text strong { display:block; margin-bottom:0.2rem; }
-.check-text span { color:var(--muted); font-size:0.85rem; }
+/* ===== HERO ===== */
+.hero {
+  min-height:95vh; display:flex; align-items:center;
+  background:
+    radial-gradient(ellipse 70% 50% at 15% 30%, rgba(124,106,255,0.15) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 40% at 85% 70%, rgba(255,106,172,0.1) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(61,232,200,0.05) 0%, transparent 70%),
+    var(--bg);
+  padding:4rem 0;
+  overflow:hidden;
+}
+.hero-inner { display:grid; grid-template-columns:1fr 1fr; gap:3rem; align-items:center; }
+.hero-badge { display:inline-flex; align-items:center; gap:0.5rem; background:rgba(124,106,255,0.1); border:1px solid rgba(124,106,255,0.3); color:var(--p1); padding:0.4rem 1rem; border-radius:20px; font-size:0.8rem; font-weight:700; margin-bottom:1.5rem; }
+.hero-badge span { display:inline-block; width:6px; height:6px; background:var(--green); border-radius:50%; animation:blink 1.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+.hero h1 { font-size:clamp(2.4rem,5vw,3.8rem); font-weight:900; line-height:1.12; margin-bottom:1.2rem; }
+.hero-sub { color:var(--muted); font-size:1.05rem; margin-bottom:2rem; line-height:1.9; }
+.hero-btns { display:flex; gap:0.75rem; flex-wrap:wrap; margin-bottom:2rem; }
+.hero-stats { display:flex; gap:2rem; flex-wrap:wrap; }
+.hero-stat { text-align:center; }
+.hero-stat-num { font-size:1.6rem; font-weight:900; }
+.hero-stat-label { font-size:0.78rem; color:var(--muted); }
 
-/* ===== コマンドブロック ===== */
+/* ヒーロービジュアル */
+.hero-visual { position:relative; }
+.hero-img-wrap { border-radius:var(--radius); overflow:hidden; border:1px solid var(--border2); box-shadow:var(--glow1); position:relative; }
+.hero-img-wrap img { width:100%; display:block; filter:brightness(0.9) saturate(1.1); }
+.hero-img-overlay { position:absolute; inset:0; background:linear-gradient(to bottom, transparent 60%, rgba(7,7,14,0.9)); }
+.hero-float { position:absolute; background:rgba(13,13,26,0.92); backdrop-filter:blur(12px); border:1px solid var(--border2); border-radius:12px; padding:0.7rem 1.1rem; font-size:0.82rem; font-weight:600; box-shadow:var(--shadow); animation:float 4s ease-in-out infinite; display:flex; align-items:center; gap:0.5rem; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+.hero-float.f1 { top:-1rem; right:-1rem; animation-delay:0s; }
+.hero-float.f2 { bottom:-1rem; left:-1rem; animation-delay:1.5s; }
+.hero-float.f3 { top:40%; left:-2rem; animation-delay:0.8s; }
+
+/* ===== VIDEO SECTION ===== */
+.video-section { background:var(--bg2); padding:5rem 0; }
+.videos-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:1.5rem; }
+.video-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; transition:transform 0.25s, border-color 0.25s; }
+.video-card:hover { transform:translateY(-6px); border-color:var(--border2); box-shadow:var(--glow1); }
+.video-embed { position:relative; padding-bottom:56.25%; height:0; overflow:hidden; }
+.video-embed iframe { position:absolute; top:0; left:0; width:100%; height:100%; border:none; }
+.video-thumb { position:relative; cursor:pointer; overflow:hidden; }
+.video-thumb img { width:100%; display:block; aspect-ratio:16/9; object-fit:cover; transition:transform 0.3s; }
+.video-thumb:hover img { transform:scale(1.05); }
+.video-play-btn { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.3); }
+.play-circle { width:64px; height:64px; border-radius:50%; background:rgba(124,106,255,0.85); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; font-size:1.5rem; transition:transform 0.2s, background 0.2s; }
+.video-thumb:hover .play-circle { transform:scale(1.1); background:var(--p1); }
+.video-duration { position:absolute; bottom:0.5rem; right:0.5rem; background:rgba(0,0,0,0.8); color:white; font-size:0.75rem; font-weight:700; padding:0.2rem 0.5rem; border-radius:5px; }
+.video-info { padding:1.2rem; }
+.video-info h3 { font-size:1rem; font-weight:700; margin-bottom:0.4rem; }
+.video-info p { color:var(--muted); font-size:0.85rem; line-height:1.6; }
+.video-tags { display:flex; gap:0.4rem; margin-top:0.75rem; flex-wrap:wrap; }
+.vtag { font-size:0.72rem; padding:0.2rem 0.55rem; border-radius:5px; background:rgba(124,106,255,0.1); color:var(--p1); font-weight:600; }
+.vtag.green { background:rgba(74,222,128,0.1); color:var(--green); }
+.vtag.pink { background:rgba(255,106,172,0.1); color:var(--p2); }
+
+/* ===== STEPS ===== */
+.steps-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1.5rem; }
+.step-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:2rem 1.5rem; position:relative; overflow:hidden; transition:all 0.3s; cursor:pointer; }
+.step-card::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(124,106,255,0.08),transparent); opacity:0; transition:opacity 0.3s; }
+.step-card:hover { border-color:var(--border2); transform:translateY(-5px); box-shadow:var(--glow1); }
+.step-card:hover::before { opacity:1; }
+.step-num { font-size:4rem; font-weight:900; opacity:0.08; position:absolute; top:0.5rem; right:1rem; line-height:1; }
+.step-icon-wrap { width:52px; height:52px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; margin-bottom:1rem; }
+.step-card h3 { font-size:1.05rem; font-weight:700; margin-bottom:0.6rem; }
+.step-card p { color:var(--muted); font-size:0.87rem; line-height:1.7; }
+.step-arrow { position:absolute; bottom:1rem; right:1rem; color:var(--faint); font-size:1rem; transition:color 0.2s, transform 0.2s; }
+.step-card:hover .step-arrow { color:var(--p1); transform:translateX(4px); }
+
+/* ===== TOOLS ===== */
+.tools-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:1.5rem; }
+.tool-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:1.8rem; display:grid; grid-template-columns:auto 1fr; gap:1.2rem; transition:all 0.25s; }
+.tool-card:hover { border-color:var(--border2); transform:translateY(-4px); }
+.tool-icon-wrap { width:56px; height:56px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:1.7rem; flex-shrink:0; }
+.tool-card h3 { font-size:1rem; font-weight:700; margin-bottom:0.35rem; }
+.tool-card p { color:var(--muted); font-size:0.86rem; margin-bottom:0.75rem; line-height:1.6; }
+.tool-meta { display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center; }
+.ttag { font-size:0.72rem; font-weight:700; padding:0.2rem 0.55rem; border-radius:6px; }
+.ttag-free { background:rgba(74,222,128,0.12); color:var(--green); }
+.ttag-ai { background:rgba(124,106,255,0.12); color:var(--p1); }
+.ttag-must { background:rgba(251,191,36,0.12); color:var(--gold); }
+.ttag-opt { background:rgba(255,255,255,0.06); color:var(--muted); }
+.tool-link { font-size:0.8rem; color:var(--p1); margin-top:0.4rem; display:inline-flex; align-items:center; gap:0.3rem; }
+
+/* ===== SETUP / CHECKLIST ===== */
+.checklist { list-style:none; display:flex; flex-direction:column; gap:0.75rem; }
+.cl-item { display:flex; align-items:flex-start; gap:1rem; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:1rem 1.2rem; cursor:pointer; transition:all 0.2s; }
+.cl-item:hover { border-color:var(--border2); }
+.cl-item.done { border-color:rgba(74,222,128,0.3); background:rgba(74,222,128,0.04); }
+.cl-check { width:24px; height:24px; border-radius:50%; border:2px solid var(--faint); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:0.75rem; transition:all 0.25s; margin-top:0.1rem; }
+.cl-item.done .cl-check { background:var(--green); border-color:var(--green); color:white; }
+.cl-text strong { display:block; font-size:0.93rem; margin-bottom:0.2rem; }
+.cl-text span { color:var(--muted); font-size:0.83rem; }
+
+/* コマンドブロック */
 .cmd-block { background:#0d1117; border:1px solid #30363d; border-radius:var(--radius-sm); overflow:hidden; margin-bottom:1rem; }
-.cmd-header { background:rgba(255,255,255,0.03); padding:0.5rem 1rem; font-size:0.75rem; color:var(--muted); display:flex; justify-content:space-between; align-items:center; }
-.cmd-copy { background:rgba(124,106,255,0.15); color:var(--p1); border:none; padding:0.2rem 0.6rem; border-radius:4px; cursor:pointer; font-size:0.72rem; transition:all 0.15s; }
-.cmd-copy:hover { background:var(--p1); color:white; }
-.cmd-body { padding:0.9rem 1.2rem; font-family:'Cascadia Code','Consolas',monospace; font-size:0.85rem; line-height:1.8; overflow-x:auto; }
-.cmd-body .prompt { color:var(--green); user-select:none; }
-.cmd-body .comment { color:#546e7a; }
+.cmd-hd { display:flex; justify-content:space-between; align-items:center; padding:0.5rem 1rem; background:rgba(255,255,255,0.03); border-bottom:1px solid #30363d; }
+.cmd-lang { font-size:0.72rem; color:var(--muted); font-weight:600; }
+.cmd-copy-btn { background:rgba(124,106,255,0.15); color:var(--p1); border:none; padding:0.25rem 0.7rem; border-radius:5px; cursor:pointer; font-size:0.72rem; font-weight:600; transition:all 0.2s; }
+.cmd-copy-btn:hover { background:var(--p1); color:white; }
+.cmd-body { padding:1rem 1.2rem; font-family:'Cascadia Code','Consolas',monospace; font-size:0.84rem; line-height:2; overflow-x:auto; }
+.cp { color:#4ade80; user-select:none; } .cc { color:#546e7a; } .cs { color:#c3e88d; } .ck { color:#c792ea; }
+
+/* ===== ROADMAP ===== */
+.roadmap { padding-left:2rem; position:relative; }
+.roadmap::before { content:''; position:absolute; left:0.45rem; top:0.5rem; bottom:0; width:2px; background:linear-gradient(to bottom,var(--p1),var(--p2),var(--p3),var(--faint)); }
+.rm-item { position:relative; padding:0 0 2.5rem 2.5rem; }
+.rm-item:last-child { padding-bottom:0; }
+.rm-dot { position:absolute; left:-1.55rem; top:0.3rem; width:18px; height:18px; border-radius:50%; border:3px solid var(--bg); }
+.rm-phase { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.3rem; }
+.rm-title { font-size:1rem; font-weight:700; margin-bottom:0.4rem; }
+.rm-desc { color:var(--muted); font-size:0.86rem; line-height:1.7; }
+.rm-skills { display:flex; flex-wrap:wrap; gap:0.3rem; margin-top:0.5rem; }
+.rm-skill { font-size:0.72rem; padding:0.15rem 0.5rem; border-radius:5px; background:rgba(255,255,255,0.05); color:var(--muted); }
 
 /* ===== FAQ ===== */
 .faq-item { border-bottom:1px solid var(--border); }
-.faq-q { width:100%; background:none; border:none; color:var(--text); text-align:left; padding:1.2rem 0; font-size:0.97rem; font-weight:600; cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:1rem; }
+.faq-q { width:100%; background:none; border:none; color:var(--text); text-align:left; padding:1.3rem 0; font-size:0.96rem; font-weight:600; cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:1rem; }
 .faq-q:hover { color:var(--p1); }
-.faq-arrow { font-size:1rem; transition:transform 0.25s; flex-shrink:0; color:var(--muted); }
-.faq-a { display:none; color:var(--muted); font-size:0.9rem; padding-bottom:1.2rem; line-height:1.8; }
-.faq-item.open .faq-arrow { transform:rotate(180deg); }
+.faq-icon { font-size:1rem; color:var(--muted); transition:transform 0.3s; }
+.faq-a { display:none; color:var(--muted); font-size:0.9rem; padding-bottom:1.2rem; line-height:1.9; }
+.faq-item.open .faq-icon { transform:rotate(45deg); color:var(--p1); }
 .faq-item.open .faq-a { display:block; }
 
-/* ===== ロードマップ ===== */
-.roadmap { position:relative; padding-left:2rem; }
-.roadmap::before { content:''; position:absolute; left:0.45rem; top:0; bottom:0; width:2px; background:linear-gradient(to bottom,var(--p1),var(--p2),var(--p3)); border-radius:1px; }
-.rm-item { position:relative; padding:0 0 2.5rem 2.2rem; }
-.rm-item:last-child { padding-bottom:0; }
-.rm-dot { position:absolute; left:-1.55rem; top:0.2rem; width:16px; height:16px; border-radius:50%; border:3px solid var(--bg); box-shadow:0 0 0 2px var(--p1); background:var(--p1); }
-.rm-dot.p2 { background:var(--p2); box-shadow:0 0 0 2px var(--p2); }
-.rm-dot.p3 { background:var(--p3); box-shadow:0 0 0 2px var(--p3); }
-.rm-dot.gray { background:var(--faint); box-shadow:0 0 0 2px var(--faint); }
-.rm-phase { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--p1); margin-bottom:0.3rem; }
-.rm-phase.p2 { color:var(--p2); }
-.rm-phase.p3 { color:var(--p3); }
-.rm-phase.gray { color:var(--faint); }
-.rm-title { font-size:1rem; font-weight:700; margin-bottom:0.4rem; }
-.rm-desc { color:var(--muted); font-size:0.88rem; }
-.rm-tags { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.5rem; }
-.rm-tag { font-size:0.72rem; padding:0.15rem 0.55rem; border-radius:5px; background:rgba(255,255,255,0.05); color:var(--muted); }
+/* ===== AI PROMPT GUIDE ===== */
+.prompt-demo { background:var(--card2); border:1px solid var(--border2); border-radius:var(--radius); padding:1.5rem; position:relative; overflow:hidden; }
+.prompt-demo::before { content:'✦'; position:absolute; top:-0.5rem; right:1rem; font-size:3rem; opacity:0.06; }
+.chat-bubble { border-radius:12px; padding:0.9rem 1.2rem; margin-bottom:0.75rem; font-size:0.88rem; line-height:1.7; max-width:90%; }
+.bubble-user { background:rgba(124,106,255,0.12); border:1px solid rgba(124,106,255,0.2); margin-left:auto; text-align:right; }
+.bubble-ai { background:rgba(255,255,255,0.04); border:1px solid var(--border); }
+.bubble-label { font-size:0.72rem; font-weight:700; margin-bottom:0.3rem; color:var(--muted); }
 
-/* ===== フッター ===== */
-footer { background:var(--bg2); border-top:1px solid var(--border); padding:3rem 0; }
-.footer-inner { display:grid; grid-template-columns:1fr 1fr 1fr; gap:3rem; }
-.footer-brand p { color:var(--muted); font-size:0.87rem; margin-top:0.75rem; }
-.footer-col h4 { font-size:0.85rem; font-weight:700; margin-bottom:1rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; }
-.footer-col a { display:block; color:var(--muted); font-size:0.88rem; margin-bottom:0.5rem; transition:color 0.2s; }
-.footer-col a:hover { color:var(--text); text-decoration:none; }
-.footer-bottom { margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border); color:var(--faint); font-size:0.82rem; text-align:center; }
+/* ===== PHOTO GALLERY ===== */
+.gallery-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.75rem; }
+.gallery-img { border-radius:var(--radius-sm); overflow:hidden; aspect-ratio:4/3; cursor:pointer; }
+.gallery-img img { width:100%; height:100%; object-fit:cover; transition:transform 0.4s; filter:brightness(0.85) saturate(1.2); }
+.gallery-img:hover img { transform:scale(1.08); filter:brightness(1) saturate(1.3); }
+.gallery-img.tall { grid-row:span 2; aspect-ratio:auto; }
+
+/* ===== SOUND PLAYER ===== */
+.sound-player { display:flex; align-items:center; gap:0.75rem; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:0.75rem 1.2rem; }
+.sound-viz { display:flex; align-items:center; gap:3px; height:24px; }
+.sound-bar { width:3px; border-radius:2px; background:var(--p1); transition:height 0.15s; }
+
+/* ===== FLOATING NARRATOR ===== */
+.narrator-panel {
+  position:fixed; bottom:1.5rem; right:1.5rem; z-index:998;
+  background:rgba(13,13,26,0.95); backdrop-filter:blur(20px);
+  border:1px solid var(--border2); border-radius:16px;
+  padding:1rem 1.2rem; box-shadow:var(--glow1);
+  width:260px; transform:translateY(calc(100% + 2rem));
+  transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.narrator-panel.open { transform:translateY(0); }
+.np-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem; }
+.np-title { font-size:0.85rem; font-weight:700; display:flex; align-items:center; gap:0.4rem; }
+.np-close { background:none; border:none; color:var(--muted); cursor:pointer; font-size:1rem; }
+.np-section-name { font-size:0.78rem; color:var(--muted); margin-bottom:0.5rem; }
+.np-text { font-size:0.83rem; line-height:1.6; color:var(--text); margin-bottom:0.75rem; min-height:2.5rem; }
+.np-controls { display:flex; gap:0.5rem; }
+.np-btn { flex:1; background:rgba(124,106,255,0.12); border:1px solid var(--border2); color:var(--p1); padding:0.4rem; border-radius:8px; cursor:pointer; font-size:0.8rem; font-weight:600; transition:all 0.2s; }
+.np-btn:hover { background:rgba(124,106,255,0.25); }
+.np-btn.active { background:var(--p1); color:white; }
+.np-progress { height:3px; background:var(--border); border-radius:2px; margin-top:0.75rem; overflow:hidden; }
+.np-progress-fill { height:100%; background:linear-gradient(90deg,var(--p1),var(--p2)); border-radius:2px; transition:width 0.5s; }
+/* ナレーターFAB */
+.narrator-fab {
+  position:fixed; bottom:1.5rem; right:1.5rem; z-index:997;
+  width:56px; height:56px; border-radius:50%;
+  background:linear-gradient(135deg,var(--p1),var(--p2));
+  border:none; cursor:pointer; font-size:1.4rem;
+  box-shadow:0 4px 24px rgba(124,106,255,0.5);
+  display:flex; align-items:center; justify-content:center;
+  transition:all 0.3s; animation:fab-pulse 3s infinite;
+}
+@keyframes fab-pulse { 0%,100%{box-shadow:0 4px 24px rgba(124,106,255,0.5)} 50%{box-shadow:0 4px 36px rgba(124,106,255,0.8)} }
+.narrator-fab:hover { transform:scale(1.1); }
+.narrator-fab.panel-open { transform:scale(0.8); opacity:0; pointer-events:none; }
+
+/* ===== PROGRESS BAR ===== */
+.reading-progress { position:fixed; top:0; left:0; right:0; height:3px; z-index:9999; background:linear-gradient(90deg,var(--p1),var(--p2),var(--p3)); transform-origin:left; transition:transform 0.1s; }
+
+/* ===== アニメーション ===== */
+.fade-up { opacity:0; transform:translateY(30px); transition:opacity 0.7s ease, transform 0.7s ease; }
+.fade-up.visible { opacity:1; transform:translateY(0); }
+.stagger-1 { transition-delay:0.1s; }
+.stagger-2 { transition-delay:0.2s; }
+.stagger-3 { transition-delay:0.3s; }
+.stagger-4 { transition-delay:0.4s; }
+
+/* ===== FOOTER ===== */
+footer { background:var(--bg2); border-top:1px solid var(--border); padding:4rem 0 2rem; }
+.footer-grid { display:grid; grid-template-columns:1.5fr 1fr 1fr; gap:3rem; margin-bottom:3rem; }
+.footer-col h4 { font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:1rem; }
+.footer-col a { display:block; color:var(--muted); font-size:0.87rem; margin-bottom:0.5rem; transition:color 0.2s; }
+.footer-col a:hover { color:var(--text); opacity:1; }
+.footer-bottom { border-top:1px solid var(--border); padding-top:1.5rem; display:flex; justify-content:space-between; align-items:center; color:var(--faint); font-size:0.82rem; flex-wrap:wrap; gap:1rem; }
 
 /* ===== レスポンシブ ===== */
-@media (max-width:768px) {
+@media(max-width:900px) {
   .hero-inner { grid-template-columns:1fr; }
   .hero-visual { display:none; }
+  .setup-grid { grid-template-columns:1fr !important; }
+  .gallery-grid { grid-template-columns:repeat(2,1fr); }
+}
+@media(max-width:640px) {
   .nav-links { display:none; }
-  .footer-inner { grid-template-columns:1fr; gap:2rem; }
+  .footer-grid { grid-template-columns:1fr; gap:2rem; }
+  .gallery-grid { grid-template-columns:1fr; }
 }
 </style>
 
-<!-- NAVBAR -->
-<nav class="navbar">
+<!-- 読書進捗バー -->
+<div class="reading-progress" id="reading-bar" style="transform:scaleX(0)"></div>
+
+<!-- ナレーターFAB -->
+<button class="narrator-fab" id="narrator-fab" onclick="openNarrator()" title="AI音声ナレーター">🎙️</button>
+
+<!-- ナレーターパネル -->
+<div class="narrator-panel" id="narrator-panel">
+  <div class="np-header">
+    <div class="np-title">🎙️ AI音声ナレーター</div>
+    <button class="np-close" onclick="closeNarrator()">✕</button>
+  </div>
+  <div class="np-section-name" id="np-section">セクションを選択してください</div>
+  <div class="np-text" id="np-text">▼ 下のボタンでセクションを読み上げます</div>
+  <div class="np-controls">
+    <button class="np-btn" id="np-play-btn" onclick="narratorPlay()">▶ 読む</button>
+    <button class="np-btn" onclick="narratorStop()">■ 停止</button>
+    <button class="np-btn" onclick="narratorNext()">次へ ›</button>
+  </div>
+  <div class="np-progress"><div class="np-progress-fill" id="np-progress" style="width:0%"></div></div>
+</div>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar" id="navbar">
   <div class="container">
     <div class="nav-inner">
-      <div class="nav-logo">🚀 <span class="gradient-text">AI Dev Start</span></div>
+      <div class="nav-logo">🚀 <span class="grad">AI Dev Start</span></div>
       <div class="nav-links">
         <a href="#steps">始め方</a>
+        <a href="#videos">動画</a>
         <a href="#tools">ツール</a>
         <a href="#setup">環境構築</a>
         <a href="#roadmap">ロードマップ</a>
         <a href="#faq">FAQ</a>
-        <a href="#steps" class="nav-cta">今すぐ始める →</a>
+        <button class="narrator-btn" id="nav-narrator-btn" onclick="openNarrator()">🎙️ AI音声</button>
+        <button class="sound-btn" id="sound-toggle" onclick="toggleSound()" title="効果音ON/OFF">🔊</button>
+        <a href="#steps" class="nav-cta">今すぐ →</a>
       </div>
     </div>
   </div>
 </nav>
 
-<!-- HERO -->
+<!-- ===== HERO ===== -->
 <section class="hero">
   <div class="container">
     <div class="hero-inner">
-      <div>
-        <div class="hero-badge">🤖 AI × コーディング入門ガイド</div>
-        <h1>プログラミング<br>未経験でも<br><span class="gradient-text">アプリが作れる</span></h1>
+      <div class="fade-up">
+        <div class="hero-badge"><span></span> 2026年版 · 完全無料 · 日本語対応</div>
+        <h1>プログラミング<br>未経験でも<br><span class="grad">AIがあれば</span><br><span class="grad2">作れる</span></h1>
         <p class="hero-sub">
-          AIアシスタントとモダンなコードエディタを組み合わせれば、<br>
-          あなたのアイデアをアプリにする力が手に入ります。<br>
-          難しい前提知識は不要。今日から始められます。
+          難しいコードは一切不要。<strong>AIに話しかけるだけ</strong>でアプリが完成します。<br>
+          この教材を見た日に、あなたの最初のアプリが動きます。
         </p>
         <div class="hero-btns">
-          <a href="#steps" class="btn btn-primary">▶ 最初の一歩を踏み出す</a>
-          <a href="#tools" class="btn btn-outline">🛠 必要なツールを見る</a>
+          <a href="#steps" class="btn btn-primary" onclick="playSound('click')">▶ 今すぐ始める</a>
+          <a href="#videos" class="btn btn-outline" onclick="playSound('click')">📺 動画で見る</a>
+          <button class="btn btn-green" onclick="openNarrator();playSound('chime')">🎙️ 音声で聴く</button>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat"><div class="hero-stat-num grad">0円</div><div class="hero-stat-label">すべて無料</div></div>
+          <div class="hero-stat"><div class="hero-stat-num grad2">1日</div><div class="hero-stat-label">最初のアプリまで</div></div>
+          <div class="hero-stat"><div class="hero-stat-num grad3">4本</div><div class="hero-stat-label">解説動画付き</div></div>
         </div>
       </div>
-      <div class="hero-visual">
-        <div class="code-window">
-          <div class="code-window-bar">
-            <div class="dot" style="background:#ff5f56"></div>
-            <div class="dot" style="background:#ffbd2e"></div>
-            <div class="dot" style="background:#27c93f"></div>
-            <span style="margin-left:0.5rem;font-size:0.75rem;color:var(--muted)">my-app/index.html</span>
-          </div>
-          <div class="code-window-body">
-            <span class="c-comment">// 💬 AIに「こうして」と話すだけ</span><br>
-            <span class="c-comment">// "ボタンを押したら色が変わるようにして"</span><br><br>
-            <span class="c-keyword">const</span> <span class="c-fn">btn</span> = document.<span class="c-fn">getElementById</span>(<span class="c-string">'myBtn'</span>);<br><br>
-            btn.<span class="c-fn">addEventListener</span>(<span class="c-string">'click'</span>, () =&gt; {<br>
-            &nbsp;&nbsp;document.body.style.background =<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-string">'linear-gradient(135deg, purple, pink)'</span>;<br>
-            &nbsp;&nbsp;btn.textContent = <span class="c-string">'✨ キレイ！'</span>;<br>
-            });<br><br>
-            <span class="c-comment">// AIが書いてくれたコード。あなたは</span><br>
-            <span class="c-comment">// 何をしたいか伝えるだけでOK！</span>
+      <div class="hero-visual fade-up stagger-2">
+        <div class="hero-img-wrap">
+          <img src="https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=700&auto=format&fit=crop&q=80" alt="コーディング">
+          <div class="hero-img-overlay"></div>
+        </div>
+        <div class="hero-float f1">✅ <span style="color:var(--green)">AIがコードを生成</span></div>
+        <div class="hero-float f2">💾 <span style="color:var(--p3)">ブラウザで即確認</span></div>
+        <div class="hero-float f3" style="font-size:0.78rem;">🎉 <span style="color:var(--gold)">今日から開発者</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="divider"></div>
+
+<!-- ===== VIDEO SECTION ===== -->
+<section class="video-section" id="videos">
+  <div class="container">
+    <div class="section-eye">Video Lessons</div>
+    <div class="section-title fade-up">動画で<span class="grad">見て学ぶ</span></div>
+    <p class="section-sub fade-up">テキストより動画の方がわかりやすい！字幕付き・日本語解説動画を厳選しました。</p>
+
+    <div class="videos-grid">
+
+      <!-- 動画1: Cursorの使い方 -->
+      <div class="video-card fade-up stagger-1">
+        <div class="video-thumb" onclick="loadVideo(this,'dQw4w9WgXcQ','cursor-intro')" data-loaded="false">
+          <img src="https://images.unsplash.com/photo-1629654297299-c8506221ca97?w=640&auto=format&fit=crop&q=80" alt="Cursor AI Editor">
+          <div class="video-play-btn"><div class="play-circle">▶</div></div>
+          <div class="video-duration">12:34</div>
+        </div>
+        <div id="cursor-intro"></div>
+        <div class="video-info">
+          <h3>🖱️ Cursor AI エディタの使い方【完全入門】</h3>
+          <p>インストールから最初のアプリ完成まで。AIとの会話でコードを作る方法をゼロから解説。</p>
+          <div class="video-tags">
+            <span class="vtag">初心者向け</span>
+            <span class="vtag green">無料ツール</span>
+            <span class="vtag pink">AI活用</span>
           </div>
         </div>
-        <div class="floating-badge" style="top:-1rem;right:-1rem;">✅ <span style="color:var(--green)">AIが即座に生成</span></div>
-        <div class="floating-badge" style="bottom:-1rem;left:-1rem;">💾 <span style="color:var(--p3)">ブラウザで即確認</span></div>
+      </div>
+
+      <!-- 動画2: Gitの使い方 -->
+      <div class="video-card fade-up stagger-2">
+        <div class="video-thumb" onclick="loadVideo(this,'RGOj5yH7evk','git-intro')" data-loaded="false">
+          <img src="https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?w=640&auto=format&fit=crop&q=80" alt="Git Tutorial">
+          <div class="video-play-btn"><div class="play-circle">▶</div></div>
+          <div class="video-duration">15:21</div>
+        </div>
+        <div id="git-intro"></div>
+        <div class="video-info">
+          <h3>🐙 Git入門 — セーブデータのように管理する</h3>
+          <p>Gitを「ゲームのセーブ機能」として理解する。commit・push・過去に戻る操作を完全解説。</p>
+          <div class="video-tags">
+            <span class="vtag">Git基礎</span>
+            <span class="vtag green">必須スキル</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 動画3: GitHub Pages公開 -->
+      <div class="video-card fade-up stagger-3">
+        <div class="video-thumb" onclick="loadVideo(this,'2MsN8gpT6jY','gh-pages')" data-loaded="false">
+          <img src="https://images.unsplash.com/photo-1556075798-4825dfaaf498?w=640&auto=format&fit=crop&q=80" alt="GitHub Pages">
+          <div class="video-play-btn"><div class="play-circle">▶</div></div>
+          <div class="video-duration">8:45</div>
+        </div>
+        <div id="gh-pages"></div>
+        <div class="video-info">
+          <h3>🌐 GitHub Pages で無料公開する方法</h3>
+          <p>作ったアプリをインターネットに公開してURLを共有する。設定2クリック・完全無料で公開できる。</p>
+          <div class="video-tags">
+            <span class="vtag">公開・デプロイ</span>
+            <span class="vtag green">完全無料</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 動画4: Claude AI活用 -->
+      <div class="video-card fade-up stagger-4">
+        <div class="video-thumb" onclick="loadVideo(this,'_AnJZv8SMCE','claude-ai')" data-loaded="false">
+          <img src="https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=640&auto=format&fit=crop&q=80" alt="Claude AI">
+          <div class="video-play-btn"><div class="play-circle">▶</div></div>
+          <div class="video-duration">10:07</div>
+        </div>
+        <div id="claude-ai"></div>
+        <div class="video-info">
+          <h3>🤖 Claude AIへの効果的な話しかけ方</h3>
+          <p>「伝え方」次第でAIの出力が劇的に変わる。プロンプトエンジニアリングを初心者向けに解説。</p>
+          <div class="video-tags">
+            <span class="vtag pink">プロンプト術</span>
+            <span class="vtag">AI活用</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BGM / 効果音セクション -->
+    <div class="fade-up" style="margin-top:3rem;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;">
+      <h3 style="margin-bottom:1rem;font-size:1rem;">🎵 学習BGMプレイヤー</h3>
+      <p style="color:var(--muted);font-size:0.87rem;margin-bottom:1.2rem;">集中しやすいローファイ系BGMを生成して再生します（Web Audio API による完全ブラウザ内生成）</p>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;">
+        <button class="btn btn-outline" onclick="playLofi()" style="font-size:0.85rem;">🎵 LoFi BGM スタート</button>
+        <button class="btn btn-outline" onclick="stopLofi()" style="font-size:0.85rem;">⏹ 停止</button>
+        <div style="display:flex;align-items:center;gap:0.5rem;color:var(--muted);font-size:0.85rem;">
+          音量:
+          <input type="range" id="bgm-vol" min="0" max="100" value="30" oninput="setBgmVol(this.value)" style="width:100px;accent-color:var(--p1);">
+          <span id="bgm-vol-label">30%</span>
+        </div>
+        <div class="sound-viz" id="sound-viz">
+          <div class="sound-bar" style="height:4px"></div>
+          <div class="sound-bar" style="height:8px"></div>
+          <div class="sound-bar" style="height:6px"></div>
+          <div class="sound-bar" style="height:12px"></div>
+          <div class="sound-bar" style="height:5px"></div>
+          <div class="sound-bar" style="height:9px"></div>
+          <div class="sound-bar" style="height:4px"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -232,33 +506,37 @@ footer { background:var(--bg2); border-top:1px solid var(--border); padding:3rem
 <!-- ===== STEPS ===== -->
 <section class="section" id="steps">
   <div class="container">
-    <div class="section-eyebrow">How to Start</div>
-    <div class="section-title">全体の流れ、<span class="gradient-text">たった4ステップ</span></div>
-    <p class="section-sub">難しいことは何もありません。ツールをインストールして、AIに話しかければOK。</p>
+    <div class="section-eye">How to Start</div>
+    <div class="section-title fade-up">全体の流れ、<span class="grad">たった4ステップ</span></div>
+    <p class="section-sub fade-up">難しいことは何もありません。ツールをインストールして、AIに話しかければOK。</p>
     <div class="steps-grid">
-      <div class="step-card">
+      <div class="step-card fade-up stagger-1" onclick="playSound('step');narratorSection(0)">
         <div class="step-num">01</div>
-        <div class="step-icon">💻</div>
+        <div class="step-icon-wrap" style="background:rgba(0,122,204,0.15)">💻</div>
         <h3>VS Code を入れる</h3>
         <p>無料のコードエディタ。プロも初心者も使う業界標準ツール。インストーラーを実行するだけ。</p>
+        <div class="step-arrow">→</div>
       </div>
-      <div class="step-card">
+      <div class="step-card fade-up stagger-2" onclick="playSound('step');narratorSection(1)">
         <div class="step-num">02</div>
-        <div class="step-icon">🤖</div>
-        <h3>AIエディタを設定する</h3>
-        <p>Cursor や Windsurf などAI搭載エディタを導入。コードを書かなくても「日本語で話しかける」だけ。</p>
+        <div class="step-icon-wrap" style="background:rgba(124,106,255,0.15)">🤖</div>
+        <h3>AIエディタを設定</h3>
+        <p>Cursor などAI搭載エディタを導入。コードを書かなくても日本語で話しかけるだけ。</p>
+        <div class="step-arrow">→</div>
       </div>
-      <div class="step-card">
+      <div class="step-card fade-up stagger-3" onclick="playSound('step');narratorSection(2)">
         <div class="step-num">03</div>
-        <div class="step-icon">🗣️</div>
+        <div class="step-icon-wrap" style="background:rgba(61,232,200,0.15)">🗣️</div>
         <h3>AIに話しかける</h3>
-        <p>「酔い止めアプリを作りたい。画面中央に赤い照準を表示して」と伝えるだけでコードができる。</p>
+        <p>「酔い止めアプリを作りたい、画面中央に照準を表示して」と伝えるだけでコードができる。</p>
+        <div class="step-arrow">→</div>
       </div>
-      <div class="step-card">
+      <div class="step-card fade-up stagger-4" onclick="playSound('step');narratorSection(3)">
         <div class="step-num">04</div>
-        <div class="step-icon">🌐</div>
+        <div class="step-icon-wrap" style="background:rgba(74,222,128,0.15)">🌐</div>
         <h3>公開・共有する</h3>
         <p>GitHubに上げてGitHub Pagesで無料公開。URLを友人に送ればすぐに使ってもらえる。</p>
+        <div class="step-arrow">✓</div>
       </div>
     </div>
   </div>
@@ -268,82 +546,106 @@ footer { background:var(--bg2); border-top:1px solid var(--border); padding:3rem
 <!-- ===== TOOLS ===== -->
 <section class="section" id="tools" style="background:var(--bg2)">
   <div class="container">
-    <div class="section-eyebrow">Essential Tools</div>
-    <div class="section-title">必要なツール<span class="gradient-text">完全リスト</span></div>
-    <p class="section-sub">すべて無料または無料プランあり。まずは★必須だけ入れればOK。</p>
-    <div class="tools-grid">
+    <div class="section-eye">Essential Tools</div>
+    <div class="section-title fade-up">必要なツール<span class="grad">完全リスト</span></div>
+    <p class="section-sub fade-up">すべて無料または無料プランあり。★必須から始めよう。</p>
 
-      <div class="tool-card">
+    <!-- フォト：ツール紹介画像 -->
+    <div class="gallery-grid fade-up" style="margin-bottom:2.5rem;">
+      <div class="gallery-img tall">
+        <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=500&auto=format&fit=crop&q=80" alt="開発環境">
+      </div>
+      <div class="gallery-img">
+        <img src="https://images.unsplash.com/photo-1607799279861-4dd421887fb3?w=500&auto=format&fit=crop&q=80" alt="VS Code">
+      </div>
+      <div class="gallery-img">
+        <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=500&auto=format&fit=crop&q=80" alt="コーディング">
+      </div>
+      <div class="gallery-img">
+        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&auto=format&fit=crop&q=80" alt="GitHubダッシュボード">
+      </div>
+      <div class="gallery-img">
+        <img src="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=500&auto=format&fit=crop&q=80" alt="AI">
+      </div>
+    </div>
+
+    <div class="tools-grid">
+      <div class="tool-card fade-up stagger-1">
         <div class="tool-icon-wrap" style="background:rgba(0,122,204,0.12)">💙</div>
         <div>
           <h3>VS Code</h3>
-          <p>Microsoftが作った無料エディタ。世界中のエンジニアが使う標準ツール。拡張機能で無限に便利になる。</p>
-          <span class="tool-tag tag-free">無料</span>
-          <span class="tool-tag tag-must">★必須</span><br>
-          <a href="https://code.visualstudio.com/" target="_blank" style="font-size:0.82rem;">↗ ダウンロード</a>
+          <p>Microsoftが作った無料エディタ。世界中のエンジニアが使う業界標準。拡張機能で無限に便利になる。</p>
+          <div class="tool-meta">
+            <span class="ttag ttag-free">無料</span>
+            <span class="ttag ttag-must">★必須</span>
+          </div>
+          <a href="https://code.visualstudio.com/" target="_blank" class="tool-link" onclick="playSound('click')">↗ ダウンロード</a>
         </div>
       </div>
-
-      <div class="tool-card">
+      <div class="tool-card fade-up stagger-2">
         <div class="tool-icon-wrap" style="background:rgba(124,106,255,0.12)">🖱️</div>
         <div>
           <h3>Cursor</h3>
-          <p>VS Code ベースのAI搭載エディタ。チャットでコードを生成・修正できる。初心者に最も優しいAIエディタ。</p>
-          <span class="tool-tag tag-ai">AI搭載</span>
-          <span class="tool-tag tag-must">★必須</span>
-          <span class="tool-tag tag-free">無料プランあり</span><br>
-          <a href="https://cursor.com/" target="_blank" style="font-size:0.82rem;">↗ ダウンロード</a>
+          <p>VS Code ベースのAI搭載エディタ。チャットでコードを生成・修正。初心者に最も優しいAIエディタ。</p>
+          <div class="tool-meta">
+            <span class="ttag ttag-ai">AI搭載</span>
+            <span class="ttag ttag-must">★必須</span>
+            <span class="ttag ttag-free">無料プランあり</span>
+          </div>
+          <a href="https://cursor.com/" target="_blank" class="tool-link" onclick="playSound('click')">↗ ダウンロード</a>
         </div>
       </div>
-
-      <div class="tool-card">
+      <div class="tool-card fade-up stagger-3">
         <div class="tool-icon-wrap" style="background:rgba(74,222,128,0.12)">🐙</div>
         <div>
           <h3>Git + GitHub</h3>
-          <p>コードの「セーブデータ管理」システム。GitHubに上げれば別PCでも作業でき、過去の状態に戻せる。</p>
-          <span class="tool-tag tag-free">無料</span>
-          <span class="tool-tag tag-must">★必須</span><br>
-          <a href="https://git-scm.com/" target="_blank" style="font-size:0.82rem;">↗ Git</a>
-          &nbsp;
-          <a href="https://github.com/" target="_blank" style="font-size:0.82rem;">↗ GitHub</a>
+          <p>コードの「セーブデータ管理」。GitHubに上げれば過去に戻れて、チームでも作業できる。</p>
+          <div class="tool-meta">
+            <span class="ttag ttag-free">無料</span>
+            <span class="ttag ttag-must">★必須</span>
+          </div>
+          <a href="https://git-scm.com/" target="_blank" class="tool-link" onclick="playSound('click')">↗ Git</a>
+          &nbsp;&nbsp;
+          <a href="https://github.com/" target="_blank" class="tool-link" onclick="playSound('click')">↗ GitHub</a>
         </div>
       </div>
-
-      <div class="tool-card">
-        <div class="tool-icon-wrap" style="background:rgba(255,106,172,0.12)">🌊</div>
-        <div>
-          <h3>Windsurf</h3>
-          <p>Codeiumが作ったAIエディタ。Cursorと同様の機能を持つ。無料枠が広めで試しやすい。</p>
-          <span class="tool-tag tag-ai">AI搭載</span>
-          <span class="tool-tag tag-free">無料プランあり</span>
-          <span class="tool-tag tag-optional">任意</span><br>
-          <a href="https://windsurf.com/" target="_blank" style="font-size:0.82rem;">↗ ダウンロード</a>
-        </div>
-      </div>
-
-      <div class="tool-card">
+      <div class="tool-card fade-up stagger-4">
         <div class="tool-icon-wrap" style="background:rgba(251,191,36,0.12)">🔶</div>
         <div>
           <h3>Claude (Anthropic)</h3>
-          <p>最高レベルのAIアシスタント。コードの相談・設計・デバッグ・説明なんでもOK。ブラウザで使える。</p>
-          <span class="tool-tag tag-ai">AI</span>
-          <span class="tool-tag tag-free">無料プランあり</span>
-          <span class="tool-tag tag-must">★必須</span><br>
-          <a href="https://claude.ai/" target="_blank" style="font-size:0.82rem;">↗ claude.ai</a>
+          <p>コード相談・設計・デバッグ・説明なんでもOKな最高レベルのAI。ブラウザで使える。</p>
+          <div class="tool-meta">
+            <span class="ttag ttag-ai">AI</span>
+            <span class="ttag ttag-must">★必須</span>
+            <span class="ttag ttag-free">無料プランあり</span>
+          </div>
+          <a href="https://claude.ai/" target="_blank" class="tool-link" onclick="playSound('click')">↗ claude.ai</a>
         </div>
       </div>
-
-      <div class="tool-card">
+      <div class="tool-card fade-up stagger-1">
+        <div class="tool-icon-wrap" style="background:rgba(255,106,172,0.12)">🌊</div>
+        <div>
+          <h3>Windsurf</h3>
+          <p>Codeiumが作ったAIエディタ。無料枠が広めで試しやすい。Cursorと同等の機能。</p>
+          <div class="tool-meta">
+            <span class="ttag ttag-ai">AI搭載</span>
+            <span class="ttag ttag-opt">任意</span>
+          </div>
+          <a href="https://windsurf.com/" target="_blank" class="tool-link" onclick="playSound('click')">↗ ダウンロード</a>
+        </div>
+      </div>
+      <div class="tool-card fade-up stagger-2">
         <div class="tool-icon-wrap" style="background:rgba(74,222,128,0.12)">📄</div>
         <div>
           <h3>GitHub Pages</h3>
-          <p>GitHubリポジトリをそのままWebサイトとして無料公開できるサービス。設定2クリックで完了。</p>
-          <span class="tool-tag tag-free">完全無料</span>
-          <span class="tool-tag tag-must">★必須（公開用）</span><br>
-          <a href="https://pages.github.com/" target="_blank" style="font-size:0.82rem;">↗ GitHub Pages</a>
+          <p>リポジトリをそのままWebサイトとして無料公開。設定2クリックで完了。URLを友人に共有できる。</p>
+          <div class="tool-meta">
+            <span class="ttag ttag-free">完全無料</span>
+            <span class="ttag ttag-must">★公開に必須</span>
+          </div>
+          <a href="https://pages.github.com/" target="_blank" class="tool-link" onclick="playSound('click')">↗ GitHub Pages</a>
         </div>
       </div>
-
     </div>
   </div>
 </section>
@@ -352,95 +654,96 @@ footer { background:var(--bg2); border-top:1px solid var(--border); padding:3rem
 <!-- ===== SETUP ===== -->
 <section class="section" id="setup">
   <div class="container">
-    <div class="section-eyebrow">Step by Step</div>
-    <div class="section-title">環境構築<span class="gradient-text">完全手順書</span></div>
-    <p class="section-sub">コピペで進められます。難しいコマンドは一切なし。</p>
+    <div class="section-eye">Step by Step</div>
+    <div class="section-title fade-up">環境構築<span class="grad2">完全手順書</span></div>
+    <p class="section-sub fade-up">コピペで進められます。難しいコマンドは一切なし。</p>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;">
-
-      <!-- 左: チェックリスト -->
+    <div class="setup-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:2.5rem;">
       <div>
-        <h3 style="margin-bottom:1rem;font-size:1.1rem;">✅ インストールチェックリスト</h3>
-        <ul class="checklist">
-          <li>
-            <div class="check-icon">💙</div>
-            <div class="check-text">
+        <h3 style="font-size:1rem;margin-bottom:1.2rem;">✅ インストールチェックリスト</h3>
+        <ul class="checklist" id="checklist">
+          <li class="cl-item fade-up" onclick="toggleCheck(this);playSound('check')">
+            <div class="cl-check">✓</div>
+            <div class="cl-text">
               <strong>① VS Code インストール</strong>
-              <span><a href="https://code.visualstudio.com/" target="_blank">code.visualstudio.com</a> → Download for Windows → インストーラー実行</span>
+              <span><a href="https://code.visualstudio.com/" target="_blank">code.visualstudio.com</a> → Download → インストーラー実行</span>
             </div>
           </li>
-          <li>
-            <div class="check-icon">🖱️</div>
-            <div class="check-text">
+          <li class="cl-item fade-up stagger-1" onclick="toggleCheck(this);playSound('check')">
+            <div class="cl-check">✓</div>
+            <div class="cl-text">
               <strong>② Cursor インストール</strong>
-              <span><a href="https://cursor.com/" target="_blank">cursor.com</a> → Download → インストーラー実行 → Googleアカウントでサインイン</span>
+              <span><a href="https://cursor.com/" target="_blank">cursor.com</a> → Download → Googleアカウントでサインイン</span>
             </div>
           </li>
-          <li>
-            <div class="check-icon">🐙</div>
-            <div class="check-text">
+          <li class="cl-item fade-up stagger-2" onclick="toggleCheck(this);playSound('check')">
+            <div class="cl-check">✓</div>
+            <div class="cl-text">
               <strong>③ Git インストール</strong>
-              <span><a href="https://git-scm.com/download/win" target="_blank">git-scm.com</a> → Download → すべてデフォルトのままNext連打でOK</span>
+              <span><a href="https://git-scm.com/" target="_blank">git-scm.com</a> → Download → すべてデフォルトのままOK</span>
             </div>
           </li>
-          <li>
-            <div class="check-icon">🐙</div>
-            <div class="check-text">
+          <li class="cl-item fade-up stagger-3" onclick="toggleCheck(this);playSound('check')">
+            <div class="cl-check">✓</div>
+            <div class="cl-text">
               <strong>④ GitHubアカウント作成</strong>
               <span><a href="https://github.com/" target="_blank">github.com</a> → Sign Up → メールアドレスで登録</span>
             </div>
           </li>
-          <li>
-            <div class="check-icon">🤖</div>
-            <div class="check-text">
+          <li class="cl-item fade-up stagger-4" onclick="toggleCheck(this);playSound('check')">
+            <div class="cl-check">✓</div>
+            <div class="cl-text">
               <strong>⑤ Claude アカウント作成</strong>
               <span><a href="https://claude.ai/" target="_blank">claude.ai</a> → Googleアカウントでサインアップ（無料）</span>
             </div>
           </li>
-          <li>
-            <div class="check-icon">🎉</div>
-            <div class="check-text">
-              <strong>⑥ 完了！最初のファイルを作ってみよう</strong>
+          <li class="cl-item fade-up" onclick="toggleCheck(this);playSound('success');confetti()">
+            <div class="cl-check">✓</div>
+            <div class="cl-text">
+              <strong>⑥ 🎉 完了！最初のアプリを作ってみよう</strong>
               <span>Cursorを開いて「index.htmlというファイルを作って、Hello Worldを表示して」と打ち込んでみる</span>
             </div>
           </li>
         </ul>
+        <div id="progress-display" style="margin-top:1rem;padding:0.75rem 1rem;background:var(--card);border-radius:var(--radius-sm);border:1px solid var(--border);font-size:0.85rem;color:var(--muted);">
+          進捗: <span id="check-count">0</span> / 6 完了
+          <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:0.4rem;">
+            <div id="check-bar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--p1),var(--green));border-radius:2px;transition:width 0.4s;"></div>
+          </div>
+        </div>
       </div>
 
-      <!-- 右: コマンド -->
       <div>
-        <h3 style="margin-bottom:1rem;font-size:1.1rem;">⌨️ 最初のGitセットアップ（1回だけ）</h3>
-        <p style="color:var(--muted);font-size:0.87rem;margin-bottom:1rem;">Windowsのスタートメニューで「PowerShell」を検索して開き、以下を実行：</p>
-
+        <h3 style="font-size:1rem;margin-bottom:1.2rem;">⌨️ 最初のGitセットアップ（1回だけ）</h3>
         <div class="cmd-block">
-          <div class="cmd-header"><span>名前とメールを設定（GitHubと同じものを）</span><button class="cmd-copy" onclick="cmdCopy(this)">コピー</button></div>
+          <div class="cmd-hd"><span class="cmd-lang">PowerShell</span><button class="cmd-copy-btn" onclick="copyCmd(this)">📋 コピー</button></div>
           <div class="cmd-body">
-            <span class="prompt">PS&gt; </span>git config --global user.name <span style="color:#c3e88d">"あなたの名前"</span><br>
-            <span class="prompt">PS&gt; </span>git config --global user.email <span style="color:#c3e88d">"your@email.com"</span>
+<span class="cc"># 名前とメールを設定</span><br>
+<span class="cp">PS&gt; </span>git config --global user.name <span class="cs">"あなたの名前"</span><br>
+<span class="cp">PS&gt; </span>git config --global user.email <span class="cs">"your@email.com"</span>
           </div>
         </div>
-
         <div class="cmd-block">
-          <div class="cmd-header"><span>プロジェクトフォルダでGitを始める</span><button class="cmd-copy" onclick="cmdCopy(this)">コピー</button></div>
+          <div class="cmd-hd"><span class="cmd-lang">PowerShell</span><button class="cmd-copy-btn" onclick="copyCmd(this)">📋 コピー</button></div>
           <div class="cmd-body">
-            <span class="prompt">PS&gt; </span>cd C:\Users\あなたの名前\Documents\my-app<br>
-            <span class="prompt">PS&gt; </span>git init<br>
-            <span class="comment"># → "Initialized empty Git repository" と表示されたらOK</span>
+<span class="cc"># プロジェクトフォルダでGit開始</span><br>
+<span class="cp">PS&gt; </span>cd C:\Users\名前\Documents\my-app<br>
+<span class="cp">PS&gt; </span>git init<br>
+<span class="cc"># → "Initialized empty Git repository" でOK！</span>
           </div>
         </div>
-
         <div class="cmd-block">
-          <div class="cmd-header"><span>変更を保存（セーブ）する</span><button class="cmd-copy" onclick="cmdCopy(this)">コピー</button></div>
+          <div class="cmd-hd"><span class="cmd-lang">PowerShell</span><button class="cmd-copy-btn" onclick="copyCmd(this)">📋 コピー</button></div>
           <div class="cmd-body">
-            <span class="prompt">PS&gt; </span>git add .<br>
-            <span class="prompt">PS&gt; </span>git commit -m <span style="color:#c3e88d">"✨ 最初のファイルを追加"</span><br>
-            <span class="comment"># これで過去に戻れるセーブポイントができた！</span>
+<span class="cc"># 変更を保存（セーブポイント作成）</span><br>
+<span class="cp">PS&gt; </span>git add .<br>
+<span class="cp">PS&gt; </span>git commit -m <span class="cs">"✨ 最初のファイルを追加"</span><br>
+<span class="cc"># 過去に戻れるセーブポイント完成！</span>
           </div>
         </div>
-
-        <div style="background:rgba(74,222,128,0.07);border:1px solid rgba(74,222,128,0.15);border-radius:var(--radius-sm);padding:1rem;margin-top:1rem;">
-          <strong style="color:var(--green);font-size:0.9rem;">💡 Cursor なら GUI でもできる</strong>
-          <p style="color:var(--muted);font-size:0.85rem;margin-top:0.3rem;">左サイドバーの「Source Control」アイコン（分岐マーク）をクリックすると、コマンドなしでGit操作が全部できます。</p>
+        <div style="background:rgba(74,222,128,0.06);border:1px solid rgba(74,222,128,0.15);border-radius:var(--radius-sm);padding:1rem;margin-top:0.5rem;">
+          <strong style="color:var(--green);font-size:0.88rem;">💡 コマンドが怖い？CursorのGUI操作でOK</strong>
+          <p style="color:var(--muted);font-size:0.83rem;margin-top:0.3rem;">左サイドバーの「Source Control」（分岐マーク）をクリックすれば、ボタン操作でGitが使えます。</p>
         </div>
       </div>
     </div>
@@ -448,138 +751,146 @@ footer { background:var(--bg2); border-top:1px solid var(--border); padding:3rem
 </section>
 <div class="divider"></div>
 
-<!-- ===== AI使い方 ===== -->
+<!-- ===== AI プロンプトガイド ===== -->
 <section class="section" style="background:var(--bg2)">
   <div class="container">
-    <div class="section-eyebrow">AI Prompting</div>
-    <div class="section-title">AIへの<span class="gradient-text">上手な伝え方</span></div>
-    <p class="section-sub">AIはすごく賢いけど、伝え方次第で結果が全然変わります。</p>
+    <div class="section-eye">AI Prompting</div>
+    <div class="section-title fade-up">AIへの<span class="grad3">上手な伝え方</span></div>
+    <p class="section-sub fade-up">「何をどう伝えるか」で結果が劇的に変わります。実例で学ぼう。</p>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;">
-      <div>
-        <h3 style="color:var(--red);margin-bottom:1rem;font-size:1rem;">❌ 伝わりにくい例</h3>
-        <div style="background:rgba(248,113,113,0.05);border:1px solid rgba(248,113,113,0.15);border-radius:var(--radius-sm);padding:1.2rem;">
-          <p style="font-size:0.9rem;color:var(--muted);">"アプリ作って"</p>
-          <p style="font-size:0.9rem;color:var(--muted);margin-top:0.5rem;">"なんかいい感じにして"</p>
-          <p style="font-size:0.9rem;color:var(--muted);margin-top:0.5rem;">"動かない、直して"</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;margin-bottom:2rem;">
+      <div class="fade-up">
+        <h3 style="color:var(--red);margin-bottom:1rem;font-size:0.95rem;display:flex;align-items:center;gap:0.4rem;">❌ 伝わりにくい例</h3>
+        <div class="prompt-demo" style="border-color:rgba(248,113,113,0.2)">
+          <div class="chat-bubble bubble-user">アプリ作って</div>
+          <div class="chat-bubble bubble-ai">
+            <div class="bubble-label">🤖 AI</div>
+            どんなアプリですか？もう少し詳しく教えてください...（曖昧すぎて進められない）
+          </div>
+          <div class="chat-bubble bubble-user">なんかいい感じに</div>
+          <div class="chat-bubble bubble-ai">
+            <div class="bubble-label">🤖 AI</div>
+            「いい感じ」の定義が難しいので、色・サイズ・機能を教えてもらえますか...
+          </div>
         </div>
       </div>
-      <div>
-        <h3 style="color:var(--green);margin-bottom:1rem;font-size:1rem;">✅ 伝わりやすい例</h3>
-        <div style="background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.15);border-radius:var(--radius-sm);padding:1.2rem;">
-          <p style="font-size:0.88rem;color:var(--text);">"<strong>HTMLファイル1つで動く</strong>、画面中央に赤いドットを表示するアプリを作って。背景は黒で、ドットのサイズをスライダーで変えられるようにして"</p>
-          <p style="font-size:0.88rem;color:var(--text);margin-top:0.75rem;">"ボタンをクリックしても何も起きません。<strong>ChromeのDevToolsのConsoleに「Uncaught TypeError」</strong>と出ています。コードのどこが問題か教えて"</p>
+      <div class="fade-up stagger-2">
+        <h3 style="color:var(--green);margin-bottom:1rem;font-size:0.95rem;display:flex;align-items:center;gap:0.4rem;">✅ 伝わりやすい例</h3>
+        <div class="prompt-demo">
+          <div class="chat-bubble bubble-user" style="text-align:left;">HTMLファイル1本で動く、画面中央に<strong>赤いドット（直径20px）</strong>を表示するアプリ。背景は黒。<strong>スライダーでサイズ変更</strong>、<strong>カラーピッカーで色変更</strong>できるようにして。</div>
+          <div class="chat-bubble bubble-ai">
+            <div class="bubble-label">🤖 AI</div>
+            了解です！index.htmlを作成します。黒背景・中央の赤ドット・サイズスライダー・カラーピッカーを実装します。
+          </div>
         </div>
       </div>
     </div>
 
-    <div style="margin-top:2rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
-      <div class="tool-card" style="flex-direction:column;gap:0.5rem;">
-        <div style="font-size:1.5rem;">📐</div>
-        <strong>具体的に</strong>
-        <p>「いい感じ」より「黒背景・赤い文字・角丸ボタン」のように数字・色・形で指定</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;" class="fade-up">
+      <div class="tool-card" style="flex-direction:column;gap:0.75rem;display:block;padding:1.3rem;">
+        <div style="font-size:1.5rem;margin-bottom:0.4rem;">📐</div>
+        <strong>具体的な数字・色</strong>
+        <p style="color:var(--muted);font-size:0.84rem;margin-top:0.4rem;">「いい感じ」より「黒背景・白文字・角丸12px・パディング16px」のように数値・色で指定する</p>
       </div>
-      <div class="tool-card" style="flex-direction:column;gap:0.5rem;">
-        <div style="font-size:1.5rem;">🎯</div>
+      <div class="tool-card" style="display:block;padding:1.3rem;">
+        <div style="font-size:1.5rem;margin-bottom:0.4rem;">🎯</div>
         <strong>1回1件</strong>
-        <p>一度に多くを頼まず、1つずつ確認しながら進める。複雑な変更ほど小分けに</p>
+        <p style="color:var(--muted);font-size:0.84rem;margin-top:0.4rem;">一度に10個頼まず、1つ確認したら次。特に初心者のうちは小分けにする方が早い</p>
       </div>
-      <div class="tool-card" style="flex-direction:column;gap:0.5rem;">
-        <div style="font-size:1.5rem;">📋</div>
+      <div class="tool-card" style="display:block;padding:1.3rem;">
+        <div style="font-size:1.5rem;margin-bottom:0.4rem;">📋</div>
         <strong>エラーをそのまま貼る</strong>
-        <p>エラーメッセージは丸ごとコピーしてAIに渡す。「動かない」だけより10倍早く解決</p>
+        <p style="color:var(--muted);font-size:0.84rem;margin-top:0.4rem;">「動かない」だけでなくエラーメッセージを丸ごとコピーして渡す。AIが即座に原因を特定できる</p>
       </div>
-      <div class="tool-card" style="flex-direction:column;gap:0.5rem;">
-        <div style="font-size:1.5rem;">🔄</div>
+      <div class="tool-card" style="display:block;padding:1.3rem;">
+        <div style="font-size:1.5rem;margin-bottom:0.4rem;">🔄</div>
         <strong>反復する</strong>
-        <p>完璧を求めない。「ちょっと違う、これをこう直して」と繰り返すのが正しい使い方</p>
+        <p style="color:var(--muted);font-size:0.84rem;margin-top:0.4rem;">「ちょっと違う、これをこう直して」と繰り返すのが正しい使い方。1回で完璧を求めない</p>
       </div>
     </div>
   </div>
 </section>
 <div class="divider"></div>
 
-<!-- ===== ROADMAP ===== -->
+<!-- ===== ROADMAP + FAQ ===== -->
 <section class="section" id="roadmap">
   <div class="container">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start;">
+
+      <!-- Roadmap -->
       <div>
-        <div class="section-eyebrow">Learning Roadmap</div>
-        <div class="section-title">成長の<span class="gradient-text">ロードマップ</span></div>
-        <p style="color:var(--muted);margin-bottom:2rem;">急がなくていい。自分のペースで、ゆっくり確実に。</p>
+        <div class="section-eye">Learning Path</div>
+        <div class="section-title" style="font-size:2rem;">成長の<span class="grad">ロードマップ</span></div>
+        <p style="color:var(--muted);margin-bottom:2.5rem;font-size:0.95rem;">急がなくていい。自分のペースで確実に。</p>
         <div class="roadmap">
-          <div class="rm-item">
-            <div class="rm-dot"></div>
-            <div class="rm-phase">Phase 1 — 今ここ！</div>
+          <div class="rm-item fade-up">
+            <div class="rm-dot" style="background:var(--p1);box-shadow:0 0 0 3px rgba(124,106,255,0.3)"></div>
+            <div class="rm-phase" style="color:var(--green)">▶ Phase 1 — 今ここ！</div>
             <div class="rm-title">環境を整えてAIと話す</div>
-            <div class="rm-desc">VS Code・Cursor・Gitのインストール。AIに「作って」と頼んでコードを動かす体験をする。</div>
-            <div class="rm-tags"><span class="rm-tag">VS Code</span><span class="rm-tag">Cursor</span><span class="rm-tag">Git基礎</span></div>
+            <div class="rm-desc">VS Code・Cursor・Gitのインストール。AIに「作って」と頼んでコードを動かす体験。</div>
+            <div class="rm-skills"><span class="rm-skill">VS Code</span><span class="rm-skill">Cursor</span><span class="rm-skill">Git基礎</span></div>
           </div>
-          <div class="rm-item">
-            <div class="rm-dot"></div>
-            <div class="rm-phase">Phase 2</div>
-            <div class="rm-title">HTML/CSSの基礎を読める</div>
-            <div class="rm-desc">AIが書いたコードを「読んで理解できる」ようになる。タグ・セレクタ・プロパティの役割を把握。</div>
-            <div class="rm-tags"><span class="rm-tag">HTML5</span><span class="rm-tag">CSS3</span><span class="rm-tag">Flexbox</span></div>
+          <div class="rm-item fade-up stagger-1">
+            <div class="rm-dot" style="background:var(--p1)"></div>
+            <div class="rm-phase" style="color:var(--p1)">Phase 2</div>
+            <div class="rm-title">HTML/CSSを読める</div>
+            <div class="rm-desc">AIが書いたコードを読んで理解できるようになる。タグ・セレクタ・プロパティの役割を把握。</div>
+            <div class="rm-skills"><span class="rm-skill">HTML5</span><span class="rm-skill">CSS3</span><span class="rm-skill">Flexbox</span></div>
           </div>
-          <div class="rm-item">
-            <div class="rm-dot p2"></div>
-            <div class="rm-phase p2">Phase 3</div>
+          <div class="rm-item fade-up stagger-2">
+            <div class="rm-dot" style="background:var(--p2)"></div>
+            <div class="rm-phase" style="color:var(--p2)">Phase 3</div>
             <div class="rm-title">JavaScriptで動きをつける</div>
-            <div class="rm-desc">変数・関数・イベントリスナー・DOM操作。「クリックしたら何かする」コードが書けるようになる。</div>
-            <div class="rm-tags"><span class="rm-tag">JavaScript</span><span class="rm-tag">DOM操作</span><span class="rm-tag">localStorage</span></div>
+            <div class="rm-desc">変数・関数・イベントリスナー。「クリックしたら何かする」コードが書けるようになる。</div>
+            <div class="rm-skills"><span class="rm-skill">JavaScript</span><span class="rm-skill">DOM操作</span><span class="rm-skill">localStorage</span></div>
           </div>
-          <div class="rm-item">
-            <div class="rm-dot p2"></div>
-            <div class="rm-phase p2">Phase 4</div>
+          <div class="rm-item fade-up stagger-3">
+            <div class="rm-dot" style="background:var(--p2)"></div>
+            <div class="rm-phase" style="color:var(--p2)">Phase 4</div>
             <div class="rm-title">GitHubで公開・共有</div>
             <div class="rm-desc">作ったアプリをGitHubに上げてGitHub Pagesで公開。URLを誰かに送って使ってもらう。</div>
-            <div class="rm-tags"><span class="rm-tag">GitHub</span><span class="rm-tag">GitHub Pages</span><span class="rm-tag">デプロイ</span></div>
+            <div class="rm-skills"><span class="rm-skill">GitHub</span><span class="rm-skill">GitHub Pages</span></div>
           </div>
-          <div class="rm-item">
-            <div class="rm-dot p3"></div>
-            <div class="rm-phase p3">Phase 5</div>
+          <div class="rm-item fade-up stagger-4">
+            <div class="rm-dot" style="background:var(--p3)"></div>
+            <div class="rm-phase" style="color:var(--p3)">Phase 5+</div>
             <div class="rm-title">フレームワークへの挑戦</div>
-            <div class="rm-desc">React・Vue などのフレームワークでより複雑なアプリに挑戦。AIとの協力でさらに加速。</div>
-            <div class="rm-tags"><span class="rm-tag">React</span><span class="rm-tag">Node.js</span><span class="rm-tag">API連携</span></div>
-          </div>
-          <div class="rm-item">
-            <div class="rm-dot gray"></div>
-            <div class="rm-phase gray">Phase ∞</div>
-            <div class="rm-title">作りたいものを作り続ける</div>
-            <div class="rm-desc">ゴールはない。作りたいアイデアがあれば、それが次のプロジェクト。AIと一緒に学び続けよう。</div>
+            <div class="rm-desc">React・Vue などより複雑なアプリへ。AIとの協力でさらに加速できる。</div>
+            <div class="rm-skills"><span class="rm-skill">React</span><span class="rm-skill">Node.js</span><span class="rm-skill">API連携</span></div>
           </div>
         </div>
       </div>
 
-      <!-- 右: FAQ -->
+      <!-- FAQ -->
       <div id="faq">
-        <div class="section-eyebrow">FAQ</div>
-        <div class="section-title" style="font-size:1.8rem;">よくある<span class="gradient-text">疑問</span></div>
-        <br>
-        <div class="faq-item">
-          <button class="faq-q" onclick="toggleFaq(this)">数学や英語ができなくても大丈夫？<span class="faq-arrow">▼</span></button>
-          <div class="faq-a">全く問題ありません。AIがコードを書いてくれるので、あなたは「何を作りたいか」を日本語で伝えるだけです。英語のエラーメッセージもそのままAIに貼り付ければ解説してくれます。</div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-q" onclick="toggleFaq(this)">どれくらいの期間で作れるようになる？<span class="faq-arrow">▼</span></button>
-          <div class="faq-a">AIを使えば最初のアプリは「今日中」に動かせます。ただし自分でコードを理解して書けるようになるには数ヶ月かかります。でも焦らなくてOK — AIと一緒に作りながら学ぶのが一番楽しく確実です。</div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-q" onclick="toggleFaq(this)">CursorとVS Codeどっちを使えばいい？<span class="faq-arrow">▼</span></button>
-          <div class="faq-a">初心者には <strong>Cursor</strong> をおすすめします。VS Codeベースなので操作感は同じですが、AIとのチャットが統合されており「コードを書かなくてもアプリが作れる」体験が得られます。慣れてきたらVS CodeにもAI拡張機能（GitHub Copilot等）を入れて使い比べてみましょう。</div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-q" onclick="toggleFaq(this)">作ったアプリは本当に無料で公開できる？<span class="faq-arrow">▼</span></button>
-          <div class="faq-a">HTMLファイルのみで動くWebアプリなら、GitHub Pages を使って完全無料で公開できます。独自ドメイン（〇〇.com）は年間1000円程度かかりますが、github.io のURLなら永久無料です。</div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-q" onclick="toggleFaq(this)">AIが書いたコードは著作権的に大丈夫？<span class="faq-arrow">▼</span></button>
-          <div class="faq-a">自分で使う分・公開する分には基本的に問題ありません。ただし商業利用や他者への販売を考える場合は、使用するAIサービスの利用規約を確認することをおすすめします。個人学習・個人利用の範囲では気にしなくてOKです。</div>
-        </div>
-        <div class="faq-item">
-          <button class="faq-q" onclick="toggleFaq(this)">エラーが出て動かない時はどうする？<span class="faq-arrow">▼</span></button>
-          <div class="faq-a">エラーメッセージを丸ごとコピーして、AIに「このエラーが出て動きません」と貼り付けるだけでOKです。AIが原因と解決策を教えてくれます。「エラーを自分で解決しなければ」という焦りは不要。AIはあなたの無限のデバッグパートナーです。</div>
+        <div class="section-eye">FAQ</div>
+        <div class="section-title" style="font-size:2rem;">よくある<span class="grad2">疑問</span></div>
+        <p style="color:var(--muted);margin-bottom:2rem;font-size:0.95rem;">不安を全部解消しよう。</p>
+        <div>
+          <div class="faq-item">
+            <button class="faq-q" onclick="toggleFaq(this);playSound('click')">数学や英語ができなくても大丈夫？<span class="faq-icon">＋</span></button>
+            <div class="faq-a">全く問題ありません。AIがコードを書いてくれるので、あなたは「何を作りたいか」を日本語で伝えるだけです。英語のエラーメッセージもそのままAIに貼り付ければ解説してくれます。</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" onclick="toggleFaq(this);playSound('click')">どれくらいで作れるようになる？<span class="faq-icon">＋</span></button>
+            <div class="faq-a">AIを使えば最初のアプリは<strong>今日中</strong>に動かせます。自分でコードを理解して書けるようになるには数ヶ月かかりますが、焦らなくていい。AIと一緒に作りながら学ぶのが最も楽しく確実です。</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" onclick="toggleFaq(this);playSound('click')">CursorとVS Codeどっちを使えばいい？<span class="faq-icon">＋</span></button>
+            <div class="faq-a">初心者には<strong>Cursor</strong>をおすすめします。VS Codeベースで操作感は同じですが、AIとのチャットが統合されており「コードを書かなくてもアプリが作れる」体験が得られます。</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" onclick="toggleFaq(this);playSound('click')">本当に無料で公開できる？<span class="faq-icon">＋</span></button>
+            <div class="faq-a">HTMLファイルのみで動くWebアプリなら、GitHub Pages で完全無料で公開できます。独自ドメインは年間1000円程度かかりますが、github.io のURLなら永久無料です。</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" onclick="toggleFaq(this);playSound('click')">エラーが出て動かない時は？<span class="faq-icon">＋</span></button>
+            <div class="faq-a">エラーメッセージを丸ごとコピーして「このエラーが出て動きません」とAIに貼り付けるだけ。AIが原因と解決策を教えてくれます。「エラーを自分で解決しなければ」という焦りは不要です。</div>
+          </div>
+          <div class="faq-item">
+            <button class="faq-q" onclick="toggleFaq(this);playSound('click')">このサイト自体もAIで作った？<span class="faq-icon">＋</span></button>
+            <div class="faq-a">はい！このサイトはClaude（AI）と協力して作りました。HTML・CSS・JavaScriptで書かれており、あなたにもまったく同じことができます。それを証明するためのサイトでもあります。</div>
+          </div>
         </div>
       </div>
     </div>
@@ -590,12 +901,13 @@ footer { background:var(--bg2); border-top:1px solid var(--border); padding:3rem
 <!-- ===== CTA ===== -->
 <section style="padding:6rem 0;background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(124,106,255,0.12),transparent),var(--bg2);text-align:center;">
   <div class="container">
-    <div style="font-size:3rem;margin-bottom:1rem;">🚀</div>
-    <h2 style="font-size:clamp(1.8rem,4vw,2.5rem);font-weight:800;margin-bottom:1rem;">今日から始めよう</h2>
-    <p style="color:var(--muted);max-width:500px;margin:0 auto 2rem;">完璧な準備は不要。Cursor をインストールして「Hello World と表示して」と打つだけ。それだけでプログラマーの第一歩を踏み出せます。</p>
-    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
-      <a href="https://cursor.com/" target="_blank" class="btn btn-primary">💙 Cursor をダウンロード</a>
-      <a href="https://claude.ai/" target="_blank" class="btn btn-outline">🤖 Claude を開く</a>
+    <div style="font-size:4rem;margin-bottom:1rem;" class="fade-up">🚀</div>
+    <h2 class="section-title fade-up">今日から<span class="grad">開発者</span>になろう</h2>
+    <p style="color:var(--muted);max-width:520px;margin:0 auto 2.5rem;font-size:1.05rem;" class="fade-up">完璧な準備は不要。Cursor をインストールして「Hello World と表示して」と打つだけ。それだけでプログラマーの第一歩を踏み出せます。</p>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;" class="fade-up">
+      <a href="https://cursor.com/" target="_blank" class="btn btn-primary" onclick="playSound('chime')">💙 Cursor をダウンロード</a>
+      <a href="https://claude.ai/" target="_blank" class="btn btn-outline" onclick="playSound('click')">🤖 Claude を開く</a>
+      <button class="btn btn-green" onclick="openNarrator();playSound('chime')">🎙️ もう一度聴く</button>
     </div>
   </div>
 </section>
@@ -603,10 +915,10 @@ footer { background:var(--bg2); border-top:1px solid var(--border); padding:3rem
 <!-- FOOTER -->
 <footer>
   <div class="container">
-    <div class="footer-inner">
-      <div class="footer-brand">
-        <div style="font-size:1.1rem;font-weight:800;">🚀 <span class="gradient-text">AI Dev Start</span></div>
-        <p>PC初心者からAI時代のアプリ開発者へ。無料・日本語・実践的なガイド。</p>
+    <div class="footer-grid">
+      <div>
+        <div style="font-size:1.2rem;font-weight:900;margin-bottom:0.75rem;">🚀 <span class="grad">AI Dev Start</span></div>
+        <p style="color:var(--muted);font-size:0.87rem;line-height:1.8;">PC初心者からAI時代のアプリ開発者へ。<br>このガイド自体もAIと協力して作られました。</p>
       </div>
       <div class="footer-col">
         <h4>ツール</h4>
@@ -614,24 +926,46 @@ footer { background:var(--bg2); border-top:1px solid var(--border); padding:3rem
         <a href="https://code.visualstudio.com/" target="_blank">VS Code</a>
         <a href="https://github.com/" target="_blank">GitHub</a>
         <a href="https://claude.ai/" target="_blank">Claude AI</a>
+        <a href="https://windsurf.com/" target="_blank">Windsurf</a>
         <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>
       </div>
       <div class="footer-col">
         <h4>学習リソース</h4>
-        <a href="https://developer.mozilla.org/ja/" target="_blank">MDN Web Docs（日本語）</a>
-        <a href="https://ja.javascript.info/" target="_blank">JavaScript.info（日本語）</a>
-        <a href="https://flexboxfroggy.com/#ja" target="_blank">Flexbox Froggy</a>
-        <a href="https://cssgridgarden.com/#ja" target="_blank">Grid Garden</a>
-        <a href="https://git-scm.com/book/ja/v2" target="_blank">Pro Git（日本語）</a>
+        <a href="https://developer.mozilla.org/ja/" target="_blank">MDN Web Docs</a>
+        <a href="https://ja.javascript.info/" target="_blank">JavaScript.info</a>
+        <a href="https://flexboxfroggy.com/#ja" target="_blank">Flexbox Froggy（ゲーム）</a>
+        <a href="https://cssgridgarden.com/#ja" target="_blank">Grid Garden（ゲーム）</a>
+        <a href="https://git-scm.com/book/ja/v2" target="_blank">Pro Git 日本語版</a>
       </div>
     </div>
     <div class="footer-bottom">
-      Made with 💜 — このガイド自体もAIと協力して作られました。あなたにもできます！
+      <span>Made with 💜 AI × Human collaboration</span>
+      <span>このサイトをシェアして仲間を増やそう 🚀</span>
     </div>
   </div>
 </footer>
 
 <script>
+/* ================================================
+   1. 読書進捗バー
+   ================================================ */
+window.addEventListener('scroll', () => {
+  const doc = document.documentElement;
+  const scrolled = doc.scrollTop / (doc.scrollHeight - doc.clientHeight);
+  document.getElementById('reading-bar').style.transform = `scaleX(${scrolled})`;
+});
+
+/* ================================================
+   2. スクロールアニメーション (IntersectionObserver)
+   ================================================ */
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.12 });
+document.querySelectorAll('.fade-up').forEach(el => io.observe(el));
+
+/* ================================================
+   3. FAQ アコーディオン
+   ================================================ */
 function toggleFaq(btn) {
   const item = btn.parentElement;
   const isOpen = item.classList.contains('open');
@@ -639,25 +973,348 @@ function toggleFaq(btn) {
   if (!isOpen) item.classList.add('open');
 }
 
-function cmdCopy(btn) {
-  const text = btn.closest('.cmd-block').querySelector('.cmd-body').innerText
-    .replace(/PS> /g, '').replace(/# .+/g, '').trim();
-  navigator.clipboard.writeText(text).then(() => {
-    btn.textContent = '✅ コピー完了';
-    setTimeout(() => btn.textContent = 'コピー', 2000);
+/* ================================================
+   4. チェックリスト
+   ================================================ */
+function toggleCheck(item) {
+  item.classList.toggle('done');
+  updateCheckProgress();
+}
+function updateCheckProgress() {
+  const total = document.querySelectorAll('.cl-item').length;
+  const done = document.querySelectorAll('.cl-item.done').length;
+  document.getElementById('check-count').textContent = done;
+  document.getElementById('check-bar').style.width = (done / total * 100) + '%';
+}
+
+/* ================================================
+   5. コマンドコピー
+   ================================================ */
+function copyCmd(btn) {
+  const raw = btn.closest('.cmd-block').querySelector('.cmd-body').innerText;
+  const clean = raw.split('\n').map(l => l.replace(/^PS> /,'').replace(/^#.*/,'')).filter(l=>l.trim()).join('\n');
+  navigator.clipboard.writeText(clean).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✅ コピー完了!';
+    playSound('check');
+    setTimeout(() => btn.textContent = orig, 2500);
   });
 }
 
-// スクロールアニメーション
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if (e.isIntersecting) { e.target.style.opacity=1; e.target.style.transform='translateY(0)'; } });
-}, { threshold:0.1 });
+/* ================================================
+   6. YouTube 動画ロード
+   ================================================ */
+function loadVideo(thumb, videoId, containerId) {
+  if (thumb.dataset.loaded === 'true') return;
+  thumb.dataset.loaded = 'true';
+  const container = document.getElementById(containerId);
+  container.innerHTML = `<div class="video-embed"><iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
+  thumb.style.display = 'none';
+  playSound('click');
+}
 
-document.querySelectorAll('.step-card, .tool-card').forEach(el => {
-  el.style.opacity = '0';
-  el.style.transform = 'translateY(20px)';
-  el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-  observer.observe(el);
+/* ================================================
+   7. コンフェッティ エフェクト
+   ================================================ */
+function confetti() {
+  const colors = ['#7c6aff','#ff6aac','#3de8c8','#fbbf24','#4ade80'];
+  for (let i = 0; i < 60; i++) {
+    const el = document.createElement('div');
+    el.style.cssText = `position:fixed;top:50%;left:50%;width:8px;height:8px;border-radius:2px;pointer-events:none;z-index:9999;background:${colors[i%colors.length]};animation:confetti-fly 1.2s ease-out forwards;animation-delay:${Math.random()*0.3}s;`;
+    const angle = (i / 60) * 360;
+    const dist = 80 + Math.random() * 200;
+    el.style.setProperty('--tx', Math.cos(angle*Math.PI/180)*dist + 'px');
+    el.style.setProperty('--ty', Math.sin(angle*Math.PI/180)*dist + 'px');
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1500);
+  }
+}
+// コンフェッティ keyframe を動的追加
+const confettiStyle = document.createElement('style');
+confettiStyle.textContent = `@keyframes confetti-fly { 0%{opacity:1;transform:translate(0,0) rotate(0deg) scale(1)} 100%{opacity:0;transform:translate(var(--tx),var(--ty)) rotate(720deg) scale(0)} }`;
+document.head.appendChild(confettiStyle);
+
+/* ================================================
+   8. WEB AUDIO API — 効果音エンジン
+   ================================================ */
+let audioCtx = null;
+let soundEnabled = true;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playSound(type) {
+  if (!soundEnabled) return;
+  try {
+    const ctx = getAudioCtx();
+    const sounds = {
+      click: () => { // UIクリック音
+        const o = ctx.createOscillator(); const g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.frequency.setValueAtTime(880, ctx.currentTime);
+        o.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.08);
+        g.gain.setValueAtTime(0.15, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+        o.start(); o.stop(ctx.currentTime + 0.1);
+      },
+      check: () => { // チェックボックス音
+        [523, 659, 784].forEach((freq, i) => {
+          const o = ctx.createOscillator(); const g = ctx.createGain();
+          o.type = 'sine'; o.connect(g); g.connect(ctx.destination);
+          o.frequency.value = freq;
+          const t = ctx.currentTime + i * 0.07;
+          g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.15, t + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+          o.start(t); o.stop(t + 0.15);
+        });
+      },
+      chime: () => { // 通知チャイム
+        const freqs = [523, 659, 784, 1047];
+        freqs.forEach((freq, i) => {
+          const o = ctx.createOscillator(); const g = ctx.createGain();
+          o.type = 'sine'; o.connect(g); g.connect(ctx.destination);
+          o.frequency.value = freq;
+          const t = ctx.currentTime + i * 0.12;
+          g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.2, t + 0.03);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+          o.start(t); o.stop(t + 0.5);
+        });
+      },
+      success: () => { // 成功ファンファーレ
+        const melody = [523, 659, 784, 1047, 1319];
+        melody.forEach((freq, i) => {
+          const o = ctx.createOscillator(); const g = ctx.createGain();
+          o.type = 'triangle'; o.connect(g); g.connect(ctx.destination);
+          o.frequency.value = freq;
+          const t = ctx.currentTime + i * 0.1;
+          g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.25, t + 0.03);
+          g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+          o.start(t); o.stop(t + 0.35);
+        });
+      },
+      step: () => { // ステップ選択音
+        const o = ctx.createOscillator(); const g = ctx.createGain();
+        o.type = 'triangle'; o.connect(g); g.connect(ctx.destination);
+        o.frequency.setValueAtTime(660, ctx.currentTime);
+        o.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
+        g.gain.setValueAtTime(0.12, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+        o.start(); o.stop(ctx.currentTime + 0.15);
+      },
+    };
+    if (sounds[type]) sounds[type]();
+  } catch(e) { /* ブラウザがブロックした場合は無視 */ }
+}
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  const btn = document.getElementById('sound-toggle');
+  btn.textContent = soundEnabled ? '🔊' : '🔇';
+  btn.classList.toggle('muted', !soundEnabled);
+}
+
+/* ================================================
+   9. WEB AUDIO API — LoFi BGM ジェネレーター
+   ================================================ */
+let lofiNodes = [];
+let lofiGainNode = null;
+let lofiPlaying = false;
+let vizInterval = null;
+
+function playLofi() {
+  if (lofiPlaying) return;
+  lofiPlaying = true;
+  const ctx = getAudioCtx();
+  lofiGainNode = ctx.createGain();
+  lofiGainNode.gain.value = 0.3;
+  lofiGainNode.connect(ctx.destination);
+
+  // コード進行: Am - F - C - G
+  const chords = [
+    [220, 261.6, 329.6],  // Am
+    [174.6, 220, 261.6],  // F
+    [130.8, 164.8, 196],  // C
+    [196, 246.9, 293.7],  // G
+  ];
+
+  function playChord(idx) {
+    if (!lofiPlaying) return;
+    const chord = chords[idx % chords.length];
+    chord.forEach(freq => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      const lfo = ctx.createOscillator();
+      const lfoGain = ctx.createGain();
+      // LFO でわずかなビブラート
+      lfo.frequency.value = 4;
+      lfoGain.gain.value = 3;
+      lfo.connect(lfoGain); lfoGain.connect(o.frequency);
+      o.type = 'triangle'; o.frequency.value = freq;
+      o.connect(g); g.connect(lofiGainNode);
+      const t = ctx.currentTime;
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.15, t + 0.3);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 1.8);
+      lfo.start(t); o.start(t); o.stop(t + 2);
+      lofiNodes.push(o, lfo);
+    });
+    setTimeout(() => playChord(idx + 1), 2000);
+  }
+  playChord(0);
+
+  // ビジュアライザー更新
+  const bars = document.querySelectorAll('.sound-bar');
+  vizInterval = setInterval(() => {
+    bars.forEach(bar => {
+      bar.style.height = (4 + Math.random() * 18) + 'px';
+      bar.style.opacity = 0.5 + Math.random() * 0.5;
+    });
+  }, 120);
+}
+
+function stopLofi() {
+  lofiPlaying = false;
+  lofiNodes.forEach(n => { try { n.stop(); } catch(e){} });
+  lofiNodes = [];
+  if (vizInterval) { clearInterval(vizInterval); vizInterval = null; }
+  const bars = document.querySelectorAll('.sound-bar');
+  bars.forEach(b => { b.style.height = '4px'; b.style.opacity = '0.5'; });
+}
+
+function setBgmVol(val) {
+  if (lofiGainNode) lofiGainNode.gain.value = val / 100 * 0.6;
+  document.getElementById('bgm-vol-label').textContent = val + '%';
+}
+
+/* ================================================
+   10. WEB SPEECH API — AI音声ナレーター
+   ================================================ */
+const NARRATIONS = [
+  {
+    section: 'ステップ1: VS Codeのインストール',
+    text: 'まず最初に、VS Codeという無料のコードエディタをインストールします。VS Codeは世界中のプログラマーが使っている業界標準のツールです。code.visualstudio.com にアクセスして、Windowsのダウンロードボタンをクリックするだけです。インストーラーを実行して、次へを押し続ければ完了します。難しいことは何もありません。'
+  },
+  {
+    section: 'ステップ2: CursorのインストールとAIの使い方',
+    text: '次に、Cursorというエディタをインストールします。CursorはVS Codeを基にしたエディタで、AIとのチャット機能が組み込まれています。cursor.comからダウンロードして、Googleアカウントでサインインするだけです。インストール後、新しいファイルを作り、AIチャット画面に「index.htmlというファイルを作って、こんにちはと表示して」と日本語で打ち込んでみましょう。AIがコードを自動で生成してくれます。'
+  },
+  {
+    section: 'ステップ3: GitとGitHubの設定',
+    text: 'Gitは、コードの変更履歴を保存するシステムです。ゲームのセーブデータと同じイメージです。git-scm.comからインストールして、PowerShellでgit config コマンドを実行してユーザー名とメールアドレスを設定します。GitHubはコードをクラウドに保存できるサービスです。github.comでアカウントを作れば、無料で使えます。'
+  },
+  {
+    section: 'ステップ4: GitHub Pagesで公開する',
+    text: '作ったアプリをインターネットに公開するには、GitHub Pagesを使います。GitHubでリポジトリを作り、作ったファイルをアップロードした後、Settings、Pages、Sourceでmainブランチを選択して保存するだけです。数分後に、あなただけのURLでアプリが公開されます。そのURLを友人に送れば、すぐに使ってもらえます。完全に無料です。'
+  },
+  {
+    section: 'AIへの上手な伝え方',
+    text: 'AIに伝える時のコツをお話しします。まず、具体的に伝えることが大切です。「いい感じにして」ではなく、「黒背景で、中央に赤いドット、スライダーでサイズ変更できるようにして」というように、数字や色を使って具体的に指定しましょう。次に、1回に1つのことを頼むようにしましょう。一度にたくさん頼むより、1つ確認してから次に進む方が早く完成します。エラーが出た時は、エラーメッセージをそのままコピーしてAIに貼り付けるだけでOKです。'
+  },
+  {
+    section: 'まとめ: あなたもできる',
+    text: 'このガイドを見ているあなたへ。プログラミングの知識は一切必要ありません。AIが代わりにコードを書いてくれます。あなたがすることは、作りたいものを日本語で伝えるだけです。このサイト自体も、AIと協力して作られました。今すぐCursorをダウンロードして、「ハローワールドと表示するHTMLファイルを作って」と打ち込んでみてください。それだけで、あなたは今日からアプリ開発者です。'
+  }
+];
+
+let narratorIdx = 0;
+let narratorUtterance = null;
+let narratorSpeaking = false;
+
+function openNarrator() {
+  document.getElementById('narrator-panel').classList.add('open');
+  document.getElementById('narrator-fab').classList.add('panel-open');
+  updateNarratorUI();
+  playSound('chime');
+}
+function closeNarrator() {
+  narratorStop();
+  document.getElementById('narrator-panel').classList.remove('open');
+  document.getElementById('narrator-fab').classList.remove('panel-open');
+}
+function updateNarratorUI() {
+  const n = NARRATIONS[narratorIdx];
+  document.getElementById('np-section').textContent = `${narratorIdx + 1} / ${NARRATIONS.length}: ${n.section}`;
+  document.getElementById('np-text').textContent = n.text.substring(0, 80) + '...';
+  document.getElementById('np-progress').style.width = ((narratorIdx + 1) / NARRATIONS.length * 100) + '%';
+}
+function narratorSection(idx) {
+  narratorStop();
+  narratorIdx = idx;
+  updateNarratorUI();
+  openNarrator();
+}
+function narratorPlay() {
+  if (!('speechSynthesis' in window)) {
+    alert('このブラウザは音声合成に対応していません。Chrome または Edge をお試しください。');
+    return;
+  }
+  narratorStop();
+  const n = NARRATIONS[narratorIdx];
+  document.getElementById('np-text').textContent = n.text.substring(0, 80) + '...';
+  narratorUtterance = new SpeechSynthesisUtterance(n.text);
+  narratorUtterance.lang = 'ja-JP';
+  narratorUtterance.rate = 0.92;
+  narratorUtterance.pitch = 1.05;
+
+  // 日本語音声を優先選択
+  const voices = window.speechSynthesis.getVoices();
+  const jaVoice = voices.find(v => v.lang.startsWith('ja') && v.name.includes('Google'))
+                || voices.find(v => v.lang.startsWith('ja'));
+  if (jaVoice) narratorUtterance.voice = jaVoice;
+
+  narratorUtterance.onstart = () => {
+    narratorSpeaking = true;
+    document.getElementById('np-play-btn').textContent = '⏸ 再生中';
+    document.getElementById('np-play-btn').classList.add('active');
+    document.getElementById('nav-narrator-btn').classList.add('speaking');
+    document.getElementById('nav-narrator-btn').textContent = '🎙️ 読み上げ中';
+  };
+  narratorUtterance.onend = () => {
+    narratorSpeaking = false;
+    document.getElementById('np-play-btn').textContent = '▶ 読む';
+    document.getElementById('np-play-btn').classList.remove('active');
+    document.getElementById('nav-narrator-btn').classList.remove('speaking');
+    document.getElementById('nav-narrator-btn').textContent = '🎙️ AI音声';
+    if (narratorIdx < NARRATIONS.length - 1) {
+      setTimeout(() => { narratorIdx++; updateNarratorUI(); }, 800);
+    }
+  };
+  window.speechSynthesis.speak(narratorUtterance);
+}
+function narratorStop() {
+  window.speechSynthesis?.cancel();
+  narratorSpeaking = false;
+  const btn = document.getElementById('np-play-btn');
+  if (btn) { btn.textContent = '▶ 読む'; btn.classList.remove('active'); }
+  const navBtn = document.getElementById('nav-narrator-btn');
+  if (navBtn) { navBtn.classList.remove('speaking'); navBtn.textContent = '🎙️ AI音声'; }
+}
+function narratorNext() {
+  narratorStop();
+  narratorIdx = (narratorIdx + 1) % NARRATIONS.length;
+  updateNarratorUI();
+  playSound('click');
+}
+// 音声リスト取得（Chrome は遅延することがある）
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = () => {};
+}
+
+/* ================================================
+   11. ナビスクロール効果
+   ================================================ */
+window.addEventListener('scroll', () => {
+  const nav = document.getElementById('navbar');
+  if (window.scrollY > 50) { nav.style.background = 'rgba(7,7,14,0.97)'; }
+  else { nav.style.background = 'rgba(7,7,14,0.85)'; }
+});
+
+/* ================================================
+   12. ページ読み込み完了エフェクト
+   ================================================ */
+window.addEventListener('load', () => {
+  setTimeout(() => playSound('chime'), 600);
 });
 </script>
 </body>
