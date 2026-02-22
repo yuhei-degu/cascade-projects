@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🚀 AI×コード入門 | PC初心者からアプリ開発者へ</title>
+<meta name="description" content="AIとモダンエディタを使って、プログラミング未経験でも自分だけのアプリが作れるようになる実践ガイド">
+<style>
+:root {
+  --bg: #08080f; --bg2: #0f0f1a; --card: #14141f;
+  --card2: #1a1a2e; --border: rgba(255,255,255,0.06);
+  --text: #e8e8f5; --muted: #9090b8; --faint: #555580;
+  --p1: #7c6aff; --p2: #ff6aac; --p3: #4adebb;
+  --gold: #fbbf24; --green: #4ade80; --red: #f87171;
+  --radius: 16px; --radius-sm: 10px;
+  --shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; line-height:1.7; overflow-x:hidden; }
+a { color:var(--p1); text-decoration:none; }
+a:hover { text-decoration:underline; }
+img { max-width:100%; }
+
+/* ===== ユーティリティ ===== */
+.container { max-width:1080px; margin:0 auto; padding:0 1.5rem; }
+.gradient-text { background:linear-gradient(135deg,var(--p1),var(--p2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.gradient-text-2 { background:linear-gradient(135deg,var(--p3),var(--p1)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.section { padding:5rem 0; }
+.section-eyebrow { font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:var(--p1); margin-bottom:0.75rem; }
+.section-title { font-size:clamp(1.8rem,4vw,2.8rem); font-weight:800; line-height:1.2; margin-bottom:1rem; }
+.section-sub { color:var(--muted); font-size:1.05rem; max-width:600px; margin-bottom:3rem; }
+.divider { height:1px; background:var(--border); margin:0; }
+
+/* ===== NAVBAR ===== */
+.navbar {
+  position:sticky; top:0; z-index:999;
+  background:rgba(8,8,15,0.85); backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  padding:0.9rem 0;
+}
+.nav-inner { display:flex; align-items:center; gap:2rem; }
+.nav-logo { font-size:1.1rem; font-weight:800; white-space:nowrap; }
+.nav-links { display:flex; gap:1.5rem; margin-left:auto; }
+.nav-links a { color:var(--muted); font-size:0.9rem; transition:color 0.2s; }
+.nav-links a:hover { color:var(--text); text-decoration:none; }
+.nav-cta { background:var(--p1); color:white !important; padding:0.4rem 1rem; border-radius:8px; font-weight:600; transition:filter 0.2s !important; }
+.nav-cta:hover { filter:brightness(1.15); text-decoration:none !important; }
+
+/* ===== HERO ===== */
+.hero {
+  min-height:92vh; display:flex; align-items:center;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(124,106,255,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(255,106,172,0.08) 0%, transparent 60%),
+    var(--bg);
+  padding:5rem 0;
+}
+.hero-inner { display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center; }
+.hero-badge { display:inline-flex; align-items:center; gap:0.5rem; background:rgba(124,106,255,0.1); border:1px solid rgba(124,106,255,0.25); color:var(--p1); padding:0.35rem 0.9rem; border-radius:20px; font-size:0.8rem; font-weight:600; margin-bottom:1.5rem; }
+.hero h1 { font-size:clamp(2.2rem,5vw,3.5rem); font-weight:900; line-height:1.15; margin-bottom:1.2rem; }
+.hero-sub { color:var(--muted); font-size:1.1rem; margin-bottom:2rem; line-height:1.8; }
+.hero-btns { display:flex; gap:1rem; flex-wrap:wrap; }
+.btn { display:inline-flex; align-items:center; gap:0.4rem; padding:0.75rem 1.5rem; border-radius:10px; font-weight:700; font-size:0.95rem; cursor:pointer; border:none; transition:all 0.2s; text-decoration:none !important; }
+.btn-primary { background:linear-gradient(135deg,var(--p1),#9b8fff); color:white; box-shadow:0 4px 20px rgba(124,106,255,0.35); }
+.btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(124,106,255,0.5); }
+.btn-outline { background:rgba(255,255,255,0.04); color:var(--text); border:1px solid var(--border); }
+.btn-outline:hover { border-color:rgba(124,106,255,0.5); background:rgba(124,106,255,0.06); }
+
+/* ヒーロー右側のビジュアル */
+.hero-visual { position:relative; }
+.code-window { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); }
+.code-window-bar { background:rgba(255,255,255,0.04); padding:0.75rem 1rem; display:flex; gap:0.4rem; align-items:center; }
+.dot { width:12px; height:12px; border-radius:50%; }
+.code-window-body { padding:1.2rem 1.5rem; font-family:'Cascadia Code','Consolas',monospace; font-size:0.82rem; line-height:1.9; }
+.c-keyword { color:#c792ea; } .c-fn { color:#82aaff; } .c-string { color:#c3e88d; }
+.c-comment { color:#546e7a; font-style:italic; } .c-num { color:#f78c6c; }
+.floating-badge { position:absolute; background:var(--card2); border:1px solid var(--border); border-radius:10px; padding:0.5rem 0.9rem; font-size:0.8rem; font-weight:600; box-shadow:var(--shadow); display:flex; align-items:center; gap:0.4rem; }
+
+/* ===== ステップ ===== */
+.steps-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1.5rem; }
+.step-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:1.8rem 1.5rem; position:relative; transition:border-color 0.2s, transform 0.2s; }
+.step-card:hover { border-color:rgba(124,106,255,0.3); transform:translateY(-4px); }
+.step-num { font-size:3rem; font-weight:900; line-height:1; margin-bottom:1rem; opacity:0.15; font-variant-numeric:tabular-nums; }
+.step-icon { font-size:2rem; margin-bottom:0.75rem; }
+.step-card h3 { font-size:1.05rem; font-weight:700; margin-bottom:0.5rem; }
+.step-card p { color:var(--muted); font-size:0.88rem; }
+.step-connector { display:none; }
+
+/* ===== ツール紹介 ===== */
+.tools-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1.5rem; }
+.tool-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:1.8rem; display:flex; gap:1.2rem; transition:border-color 0.2s; }
+.tool-card:hover { border-color:rgba(124,106,255,0.3); }
+.tool-icon-wrap { width:52px; height:52px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.6rem; flex-shrink:0; }
+.tool-card h3 { font-size:1.05rem; font-weight:700; margin-bottom:0.3rem; }
+.tool-card p { color:var(--muted); font-size:0.87rem; margin-bottom:0.75rem; }
+.tool-tag { display:inline-block; font-size:0.72rem; font-weight:600; padding:0.2rem 0.55rem; border-radius:5px; margin-right:0.3rem; margin-bottom:0.3rem; }
+.tag-free { background:rgba(74,222,128,0.12); color:var(--green); }
+.tag-ai { background:rgba(124,106,255,0.12); color:var(--p1); }
+.tag-must { background:rgba(251,191,36,0.12); color:var(--gold); }
+.tag-optional { background:rgba(255,255,255,0.06); color:var(--muted); }
+</style>
+</head>
+<body>
+
+<style>
+/* ===== チェックリスト ===== */
+.checklist { list-style:none; display:flex; flex-direction:column; gap:0.75rem; }
+.checklist li { display:flex; align-items:flex-start; gap:0.75rem; background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:1rem 1.2rem; }
+.check-icon { font-size:1.1rem; flex-shrink:0; margin-top:0.1rem; }
+.check-text { font-size:0.92rem; }
+.check-text strong { display:block; margin-bottom:0.2rem; }
+.check-text span { color:var(--muted); font-size:0.85rem; }
+
+/* ===== コマンドブロック ===== */
+.cmd-block { background:#0d1117; border:1px solid #30363d; border-radius:var(--radius-sm); overflow:hidden; margin-bottom:1rem; }
+.cmd-header { background:rgba(255,255,255,0.03); padding:0.5rem 1rem; font-size:0.75rem; color:var(--muted); display:flex; justify-content:space-between; align-items:center; }
+.cmd-copy { background:rgba(124,106,255,0.15); color:var(--p1); border:none; padding:0.2rem 0.6rem; border-radius:4px; cursor:pointer; font-size:0.72rem; transition:all 0.15s; }
+.cmd-copy:hover { background:var(--p1); color:white; }
+.cmd-body { padding:0.9rem 1.2rem; font-family:'Cascadia Code','Consolas',monospace; font-size:0.85rem; line-height:1.8; overflow-x:auto; }
+.cmd-body .prompt { color:var(--green); user-select:none; }
+.cmd-body .comment { color:#546e7a; }
+
+/* ===== FAQ ===== */
+.faq-item { border-bottom:1px solid var(--border); }
+.faq-q { width:100%; background:none; border:none; color:var(--text); text-align:left; padding:1.2rem 0; font-size:0.97rem; font-weight:600; cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:1rem; }
+.faq-q:hover { color:var(--p1); }
+.faq-arrow { font-size:1rem; transition:transform 0.25s; flex-shrink:0; color:var(--muted); }
+.faq-a { display:none; color:var(--muted); font-size:0.9rem; padding-bottom:1.2rem; line-height:1.8; }
+.faq-item.open .faq-arrow { transform:rotate(180deg); }
+.faq-item.open .faq-a { display:block; }
+
+/* ===== ロードマップ ===== */
+.roadmap { position:relative; padding-left:2rem; }
+.roadmap::before { content:''; position:absolute; left:0.45rem; top:0; bottom:0; width:2px; background:linear-gradient(to bottom,var(--p1),var(--p2),var(--p3)); border-radius:1px; }
+.rm-item { position:relative; padding:0 0 2.5rem 2.2rem; }
+.rm-item:last-child { padding-bottom:0; }
+.rm-dot { position:absolute; left:-1.55rem; top:0.2rem; width:16px; height:16px; border-radius:50%; border:3px solid var(--bg); box-shadow:0 0 0 2px var(--p1); background:var(--p1); }
+.rm-dot.p2 { background:var(--p2); box-shadow:0 0 0 2px var(--p2); }
+.rm-dot.p3 { background:var(--p3); box-shadow:0 0 0 2px var(--p3); }
+.rm-dot.gray { background:var(--faint); box-shadow:0 0 0 2px var(--faint); }
+.rm-phase { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--p1); margin-bottom:0.3rem; }
+.rm-phase.p2 { color:var(--p2); }
+.rm-phase.p3 { color:var(--p3); }
+.rm-phase.gray { color:var(--faint); }
+.rm-title { font-size:1rem; font-weight:700; margin-bottom:0.4rem; }
+.rm-desc { color:var(--muted); font-size:0.88rem; }
+.rm-tags { display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.5rem; }
+.rm-tag { font-size:0.72rem; padding:0.15rem 0.55rem; border-radius:5px; background:rgba(255,255,255,0.05); color:var(--muted); }
+
+/* ===== フッター ===== */
+footer { background:var(--bg2); border-top:1px solid var(--border); padding:3rem 0; }
+.footer-inner { display:grid; grid-template-columns:1fr 1fr 1fr; gap:3rem; }
+.footer-brand p { color:var(--muted); font-size:0.87rem; margin-top:0.75rem; }
+.footer-col h4 { font-size:0.85rem; font-weight:700; margin-bottom:1rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; }
+.footer-col a { display:block; color:var(--muted); font-size:0.88rem; margin-bottom:0.5rem; transition:color 0.2s; }
+.footer-col a:hover { color:var(--text); text-decoration:none; }
+.footer-bottom { margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border); color:var(--faint); font-size:0.82rem; text-align:center; }
+
+/* ===== レスポンシブ ===== */
+@media (max-width:768px) {
+  .hero-inner { grid-template-columns:1fr; }
+  .hero-visual { display:none; }
+  .nav-links { display:none; }
+  .footer-inner { grid-template-columns:1fr; gap:2rem; }
+}
+</style>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="container">
+    <div class="nav-inner">
+      <div class="nav-logo">🚀 <span class="gradient-text">AI Dev Start</span></div>
+      <div class="nav-links">
+        <a href="#steps">始め方</a>
+        <a href="#tools">ツール</a>
+        <a href="#setup">環境構築</a>
+        <a href="#roadmap">ロードマップ</a>
+        <a href="#faq">FAQ</a>
+        <a href="#steps" class="nav-cta">今すぐ始める →</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-badge">🤖 AI × コーディング入門ガイド</div>
+        <h1>プログラミング<br>未経験でも<br><span class="gradient-text">アプリが作れる</span></h1>
+        <p class="hero-sub">
+          AIアシスタントとモダンなコードエディタを組み合わせれば、<br>
+          あなたのアイデアをアプリにする力が手に入ります。<br>
+          難しい前提知識は不要。今日から始められます。
+        </p>
+        <div class="hero-btns">
+          <a href="#steps" class="btn btn-primary">▶ 最初の一歩を踏み出す</a>
+          <a href="#tools" class="btn btn-outline">🛠 必要なツールを見る</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="code-window">
+          <div class="code-window-bar">
+            <div class="dot" style="background:#ff5f56"></div>
+            <div class="dot" style="background:#ffbd2e"></div>
+            <div class="dot" style="background:#27c93f"></div>
+            <span style="margin-left:0.5rem;font-size:0.75rem;color:var(--muted)">my-app/index.html</span>
+          </div>
+          <div class="code-window-body">
+            <span class="c-comment">// 💬 AIに「こうして」と話すだけ</span><br>
+            <span class="c-comment">// "ボタンを押したら色が変わるようにして"</span><br><br>
+            <span class="c-keyword">const</span> <span class="c-fn">btn</span> = document.<span class="c-fn">getElementById</span>(<span class="c-string">'myBtn'</span>);<br><br>
+            btn.<span class="c-fn">addEventListener</span>(<span class="c-string">'click'</span>, () =&gt; {<br>
+            &nbsp;&nbsp;document.body.style.background =<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="c-string">'linear-gradient(135deg, purple, pink)'</span>;<br>
+            &nbsp;&nbsp;btn.textContent = <span class="c-string">'✨ キレイ！'</span>;<br>
+            });<br><br>
+            <span class="c-comment">// AIが書いてくれたコード。あなたは</span><br>
+            <span class="c-comment">// 何をしたいか伝えるだけでOK！</span>
+          </div>
+        </div>
+        <div class="floating-badge" style="top:-1rem;right:-1rem;">✅ <span style="color:var(--green)">AIが即座に生成</span></div>
+        <div class="floating-badge" style="bottom:-1rem;left:-1rem;">💾 <span style="color:var(--p3)">ブラウザで即確認</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="divider"></div>
+
+<!-- ===== STEPS ===== -->
+<section class="section" id="steps">
+  <div class="container">
+    <div class="section-eyebrow">How to Start</div>
+    <div class="section-title">全体の流れ、<span class="gradient-text">たった4ステップ</span></div>
+    <p class="section-sub">難しいことは何もありません。ツールをインストールして、AIに話しかければOK。</p>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <div class="step-icon">💻</div>
+        <h3>VS Code を入れる</h3>
+        <p>無料のコードエディタ。プロも初心者も使う業界標準ツール。インストーラーを実行するだけ。</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <div class="step-icon">🤖</div>
+        <h3>AIエディタを設定する</h3>
+        <p>Cursor や Windsurf などAI搭載エディタを導入。コードを書かなくても「日本語で話しかける」だけ。</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <div class="step-icon">🗣️</div>
+        <h3>AIに話しかける</h3>
+        <p>「酔い止めアプリを作りたい。画面中央に赤い照準を表示して」と伝えるだけでコードができる。</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">04</div>
+        <div class="step-icon">🌐</div>
+        <h3>公開・共有する</h3>
+        <p>GitHubに上げてGitHub Pagesで無料公開。URLを友人に送ればすぐに使ってもらえる。</p>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="divider"></div>
+
+<!-- ===== TOOLS ===== -->
+<section class="section" id="tools" style="background:var(--bg2)">
+  <div class="container">
+    <div class="section-eyebrow">Essential Tools</div>
+    <div class="section-title">必要なツール<span class="gradient-text">完全リスト</span></div>
+    <p class="section-sub">すべて無料または無料プランあり。まずは★必須だけ入れればOK。</p>
+    <div class="tools-grid">
+
+      <div class="tool-card">
+        <div class="tool-icon-wrap" style="background:rgba(0,122,204,0.12)">💙</div>
+        <div>
+          <h3>VS Code</h3>
+          <p>Microsoftが作った無料エディタ。世界中のエンジニアが使う標準ツール。拡張機能で無限に便利になる。</p>
+          <span class="tool-tag tag-free">無料</span>
+          <span class="tool-tag tag-must">★必須</span><br>
+          <a href="https://code.visualstudio.com/" target="_blank" style="font-size:0.82rem;">↗ ダウンロード</a>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-icon-wrap" style="background:rgba(124,106,255,0.12)">🖱️</div>
+        <div>
+          <h3>Cursor</h3>
+          <p>VS Code ベースのAI搭載エディタ。チャットでコードを生成・修正できる。初心者に最も優しいAIエディタ。</p>
+          <span class="tool-tag tag-ai">AI搭載</span>
+          <span class="tool-tag tag-must">★必須</span>
+          <span class="tool-tag tag-free">無料プランあり</span><br>
+          <a href="https://cursor.com/" target="_blank" style="font-size:0.82rem;">↗ ダウンロード</a>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-icon-wrap" style="background:rgba(74,222,128,0.12)">🐙</div>
+        <div>
+          <h3>Git + GitHub</h3>
+          <p>コードの「セーブデータ管理」システム。GitHubに上げれば別PCでも作業でき、過去の状態に戻せる。</p>
+          <span class="tool-tag tag-free">無料</span>
+          <span class="tool-tag tag-must">★必須</span><br>
+          <a href="https://git-scm.com/" target="_blank" style="font-size:0.82rem;">↗ Git</a>
+          &nbsp;
+          <a href="https://github.com/" target="_blank" style="font-size:0.82rem;">↗ GitHub</a>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-icon-wrap" style="background:rgba(255,106,172,0.12)">🌊</div>
+        <div>
+          <h3>Windsurf</h3>
+          <p>Codeiumが作ったAIエディタ。Cursorと同様の機能を持つ。無料枠が広めで試しやすい。</p>
+          <span class="tool-tag tag-ai">AI搭載</span>
+          <span class="tool-tag tag-free">無料プランあり</span>
+          <span class="tool-tag tag-optional">任意</span><br>
+          <a href="https://windsurf.com/" target="_blank" style="font-size:0.82rem;">↗ ダウンロード</a>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-icon-wrap" style="background:rgba(251,191,36,0.12)">🔶</div>
+        <div>
+          <h3>Claude (Anthropic)</h3>
+          <p>最高レベルのAIアシスタント。コードの相談・設計・デバッグ・説明なんでもOK。ブラウザで使える。</p>
+          <span class="tool-tag tag-ai">AI</span>
+          <span class="tool-tag tag-free">無料プランあり</span>
+          <span class="tool-tag tag-must">★必須</span><br>
+          <a href="https://claude.ai/" target="_blank" style="font-size:0.82rem;">↗ claude.ai</a>
+        </div>
+      </div>
+
+      <div class="tool-card">
+        <div class="tool-icon-wrap" style="background:rgba(74,222,128,0.12)">📄</div>
+        <div>
+          <h3>GitHub Pages</h3>
+          <p>GitHubリポジトリをそのままWebサイトとして無料公開できるサービス。設定2クリックで完了。</p>
+          <span class="tool-tag tag-free">完全無料</span>
+          <span class="tool-tag tag-must">★必須（公開用）</span><br>
+          <a href="https://pages.github.com/" target="_blank" style="font-size:0.82rem;">↗ GitHub Pages</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+<div class="divider"></div>
+
+<!-- ===== SETUP ===== -->
+<section class="section" id="setup">
+  <div class="container">
+    <div class="section-eyebrow">Step by Step</div>
+    <div class="section-title">環境構築<span class="gradient-text">完全手順書</span></div>
+    <p class="section-sub">コピペで進められます。難しいコマンドは一切なし。</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;">
+
+      <!-- 左: チェックリスト -->
+      <div>
+        <h3 style="margin-bottom:1rem;font-size:1.1rem;">✅ インストールチェックリスト</h3>
+        <ul class="checklist">
+          <li>
+            <div class="check-icon">💙</div>
+            <div class="check-text">
+              <strong>① VS Code インストール</strong>
+              <span><a href="https://code.visualstudio.com/" target="_blank">code.visualstudio.com</a> → Download for Windows → インストーラー実行</span>
+            </div>
+          </li>
+          <li>
+            <div class="check-icon">🖱️</div>
+            <div class="check-text">
+              <strong>② Cursor インストール</strong>
+              <span><a href="https://cursor.com/" target="_blank">cursor.com</a> → Download → インストーラー実行 → Googleアカウントでサインイン</span>
+            </div>
+          </li>
+          <li>
+            <div class="check-icon">🐙</div>
+            <div class="check-text">
+              <strong>③ Git インストール</strong>
+              <span><a href="https://git-scm.com/download/win" target="_blank">git-scm.com</a> → Download → すべてデフォルトのままNext連打でOK</span>
+            </div>
+          </li>
+          <li>
+            <div class="check-icon">🐙</div>
+            <div class="check-text">
+              <strong>④ GitHubアカウント作成</strong>
+              <span><a href="https://github.com/" target="_blank">github.com</a> → Sign Up → メールアドレスで登録</span>
+            </div>
+          </li>
+          <li>
+            <div class="check-icon">🤖</div>
+            <div class="check-text">
+              <strong>⑤ Claude アカウント作成</strong>
+              <span><a href="https://claude.ai/" target="_blank">claude.ai</a> → Googleアカウントでサインアップ（無料）</span>
+            </div>
+          </li>
+          <li>
+            <div class="check-icon">🎉</div>
+            <div class="check-text">
+              <strong>⑥ 完了！最初のファイルを作ってみよう</strong>
+              <span>Cursorを開いて「index.htmlというファイルを作って、Hello Worldを表示して」と打ち込んでみる</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 右: コマンド -->
+      <div>
+        <h3 style="margin-bottom:1rem;font-size:1.1rem;">⌨️ 最初のGitセットアップ（1回だけ）</h3>
+        <p style="color:var(--muted);font-size:0.87rem;margin-bottom:1rem;">Windowsのスタートメニューで「PowerShell」を検索して開き、以下を実行：</p>
+
+        <div class="cmd-block">
+          <div class="cmd-header"><span>名前とメールを設定（GitHubと同じものを）</span><button class="cmd-copy" onclick="cmdCopy(this)">コピー</button></div>
+          <div class="cmd-body">
+            <span class="prompt">PS&gt; </span>git config --global user.name <span style="color:#c3e88d">"あなたの名前"</span><br>
+            <span class="prompt">PS&gt; </span>git config --global user.email <span style="color:#c3e88d">"your@email.com"</span>
+          </div>
+        </div>
+
+        <div class="cmd-block">
+          <div class="cmd-header"><span>プロジェクトフォルダでGitを始める</span><button class="cmd-copy" onclick="cmdCopy(this)">コピー</button></div>
+          <div class="cmd-body">
+            <span class="prompt">PS&gt; </span>cd C:\Users\あなたの名前\Documents\my-app<br>
+            <span class="prompt">PS&gt; </span>git init<br>
+            <span class="comment"># → "Initialized empty Git repository" と表示されたらOK</span>
+          </div>
+        </div>
+
+        <div class="cmd-block">
+          <div class="cmd-header"><span>変更を保存（セーブ）する</span><button class="cmd-copy" onclick="cmdCopy(this)">コピー</button></div>
+          <div class="cmd-body">
+            <span class="prompt">PS&gt; </span>git add .<br>
+            <span class="prompt">PS&gt; </span>git commit -m <span style="color:#c3e88d">"✨ 最初のファイルを追加"</span><br>
+            <span class="comment"># これで過去に戻れるセーブポイントができた！</span>
+          </div>
+        </div>
+
+        <div style="background:rgba(74,222,128,0.07);border:1px solid rgba(74,222,128,0.15);border-radius:var(--radius-sm);padding:1rem;margin-top:1rem;">
+          <strong style="color:var(--green);font-size:0.9rem;">💡 Cursor なら GUI でもできる</strong>
+          <p style="color:var(--muted);font-size:0.85rem;margin-top:0.3rem;">左サイドバーの「Source Control」アイコン（分岐マーク）をクリックすると、コマンドなしでGit操作が全部できます。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="divider"></div>
+
+<!-- ===== AI使い方 ===== -->
+<section class="section" style="background:var(--bg2)">
+  <div class="container">
+    <div class="section-eyebrow">AI Prompting</div>
+    <div class="section-title">AIへの<span class="gradient-text">上手な伝え方</span></div>
+    <p class="section-sub">AIはすごく賢いけど、伝え方次第で結果が全然変わります。</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;">
+      <div>
+        <h3 style="color:var(--red);margin-bottom:1rem;font-size:1rem;">❌ 伝わりにくい例</h3>
+        <div style="background:rgba(248,113,113,0.05);border:1px solid rgba(248,113,113,0.15);border-radius:var(--radius-sm);padding:1.2rem;">
+          <p style="font-size:0.9rem;color:var(--muted);">"アプリ作って"</p>
+          <p style="font-size:0.9rem;color:var(--muted);margin-top:0.5rem;">"なんかいい感じにして"</p>
+          <p style="font-size:0.9rem;color:var(--muted);margin-top:0.5rem;">"動かない、直して"</p>
+        </div>
+      </div>
+      <div>
+        <h3 style="color:var(--green);margin-bottom:1rem;font-size:1rem;">✅ 伝わりやすい例</h3>
+        <div style="background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.15);border-radius:var(--radius-sm);padding:1.2rem;">
+          <p style="font-size:0.88rem;color:var(--text);">"<strong>HTMLファイル1つで動く</strong>、画面中央に赤いドットを表示するアプリを作って。背景は黒で、ドットのサイズをスライダーで変えられるようにして"</p>
+          <p style="font-size:0.88rem;color:var(--text);margin-top:0.75rem;">"ボタンをクリックしても何も起きません。<strong>ChromeのDevToolsのConsoleに「Uncaught TypeError」</strong>と出ています。コードのどこが問題か教えて"</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:2rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;">
+      <div class="tool-card" style="flex-direction:column;gap:0.5rem;">
+        <div style="font-size:1.5rem;">📐</div>
+        <strong>具体的に</strong>
+        <p>「いい感じ」より「黒背景・赤い文字・角丸ボタン」のように数字・色・形で指定</p>
+      </div>
+      <div class="tool-card" style="flex-direction:column;gap:0.5rem;">
+        <div style="font-size:1.5rem;">🎯</div>
+        <strong>1回1件</strong>
+        <p>一度に多くを頼まず、1つずつ確認しながら進める。複雑な変更ほど小分けに</p>
+      </div>
+      <div class="tool-card" style="flex-direction:column;gap:0.5rem;">
+        <div style="font-size:1.5rem;">📋</div>
+        <strong>エラーをそのまま貼る</strong>
+        <p>エラーメッセージは丸ごとコピーしてAIに渡す。「動かない」だけより10倍早く解決</p>
+      </div>
+      <div class="tool-card" style="flex-direction:column;gap:0.5rem;">
+        <div style="font-size:1.5rem;">🔄</div>
+        <strong>反復する</strong>
+        <p>完璧を求めない。「ちょっと違う、これをこう直して」と繰り返すのが正しい使い方</p>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="divider"></div>
+
+<!-- ===== ROADMAP ===== -->
+<section class="section" id="roadmap">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start;">
+      <div>
+        <div class="section-eyebrow">Learning Roadmap</div>
+        <div class="section-title">成長の<span class="gradient-text">ロードマップ</span></div>
+        <p style="color:var(--muted);margin-bottom:2rem;">急がなくていい。自分のペースで、ゆっくり確実に。</p>
+        <div class="roadmap">
+          <div class="rm-item">
+            <div class="rm-dot"></div>
+            <div class="rm-phase">Phase 1 — 今ここ！</div>
+            <div class="rm-title">環境を整えてAIと話す</div>
+            <div class="rm-desc">VS Code・Cursor・Gitのインストール。AIに「作って」と頼んでコードを動かす体験をする。</div>
+            <div class="rm-tags"><span class="rm-tag">VS Code</span><span class="rm-tag">Cursor</span><span class="rm-tag">Git基礎</span></div>
+          </div>
+          <div class="rm-item">
+            <div class="rm-dot"></div>
+            <div class="rm-phase">Phase 2</div>
+            <div class="rm-title">HTML/CSSの基礎を読める</div>
+            <div class="rm-desc">AIが書いたコードを「読んで理解できる」ようになる。タグ・セレクタ・プロパティの役割を把握。</div>
+            <div class="rm-tags"><span class="rm-tag">HTML5</span><span class="rm-tag">CSS3</span><span class="rm-tag">Flexbox</span></div>
+          </div>
+          <div class="rm-item">
+            <div class="rm-dot p2"></div>
+            <div class="rm-phase p2">Phase 3</div>
+            <div class="rm-title">JavaScriptで動きをつける</div>
+            <div class="rm-desc">変数・関数・イベントリスナー・DOM操作。「クリックしたら何かする」コードが書けるようになる。</div>
+            <div class="rm-tags"><span class="rm-tag">JavaScript</span><span class="rm-tag">DOM操作</span><span class="rm-tag">localStorage</span></div>
+          </div>
+          <div class="rm-item">
+            <div class="rm-dot p2"></div>
+            <div class="rm-phase p2">Phase 4</div>
+            <div class="rm-title">GitHubで公開・共有</div>
+            <div class="rm-desc">作ったアプリをGitHubに上げてGitHub Pagesで公開。URLを誰かに送って使ってもらう。</div>
+            <div class="rm-tags"><span class="rm-tag">GitHub</span><span class="rm-tag">GitHub Pages</span><span class="rm-tag">デプロイ</span></div>
+          </div>
+          <div class="rm-item">
+            <div class="rm-dot p3"></div>
+            <div class="rm-phase p3">Phase 5</div>
+            <div class="rm-title">フレームワークへの挑戦</div>
+            <div class="rm-desc">React・Vue などのフレームワークでより複雑なアプリに挑戦。AIとの協力でさらに加速。</div>
+            <div class="rm-tags"><span class="rm-tag">React</span><span class="rm-tag">Node.js</span><span class="rm-tag">API連携</span></div>
+          </div>
+          <div class="rm-item">
+            <div class="rm-dot gray"></div>
+            <div class="rm-phase gray">Phase ∞</div>
+            <div class="rm-title">作りたいものを作り続ける</div>
+            <div class="rm-desc">ゴールはない。作りたいアイデアがあれば、それが次のプロジェクト。AIと一緒に学び続けよう。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右: FAQ -->
+      <div id="faq">
+        <div class="section-eyebrow">FAQ</div>
+        <div class="section-title" style="font-size:1.8rem;">よくある<span class="gradient-text">疑問</span></div>
+        <br>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">数学や英語ができなくても大丈夫？<span class="faq-arrow">▼</span></button>
+          <div class="faq-a">全く問題ありません。AIがコードを書いてくれるので、あなたは「何を作りたいか」を日本語で伝えるだけです。英語のエラーメッセージもそのままAIに貼り付ければ解説してくれます。</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">どれくらいの期間で作れるようになる？<span class="faq-arrow">▼</span></button>
+          <div class="faq-a">AIを使えば最初のアプリは「今日中」に動かせます。ただし自分でコードを理解して書けるようになるには数ヶ月かかります。でも焦らなくてOK — AIと一緒に作りながら学ぶのが一番楽しく確実です。</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">CursorとVS Codeどっちを使えばいい？<span class="faq-arrow">▼</span></button>
+          <div class="faq-a">初心者には <strong>Cursor</strong> をおすすめします。VS Codeベースなので操作感は同じですが、AIとのチャットが統合されており「コードを書かなくてもアプリが作れる」体験が得られます。慣れてきたらVS CodeにもAI拡張機能（GitHub Copilot等）を入れて使い比べてみましょう。</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">作ったアプリは本当に無料で公開できる？<span class="faq-arrow">▼</span></button>
+          <div class="faq-a">HTMLファイルのみで動くWebアプリなら、GitHub Pages を使って完全無料で公開できます。独自ドメイン（〇〇.com）は年間1000円程度かかりますが、github.io のURLなら永久無料です。</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">AIが書いたコードは著作権的に大丈夫？<span class="faq-arrow">▼</span></button>
+          <div class="faq-a">自分で使う分・公開する分には基本的に問題ありません。ただし商業利用や他者への販売を考える場合は、使用するAIサービスの利用規約を確認することをおすすめします。個人学習・個人利用の範囲では気にしなくてOKです。</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">エラーが出て動かない時はどうする？<span class="faq-arrow">▼</span></button>
+          <div class="faq-a">エラーメッセージを丸ごとコピーして、AIに「このエラーが出て動きません」と貼り付けるだけでOKです。AIが原因と解決策を教えてくれます。「エラーを自分で解決しなければ」という焦りは不要。AIはあなたの無限のデバッグパートナーです。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="divider"></div>
+
+<!-- ===== CTA ===== -->
+<section style="padding:6rem 0;background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(124,106,255,0.12),transparent),var(--bg2);text-align:center;">
+  <div class="container">
+    <div style="font-size:3rem;margin-bottom:1rem;">🚀</div>
+    <h2 style="font-size:clamp(1.8rem,4vw,2.5rem);font-weight:800;margin-bottom:1rem;">今日から始めよう</h2>
+    <p style="color:var(--muted);max-width:500px;margin:0 auto 2rem;">完璧な準備は不要。Cursor をインストールして「Hello World と表示して」と打つだけ。それだけでプログラマーの第一歩を踏み出せます。</p>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+      <a href="https://cursor.com/" target="_blank" class="btn btn-primary">💙 Cursor をダウンロード</a>
+      <a href="https://claude.ai/" target="_blank" class="btn btn-outline">🤖 Claude を開く</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div style="font-size:1.1rem;font-weight:800;">🚀 <span class="gradient-text">AI Dev Start</span></div>
+        <p>PC初心者からAI時代のアプリ開発者へ。無料・日本語・実践的なガイド。</p>
+      </div>
+      <div class="footer-col">
+        <h4>ツール</h4>
+        <a href="https://cursor.com/" target="_blank">Cursor</a>
+        <a href="https://code.visualstudio.com/" target="_blank">VS Code</a>
+        <a href="https://github.com/" target="_blank">GitHub</a>
+        <a href="https://claude.ai/" target="_blank">Claude AI</a>
+        <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>
+      </div>
+      <div class="footer-col">
+        <h4>学習リソース</h4>
+        <a href="https://developer.mozilla.org/ja/" target="_blank">MDN Web Docs（日本語）</a>
+        <a href="https://ja.javascript.info/" target="_blank">JavaScript.info（日本語）</a>
+        <a href="https://flexboxfroggy.com/#ja" target="_blank">Flexbox Froggy</a>
+        <a href="https://cssgridgarden.com/#ja" target="_blank">Grid Garden</a>
+        <a href="https://git-scm.com/book/ja/v2" target="_blank">Pro Git（日本語）</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      Made with 💜 — このガイド自体もAIと協力して作られました。あなたにもできます！
+    </div>
+  </div>
+</footer>
+
+<script>
+function toggleFaq(btn) {
+  const item = btn.parentElement;
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+function cmdCopy(btn) {
+  const text = btn.closest('.cmd-block').querySelector('.cmd-body').innerText
+    .replace(/PS> /g, '').replace(/# .+/g, '').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✅ コピー完了';
+    setTimeout(() => btn.textContent = 'コピー', 2000);
+  });
+}
+
+// スクロールアニメーション
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.style.opacity=1; e.target.style.transform='translateY(0)'; } });
+}, { threshold:0.1 });
+
+document.querySelectorAll('.step-card, .tool-card').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>
