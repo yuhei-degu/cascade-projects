@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>会社を辞めても収入は止まらない｜傷病手当×失業保険 完全ロードマップ</title>
+<meta name="description" content="傷病手当と失業保険を正しく理解すれば、最大2年の再設計期間を作れる。無料チェックリストPDF・メール講座配布中。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0e1017; --ink2:#1a1f30; --ink3:#252b3d;
+  --p:#f5f0e8; --p2:#ede8dc;
+  --amber:#c8860a; --amber2:#e8a020; --amber3:#f5c04a;
+  --red:#c0392b; --green:#1a7a4a; --blue:#1a4a7a;
+  --muted:#6a6a7a; --border:rgba(14,16,23,.1);
+  --r:8px; --serif:'Noto Serif JP',serif; --sans:'Noto Sans JP',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{font-size:17px;scroll-behavior:smooth}
+body{background:var(--p);color:var(--ink);font-family:var(--sans);line-height:1.85;-webkit-font-smoothing:antialiased}
+a{color:var(--amber);text-decoration:none}
+.container{max-width:900px;margin:0 auto;padding:0 1.5rem}
+.btn{display:inline-flex;align-items:center;gap:.45rem;padding:.8rem 1.6rem;border-radius:var(--r);font-weight:700;font-size:.92rem;cursor:pointer;border:none;text-decoration:none;transition:all .2s;white-space:nowrap}
+.btn-amber{background:var(--amber);color:var(--ink)}.btn-amber:hover{background:var(--amber2)}
+.btn-outline{background:transparent;color:var(--amber2);border:2px solid rgba(232,160,32,.4)}.btn-outline:hover{background:rgba(232,160,32,.08)}
+.btn-lg{padding:1rem 2rem;font-size:1rem}
+</style>
+</head>
+<body>
+<style>
+/* ── MASTHEAD ── */
+.mast{background:var(--ink);border-bottom:3px solid var(--amber);padding:.8rem 0}
+.mast-in{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.mast-logo{font-family:var(--serif);font-size:.95rem;font-weight:900;color:var(--amber2);letter-spacing:.06em}
+.mast-meta{font-size:.7rem;color:rgba(245,240,232,.4)}
+
+/* ── HERO ── */
+.hero{background:linear-gradient(160deg,var(--ink) 0%,var(--ink2) 60%,#1a2540 100%);color:var(--p);padding:5rem 0 4rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-30%;right:-10%;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(200,134,10,.12),transparent 70%);pointer-events:none}
+.hero-eyebrow{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--amber2);margin-bottom:1.2rem;display:flex;align-items:center;gap:.5rem}
+.hero-eyebrow::before{content:'';width:2rem;height:2px;background:var(--amber)}
+.hero h1{font-family:var(--serif);font-size:clamp(1.7rem,4vw,2.6rem);font-weight:900;line-height:1.35;margin-bottom:1.2rem}
+.hero h1 em{font-style:normal;color:var(--amber3)}
+.hero-sub{font-size:1rem;color:rgba(245,240,232,.65);margin-bottom:2.2rem;max-width:560px;line-height:1.95}
+.hero-btns{display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:2.5rem}
+.hero-trust{display:flex;gap:1.5rem;flex-wrap:wrap}
+.trust-item{display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:rgba(245,240,232,.45)}
+
+/* ── EMPATHY (共感) ── */
+.empathy{background:var(--p2);padding:4rem 0}
+.empathy-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.2rem;margin-top:2rem}
+.ep-card{background:var(--p);border:1px solid var(--border);border-radius:var(--r);padding:1.4rem 1.2rem;display:flex;gap:.9rem;align-items:flex-start}
+.ep-icon{font-size:1.5rem;flex-shrink:0;margin-top:.1rem}
+.ep-text strong{display:block;margin-bottom:.3rem;font-size:.93rem}
+.ep-text span{color:var(--muted);font-size:.83rem}
+
+/* ── SOLUTION ── */
+.solution{padding:4.5rem 0;background:var(--p)}
+.sol-badge{display:inline-block;background:rgba(200,134,10,.1);border:1px solid rgba(200,134,10,.25);color:var(--amber);padding:.3rem .9rem;border-radius:20px;font-size:.75rem;font-weight:700;margin-bottom:1rem}
+.sol-title{font-family:var(--serif);font-size:clamp(1.35rem,3vw,1.9rem);font-weight:900;line-height:1.4;margin-bottom:1rem}
+.sol-body{color:var(--muted);max-width:580px;line-height:1.95;margin-bottom:2rem}
+.flow-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;margin-top:2rem}
+.fc{background:var(--ink);color:var(--p);border-radius:var(--r);padding:1.2rem;text-align:center}
+.fc .fc-num{font-size:.7rem;color:rgba(245,240,232,.35);font-weight:700;text-transform:uppercase;margin-bottom:.4rem}
+.fc .fc-main{font-family:var(--serif);font-size:1rem;font-weight:700;color:var(--amber2);margin-bottom:.3rem}
+.fc .fc-sub{font-size:.75rem;color:rgba(245,240,232,.5);line-height:1.6}
+.fc-arrow{display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--amber)}
+
+/* ── ROADMAP PREVIEW ── */
+.roadmap{background:var(--ink2);color:var(--p);padding:4.5rem 0}
+.rm-title{font-family:var(--serif);font-size:clamp(1.3rem,3vw,1.8rem);font-weight:900;color:var(--amber2);margin-bottom:.6rem}
+.rm-sub{color:rgba(245,240,232,.55);font-size:.9rem;margin-bottom:2.5rem}
+.rm-phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}
+.rm-phase{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:var(--r);padding:1.2rem}
+.rm-phase-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem}
+.ph1{color:var(--amber2)}.ph2{color:#7fb3ff}.ph3{color:var(--amber3)}.ph4{color:#5fe49a}
+.rm-phase-title{font-weight:700;font-size:.93rem;margin-bottom:.4rem}
+.rm-phase-body{font-size:.8rem;color:rgba(245,240,232,.5);line-height:1.7}
+.rm-cta{margin-top:2.5rem;text-align:center}
+
+/* ── TRUST ── */
+.trust-sec{padding:4rem 0;background:var(--p2)}
+.trust-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.2rem;margin-top:2rem}
+.trust-card{background:var(--p);border:1px solid var(--border);border-radius:var(--r);padding:1.3rem;text-align:center}
+.trust-icon{font-size:2rem;margin-bottom:.6rem}
+.trust-card strong{display:block;margin-bottom:.4rem;font-size:.92rem}
+.trust-card p{color:var(--muted);font-size:.82rem;line-height:1.75}
+
+/* ── AFFILIATE LINKS ── */
+.affiliate{padding:4.5rem 0;background:var(--p)}
+.aff-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:1.2rem;margin-top:2rem}
+.aff-card{border:1px solid var(--border);border-radius:var(--r);padding:1.4rem;display:flex;flex-direction:column;gap:.75rem;transition:border-color .2s,transform .2s}
+.aff-card:hover{border-color:rgba(200,134,10,.35);transform:translateY(-3px)}
+.aff-tag{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:.2rem .6rem;border-radius:4px;display:inline-block}
+.tag-free{background:rgba(26,122,74,.1);color:var(--green)}
+.tag-paid{background:rgba(200,134,10,.1);color:var(--amber)}
+.aff-title{font-weight:700;font-size:.95rem}
+.aff-body{color:var(--muted);font-size:.83rem;line-height:1.75;flex:1}
+.aff-btn{display:inline-flex;align-items:center;justify-content:center;gap:.3rem;background:var(--ink);color:var(--p);padding:.6rem 1rem;border-radius:var(--r);font-size:.82rem;font-weight:700;text-decoration:none;transition:background .2s;text-align:center}
+.aff-btn:hover{background:var(--ink3)}
+.aff-disc{font-size:.7rem;color:var(--muted)}
+
+/* ── FINAL CTA ── */
+.final-cta{background:linear-gradient(160deg,var(--ink) 0%,var(--ink3) 100%);color:var(--p);padding:5rem 0;text-align:center}
+.fc-title{font-family:var(--serif);font-size:clamp(1.4rem,3vw,2rem);font-weight:900;margin-bottom:.8rem}
+.fc-title em{font-style:normal;color:var(--amber3)}
+.fc-sub{color:rgba(245,240,232,.55);font-size:.92rem;margin-bottom:2rem;line-height:1.9}
+.fc-form{max-width:460px;margin:0 auto 1.5rem}
+.fc-form input{width:100%;padding:.85rem 1.1rem;border:1px solid rgba(245,240,232,.15);background:rgba(255,255,255,.06);color:var(--p);border-radius:var(--r);font-size:.9rem;margin-bottom:.6rem;font-family:var(--sans)}
+.fc-form input::placeholder{color:rgba(245,240,232,.3)}
+.fc-form input:focus{outline:none;border-color:rgba(200,134,10,.5)}
+.fc-disc{font-size:.72rem;color:rgba(245,240,232,.3)}
+
+/* ── FOOTER ── */
+footer{background:var(--ink);color:rgba(245,240,232,.35);padding:2rem 0;font-size:.75rem;text-align:center;line-height:2}
+footer a{color:rgba(232,160,32,.55)}
+
+/* ── SECTION HELPERS ── */
+.sec-eye{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--amber);margin-bottom:.75rem}
+.sec-title{font-family:var(--serif);font-size:clamp(1.35rem,3vw,1.85rem);font-weight:900;line-height:1.35;margin-bottom:.6rem}
+.sec-sub{color:var(--muted);font-size:.93rem;margin-bottom:2rem;line-height:1.9}
+
+@media(max-width:600px){.hero-btns{flex-direction:column}.fc-arrow{transform:rotate(90deg)}}
+</style>
+
+<!-- MASTHEAD -->
+<header class="mast">
+  <div class="container mast-in">
+    <span class="mast-logo">制度ナビ｜傷病手当・失業保険ガイド</span>
+    <span class="mast-meta">公的制度に基づく情報 ｜ 不正受給を推奨しません</span>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-eyebrow">傷病手当 × 失業保険 完全ガイド</div>
+    <h1>会社を辞めても、<br><em>収入は止まらない。</em></h1>
+    <p class="hero-sub">
+      「傷病手当×失業保険」を正しく理解すれば、最大2年の再設計期間を作れます。<br>
+      制度を知るだけで、あなたの選択肢は確実に増えます。
+    </p>
+    <div class="hero-btns">
+      <a href="article.html" class="btn btn-amber btn-lg">▶ 無料で完全ロードマップを見る</a>
+      <a href="#pdf" class="btn btn-outline btn-lg">📄 無料PDFを受け取る</a>
+    </div>
+    <div class="hero-trust">
+      <span class="trust-item">✅ 制度根拠あり</span>
+      <span class="trust-item">⚕️ 医師の診断が前提</span>
+      <span class="trust-item">🚫 不正受給を推奨しません</span>
+      <span class="trust-item">📋 完全無料</span>
+    </div>
+  </div>
+</section>
+
+<!-- EMPATHY 共感ブロック -->
+<section class="empathy">
+  <div class="container">
+    <div class="sec-eye">あなただけじゃない</div>
+    <div class="sec-title">こんな状態、続いていませんか？</div>
+    <div class="empathy-grid">
+      <div class="ep-card"><div class="ep-icon">🌅</div><div class="ep-text"><strong>朝、起き上がれない</strong><span>布団から出るだけで精一杯。そんな自分を責めてしまう毎日。</span></div></div>
+      <div class="ep-card"><div class="ep-icon">🚪</div><div class="ep-text"><strong>会社に行くのが怖い</strong><span>職場のことを考えるだけで動悸がする。それは心のSOSです。</span></div></div>
+      <div class="ep-card"><div class="ep-icon">💰</div><div class="ep-text"><strong>でもお金が不安</strong><span>辞めたい。でも収入がなくなったらどうやって生きていくのか。</span></div></div>
+      <div class="ep-card"><div class="ep-icon">📋</div><div class="ep-text"><strong>手続きが複雑そう</strong><span>傷病手当？失業保険？何から調べればいいかわからない。</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUTION -->
+<section class="solution">
+  <div class="container">
+    <div class="sol-badge">解決策</div>
+    <div class="sol-title">制度を知るだけで、<br>選択肢は増える。</div>
+    <p class="sol-body">
+      「会社を辞める＝収入ゼロ」ではありません。日本の社会保険制度には、
+      <strong>就労不能期間を金銭的にサポートする仕組み</strong>が存在します。
+      ただし、知らなければ申請できません。正しく理解して、正しく使うことが重要です。
+    </p>
+    <div class="flow-cards">
+      <div class="fc">
+        <div class="fc-num">Step 1</div>
+        <div class="fc-main">傷病手当金</div>
+        <div class="fc-sub">最長18ヶ月<br>標準報酬の2/3<br>非課税・医師の診断必須</div>
+      </div>
+      <div class="fc-arrow">→</div>
+      <div class="fc">
+        <div class="fc-num">Step 2</div>
+        <div class="fc-main">受給期間延長</div>
+        <div class="fc-sub">ハローワークで申請<br>最大4年間保存<br>忘れずに手続きを</div>
+      </div>
+      <div class="fc-arrow">→</div>
+      <div class="fc">
+        <div class="fc-num">Step 3</div>
+        <div class="fc-main">失業保険</div>
+        <div class="fc-sub">就労可能になってから<br>最長360日<br>転職活動と並行</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:2.5rem">
+      <a href="article.html" class="btn btn-amber btn-lg">▶ 完全ロードマップを読む（無料）</a>
+    </div>
+  </div>
+</section>
+
+<!-- ROADMAP PREVIEW -->
+<section class="roadmap">
+  <div class="container">
+    <div class="rm-title">退職3ヶ月前からの4フェーズ</div>
+    <div class="rm-sub">やるべきことを時系列で把握すれば、焦らず進められます。</div>
+    <div class="rm-phases">
+      <div class="rm-phase">
+        <div class="rm-phase-label ph1">Phase 1 ▸ 準備</div>
+        <div class="rm-phase-title">在職中に申請開始</div>
+        <div class="rm-phase-body">主治医の診断書を取得し、健保組合に傷病手当金を申請。退職後の継続受給の権利を確保する。</div>
+      </div>
+      <div class="rm-phase">
+        <div class="rm-phase-label ph2">Phase 2 ▸ 退職</div>
+        <div class="rm-phase-title">退職日の過ごし方</div>
+        <div class="rm-phase-body">退職日の出勤有無で継続受給の権利が変わる。離職票・健康保険の切り替えも並行して進める。</div>
+      </div>
+      <div class="rm-phase">
+        <div class="rm-phase-label ph3">Phase 3 ▸ 療養</div>
+        <div class="rm-phase-title">療養＋延長申請</div>
+        <div class="rm-phase-body">傷病手当金を継続受給しながら療養。ハローワークで失業保険の受給期間延長申請を忘れずに。</div>
+      </div>
+      <div class="rm-phase">
+        <div class="rm-phase-label ph4">Phase 4 ▸ 再起</div>
+        <div class="rm-phase-title">失業保険→転職活動</div>
+        <div class="rm-phase-body">就労可能の診断が出たらハローワークで手続き。転職エージェント・FP相談を活用して再出発。</div>
+      </div>
+    </div>
+    <div class="rm-cta">
+      <a href="article.html" class="btn btn-amber btn-lg">詳細ロードマップを読む →</a>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST -->
+<section class="trust-sec">
+  <div class="container">
+    <div class="sec-eye">信頼性の根拠</div>
+    <div class="sec-title">安心して読めるガイドです</div>
+    <div class="trust-grid">
+      <div class="trust-card"><div class="trust-icon">📋</div><strong>公的制度に基づく解説</strong><p>健康保険法・雇用保険法の規定に基づいた情報のみを掲載。憶測や誇張表現は一切ありません。</p></div>
+      <div class="trust-card"><div class="trust-icon">⚕️</div><strong>医師の判断が前提</strong><p>「制度を使いたいから診断書を取る」という逆算的な利用を促す内容は含みません。</p></div>
+      <div class="trust-card"><div class="trust-icon">🚫</div><strong>不正受給を推奨しない</strong><p>不正受給は刑事罰の対象であることを明記。正しい制度理解のための情報提供に徹しています。</p></div>
+      <div class="trust-card"><div class="trust-icon">🔄</div><strong>定期的に更新</strong><p>制度改正に合わせて内容を随時更新します。最新情報は各窓口でご確認をお勧めします。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- AFFILIATE LINKS (収益化) -->
+<section class="affiliate">
+  <div class="container">
+    <div class="sec-eye">次のステップへ</div>
+    <div class="sec-title">回復後の「再起」をサポートするサービス</div>
+    <p class="sec-sub">以下は当サイトが信頼性を確認したうえで紹介するサービスです。利用は任意です。</p>
+    <div class="aff-grid">
+      <div class="aff-card">
+        <span class="aff-tag tag-free">無料相談</span>
+        <div class="aff-title">🏥 心療内科・精神科を探す</div>
+        <div class="aff-body">まず受診することが回復の第一歩。近くのクリニックを検索できます。初診の流れや費用も解説。</div>
+        <a href="#" class="aff-btn">クリニックを探す →</a>
+        <div class="aff-disc">※外部サービスへのリンクです</div>
+      </div>
+      <div class="aff-card">
+        <span class="aff-tag tag-free">無料登録</span>
+        <div class="aff-title">💼 転職エージェントに相談</div>
+        <div class="aff-body">就労可能になったら転職活動へ。休職・傷病経験者の転職に精通したエージェントをご紹介。</div>
+        <a href="#" class="aff-btn">無料で相談する →</a>
+        <div class="aff-disc">※外部サービスへのリンクです</div>
+      </div>
+      <div class="aff-card">
+        <span class="aff-tag tag-free">無料相談</span>
+        <div class="aff-title">📊 FP（ファイナンシャルプランナー）に相談</div>
+        <div class="aff-body">傷病手当・失業保険の受給期間中の家計管理・住民税・節税について専門家に相談できます。</div>
+        <a href="#" class="aff-btn">FPに無料相談 →</a>
+        <div class="aff-disc">※外部サービスへのリンクです</div>
+      </div>
+      <div class="aff-card">
+        <span class="aff-tag tag-paid">有料note</span>
+        <div class="aff-title">📝 退職・療養期 完全マニュアル</div>
+        <div class="aff-body">本記事の内容をさらに深掘りした有料note。申請書の記入例・窓口での実際の会話例を収録。</div>
+        <a href="#" class="aff-btn">詳細を見る →</a>
+        <div class="aff-disc">※有料コンテンツです（¥980）</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta" id="pdf">
+  <div class="container">
+    <div class="fc-title">まず、<em>知ることから始めよう。</em></div>
+    <p class="fc-sub">
+      無料PDFチェックリストと、7日間のメール講座をお届けします。<br>
+      ハローワーク・健保窓口への持参用に最適化されています。
+    </p>
+    <div class="fc-form">
+      <input type="email" placeholder="メールアドレスを入力してください" id="email-input">
+      <button class="btn btn-amber btn-lg" style="width:100%;justify-content:center" onclick="handleSub()">
+        ▶ 無料PDFとメール講座を受け取る
+      </button>
+    </div>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem">
+      <a href="article.html" class="btn btn-outline">📖 まず記事を読む</a>
+    </div>
+    <div class="fc-disc">
+      ✅ 完全無料 ｜ いつでも解除可能 ｜ スパムなし<br>
+      登録後、確認メールをお送りします。
+    </div>
+    <div id="sub-msg" style="margin-top:1rem;font-size:.85rem;color:var(--amber3);display:none">
+      ✅ ご登録ありがとうございます。メールをご確認ください。
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>本サイトは公的制度の一般的な解説を目的としています。個別の受給可否については専門家にご相談ください。</p>
+  <p><a href="#">プライバシーポリシー</a> ｜ <a href="#">免責事項</a> ｜ <a href="article.html">詳細記事へ</a></p>
+</footer>
+
+<script>
+function handleSub(){
+  const v=document.getElementById('email-input').value;
+  if(!v||!v.includes('@')){alert('メールアドレスを正しく入力してください');return}
+  document.getElementById('email-input').value='';
+  document.getElementById('sub-msg').style.display='block';
+}
+// スクロールでフェードイン
+const els=document.querySelectorAll('.ep-card,.trust-card,.aff-card,.rm-phase,.fc');
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)'}})
+},{threshold:.1});
+els.forEach(el=>{el.style.opacity='0';el.style.transform='translateY(20px)';el.style.transition='opacity .6s ease,transform .6s ease';io.observe(el)});
+</script>
+</body></html>
