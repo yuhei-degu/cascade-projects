@@ -1,0 +1,67 @@
+// prisma/schema.prisma
+// X RSSトラッカー — データベーススキーマ
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ── 監視対象アカウント ────────────────────────────────────
+model TrackedAccount {
+  id          String   @id @default(cuid())
+  username    String   @unique          // Xのユーザー名 (例: elonmusk)
+  displayName String?                   // 表示名（任意）
+  isActive    Boolean  @default(true)   // 監視ON/OFF
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lastFetchAt DateTime?                 // 最後にRSS取得した時刻
+  fetchError  String?                   // 最後のエラーメッセージ
+
+  posts       Post[]
+
+  @@map("tracked_accounts")
+}
+
+// ── 投稿 ────────────────────────────────────────────────
+model Post {
+  id          String   @id @default(cuid())
+  accountId   String
+  title       String
+  content     String
+  url         String   @unique          // 重複チェック用（URLをユニークキーに）
+  publishedAt DateTime
+  createdAt   DateTime @default(now())
+
+  // ── 将来拡張: AI分析フィールド ──────────────────────────
+  // ai_score    Float?   // AI重要度スコア (0.0 - 1.0)
+  // ai_summary  String?  // AI要約テキスト
+  // ai_tags     String?  // JSON文字列として格納 ["AI","LLM","投資"]
+  // ai_analyzedAt DateTime? // AI分析実施日時
+
+  account     TrackedAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+  @@index([publishedAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@map("posts")
+}
+
+// ── RSS取得ログ（デバッグ・監査用）────────────────────────
+model FetchLog {
+  id          String   @id @default(cuid())
+  accountId   String?                   // nullは全体実行
+  username    String
+  status      String                    // "success" | "error"
+  newPosts    Int      @default(0)      // 新規保存件数
+  totalPosts  Int      @default(0)      // 取得した総件数
+  errorMsg    String?
+  durationMs  Int?                      // 処理時間(ms)
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt(sort: Desc)])
+  @@map("fetch_logs")
+}
