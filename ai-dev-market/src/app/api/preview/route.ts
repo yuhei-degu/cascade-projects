@@ -1,4 +1,4 @@
-/**
+﻿/**
  * API: プレビュー確認・承認・修正
  * GET  /api/preview?token=xxx
  * POST /api/preview  { action: "ok" | "revision" | "cancel" }
@@ -46,7 +46,6 @@ export async function POST(req: NextRequest) {
     const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
 
     if (action === "ok") {
-      // 決済セッション生成
       const amount = request.ai_estimated_price ?? request.paid_amount ?? 20000;
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
@@ -75,11 +74,15 @@ export async function POST(req: NextRequest) {
     if (action === "revision") {
       await supabase.from("requests").update({ status: "revision" }).eq("id", request.id);
       await supabase.from("messages").insert({
-        request_id: request.id, author: "client", content: comment ?? "修正希望", is_internal: false,
+        request_id: request.id, author: "client",
+        content: comment ?? "修正希望", is_internal: false,
       });
       await supabase.from("activity_logs").insert({
-        request_id: request.id, action: "revision_requested", detail: comment, actor: "client",
+        request_id: request.id, action: "revision_requested",
+        detail: comment, actor: "client",
       });
+      // 修正依頼メール送信
+      await sendRevisionMail(request.email, request.title, comment ?? "（コメントなし）");
       return NextResponse.json({ success: true, action: "revision" });
     }
 
@@ -95,6 +98,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, error: String(e) }, { status: 500 });
   }
 }
-
-// sendRevisionMail がない場合のスタブ (mailer.ts に追加済み想定)
-declare function sendRevisionMail(to: string, title: string, comment: string): Promise<void>;

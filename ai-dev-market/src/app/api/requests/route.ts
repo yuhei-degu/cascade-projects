@@ -4,7 +4,6 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/server";
-import { BUDGET_LABEL } from "@/types";
 import { z } from "zod";
 
 const schema = z.object({

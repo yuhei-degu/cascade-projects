@@ -121,3 +121,16 @@ export async function sendDeliveryMail(
       <p>ご利用ありがとうございました！</p>`),
   });
 }
+
+/** 修正依頼受付メール */
+export async function sendRevisionMail(to: string, title: string, comment: string) {
+  await send({
+    to, subject: `【AI Dev Market】修正内容を承りました — ${title}`,
+    html: wrap(`
+      <p>「<strong>${title}</strong>」の修正依頼を承りました。</p>
+      <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:16px">
+        <p style="margin:0;color:#7c2d12"><strong>修正内容：</strong><br>${comment}</p>
+      </div>
+      <p style="margin-top:16px">修正完了後、再度確認URLをお送りします。しばらくお待ちください。</p>`),
+  });
+}

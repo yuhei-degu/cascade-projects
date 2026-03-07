@@ -1,0 +1,143 @@
+// prisma/schema.prisma
+// ② システムDB設計
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 依頼ステータスの列挙型
+enum RequestStatus {
+  pending        // 投稿直後
+  reviewing      // AI審査中
+  rejected       // 却下（AI or 管理者）
+  accepted       // 承認済み・制作開始前
+  building       // Claude Code で制作中
+  review_ready   // 依頼者確認待ち
+  revision       // 修正中
+  payment_pending // 決済待ち
+  paid           // 決済完了
+  delivered      // 納品完了
+}
+
+// 依頼カテゴリ
+enum RequestCategory {
+  website      // Webサイト
+  webapp       // Webアプリ
+  script       // スクリプト・自動化
+  design       // デザイン
+  consultation // 相談・コンサル
+  other        // その他
+}
+
+// 希望予算レンジ
+enum BudgetRange {
+  under_5k   // ¥5,000以下
+  under_10k  // ¥10,000以下
+  under_30k  // ¥30,000以下
+  under_50k  // ¥50,000以下
+  negotiable // 要相談
+}
+
+// ── メインテーブル: 依頼 ───────────────────────────────────────
+model Request {
+  id          String          @id @default(cuid())
+  title       String
+  description String          @db.Text
+  category    RequestCategory
+  budget      BudgetRange
+  deadline    DateTime?
+  email       String          // 依頼者メアド（通知用のみ・個人情報保護）
+  status      RequestStatus   @default(pending)
+  
+  // AI審査結果（集約）
+  aiVerdict   String?         // "feasible" | "infeasible" | "partial"
+  aiScore     Float?          // 0-100 実現可能性スコア
+  
+  // プレビュー・決済トークン（UUID）
+  previewToken    String?     @unique
+  previewTokenExp DateTime?   // 有効期限
+  paymentToken    String?     @unique
+  
+  // 納品情報
+  deliverableUrl  String?     // GitHub URL or ダウンロードURL
+  deliverableNote String?     @db.Text
+  
+  // 決済
+  stripeSessionId String?
+  paidAt          DateTime?
+  paidAmount      Int?        // 円
+  
+  // タイムスタンプ
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  
+  // リレーション
+  evaluations   AiEvaluation[]
+  messages      RequestMessage[]
+  activityLogs  ActivityLog[]
+  
+  @@index([status])
+  @@index([email])
+  @@index([createdAt])
+}
+
+// ── AI審査結果（Gemini / GPT-4 それぞれ保存） ────────────────
+model AiEvaluation {
+  id              String   @id @default(cuid())
+  requestId       String
+  model           String   // "gemini-1.5-pro" | "gpt-4o"
+  feasible        Boolean
+  feasibilityScore Float   // 0-100
+  estimatedHours  Int?
+  estimatedPrice  Int?     // 円
+  concerns        String[] // 懸念点リスト
+  suggestions     String?  @db.Text
+  rawResponse     String?  @db.Text // AI生レスポンス（デバッグ用）
+  createdAt       DateTime @default(now())
+  
+  request Request @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  
+  @@index([requestId])
+}
+
+// ── 依頼への管理者/システムメッセージ履歴 ─────────────────────
+model RequestMessage {
+  id         String   @id @default(cuid())
+  requestId  String
+  author     String   // "system" | "admin" | "client"
+  content    String   @db.Text
+  isInternal Boolean  @default(false) // 内部メモ（依頼者には非表示）
+  createdAt  DateTime @default(now())
+  
+  request Request @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  
+  @@index([requestId])
+}
+
+// ── 操作ログ ───────────────────────────────────────────────────
+model ActivityLog {
+  id         String   @id @default(cuid())
+  requestId  String
+  action     String   // "status_changed" | "email_sent" | "ai_evaluated" 等
+  detail     String?  @db.Text
+  actor      String?  // "system" | "admin" | "ai"
+  createdAt  DateTime @default(now())
+  
+  request Request @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  
+  @@index([requestId])
+}
+
+// ── 管理者アカウント（NextAuth用） ────────────────────────────
+model AdminUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // bcrypt ハッシュ
+  name      String
+  createdAt DateTime @default(now())
+}
