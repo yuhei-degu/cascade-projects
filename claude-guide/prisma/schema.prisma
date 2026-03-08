@@ -1,0 +1,58 @@
+// Prisma Schema — Claude Guide
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  name            String?
+  avatarUrl       String?
+  os              String?
+  experienceLevel String?
+  createdAt       DateTime @default(now())
+  progress        Progress[]
+  questions       AiQuestion[]
+  @@map("users")
+}
+
+model Progress {
+  id          String    @id @default(cuid())
+  userId      String
+  stepId      String
+  status      String    @default("not_started")
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id])
+  @@unique([userId, stepId])
+  @@map("progress")
+}
+
+model AiQuestion {
+  id        String   @id @default(cuid())
+  userId    String?
+  stepId    String?
+  question  String
+  answer    String
+  helpful   Boolean?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+  @@map("ai_questions")
+}
+
+model ErrorLog {
+  id        String   @id @default(cuid())
+  errorText String
+  category  String
+  solution  String
+  resolved  Boolean?
+  createdAt DateTime @default(now())
+  @@map("error_logs")
+}
