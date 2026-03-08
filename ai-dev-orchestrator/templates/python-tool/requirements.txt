@@ -1,0 +1,9 @@
+# Python Tool テンプレート
+# requirements.txt
+
+anthropic>=0.39.0
+openai>=1.0.0
+click>=8.1.0
+python-dotenv>=1.0.0
+pytest>=7.4.0
+pytest-mock>=3.12.0
