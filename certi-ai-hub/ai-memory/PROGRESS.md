@@ -3,8 +3,10 @@
 project: certi-ai-hub
 phase: IMPL_PHASE2_IN_PROGRESS
 completed_tasks: [TASK-001..006]
-next_tasks: [TASK-007, TASK-008, TASK-009, TASK-010]
-completed_by: {TASK-006: "GitHub Copilot (Header.tsx / Sidebar.tsx / index.ts / layout.tsx)"}
+next_tasks: [TASK-008, TASK-009, TASK-010, TASK-011]
+completed_by:
+  TASK-006: "GitHub Copilot (Header / Sidebar / layout.tsx)"
+  TASK-007: "Cursor (LP: ヒーロー・機能カード・CTA)"
 @@END_METADATA@@
 -->
 
@@ -17,7 +19,7 @@ Last Active: 2026-03-08 00:00
 
 ## 全体進捗
 ```
-[██████░░░░░░░░░░░░░░] 30%  (6/20 tasks)
+[███████░░░░░░░░░░░░░] 35%  (7/20 tasks)
 ```
 
 ## フェーズ別進捗
@@ -40,6 +42,7 @@ Last Active: 2026-03-08 00:00
 [2026-03-08 00:00] CURSOR   boilerplate_setup           DONE
 [2026-03-08 00:00] CURSOR   db_schema_sql               DONE
 [2026-03-11 00:00] CURSOR   implement_layout            DONE
+[2026-03-11 00:00] CURSOR   implement_lp                DONE
 ```
 
 ## エージェント稼働状況
@@ -47,18 +50,15 @@ Last Active: 2026-03-08 00:00
 |-------------|------|------|------|---------|
 | CLAUDE-ARCH | 3    | 3    | 0    | 2026-03-08 |
 | COPILOT     | 1    | 1    | 0    | 2026-03-11 |
-| CURSOR      | 2    | 2    | 0    | 2026-03-08 |
+| CURSOR      | 3    | 3    | 0    | 2026-03-11 |
 | CODEX       | 0    | 0    | 0    | - |
 | TEST_AI     | 0    | 0    | 0    | - |
 
 ## 次のエージェントへの引き継ぎ事項
-1. **次に実装するタスク**: TASK-007（ランディングページ LP）
-2. **TASK-006完了内容**（GitHub Copilot が実装）:
-   - Header.tsx: モバイル/デスクトップ対応ナビ
-   - Sidebar.tsx: 固定60px サイドバー（md〜表示）
-   - index.ts: レイアウトコンポーネントをエクスポート
-   - layout.tsx: flex構造・Inter フォント・フッター統合
-   - tailwind.config.ts: フォントファミリー追加
+1. **次に実装するタスク**: TASK-008（QuestionCard コンポーネント）
+2. **完了済みタスクまとめ**:
+   - TASK-006: GitHub Copilot → Header / Sidebar / layout.tsx
+   - TASK-007: Cursor → LP（ヒーロー・機能カード・Interactive Lab・CTA）
 3. **重要な設計判断**:
    - Supabase RLSは全テーブルに適用済み（SQL参照）
    - AIはサーバーサイドAPIルート経由のみ呼ぶ

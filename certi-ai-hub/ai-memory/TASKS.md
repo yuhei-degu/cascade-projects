@@ -11,9 +11,9 @@ instruction: "[ ] のタスクを上から順に実装すること。依存関�
 
 ## サマリー
 - Total: 20
-- Done: 5
+- Done: 7
 - In Progress: 0
-- Pending: 15
+- Pending: 13
 - Failed: 0
 
 ## 凡例
@@ -52,7 +52,7 @@ instruction: "[ ] のタスクを上から順に実装すること。依存関�
   依存: TASK-005
   成果物: src/app/layout.tsx, src/components/layout/
 
-- [ ] TASK-007 | priority:HIGH | agent:CURSOR | estimate:90min
+- [x] TASK-007 | priority:HIGH | agent:CURSOR | estimate:90min
   説明: ランディングページ（LP）—機能紹介・ログインCTA
   依存: TASK-006
   成果物: src/app/(public)/page.tsx
