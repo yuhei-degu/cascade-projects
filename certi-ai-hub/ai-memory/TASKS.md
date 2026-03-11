@@ -11,9 +11,9 @@ instruction: "[ ] のタスクを上から順に実装すること。依存関�
 
 ## サマリー
 - Total: 20
-- Done: 7
+- Done: 8
 - In Progress: 0
-- Pending: 13
+- Pending: 12
 - Failed: 0
 
 ## 凡例
@@ -57,7 +57,7 @@ instruction: "[ ] のタスクを上から順に実装すること。依存関�
   依存: TASK-006
   成果物: src/app/(public)/page.tsx
 
-- [ ] TASK-008 | priority:HIGH | agent:CURSOR | estimate:120min
+- [x] TASK-008 | priority:HIGH | agent:CURSOR | estimate:120min
   説明: QuestionCard コンポーネント（択一/長文/コード問題に対応）
   依存: TASK-005
   成果物: src/components/exam/QuestionCard.tsx

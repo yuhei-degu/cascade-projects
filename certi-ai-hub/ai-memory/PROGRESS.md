@@ -3,10 +3,11 @@
 project: certi-ai-hub
 phase: IMPL_PHASE2_IN_PROGRESS
 completed_tasks: [TASK-001..006]
-next_tasks: [TASK-008, TASK-009, TASK-010, TASK-011]
+next_tasks: [TASK-009, TASK-010, TASK-011, TASK-012]
 completed_by:
   TASK-006: "GitHub Copilot (Header / Sidebar / layout.tsx)"
   TASK-007: "Cursor (LP: ヒーロー・機能カード・CTA)"
+  TASK-008: "Cursor (QuestionCard: 択一/長文/コード対応)"
 @@END_METADATA@@
 -->
 
@@ -19,7 +20,7 @@ Last Active: 2026-03-08 00:00
 
 ## 全体進捗
 ```
-[███████░░░░░░░░░░░░░] 35%  (7/20 tasks)
+[████████░░░░░░░░░░░░] 40%  (8/20 tasks)
 ```
 
 ## フェーズ別進捗
@@ -43,6 +44,7 @@ Last Active: 2026-03-08 00:00
 [2026-03-08 00:00] CURSOR   db_schema_sql               DONE
 [2026-03-11 00:00] CURSOR   implement_layout            DONE
 [2026-03-11 00:00] CURSOR   implement_lp                DONE
+[2026-03-11 00:00] CURSOR   implement_question_card     DONE
 ```
 
 ## エージェント稼働状況
@@ -50,7 +52,7 @@ Last Active: 2026-03-08 00:00
 |-------------|------|------|------|---------|
 | CLAUDE-ARCH | 3    | 3    | 0    | 2026-03-08 |
 | COPILOT     | 1    | 1    | 0    | 2026-03-11 |
-| CURSOR      | 3    | 3    | 0    | 2026-03-11 |
+| CURSOR      | 4    | 4    | 0    | 2026-03-11 |
 | CODEX       | 0    | 0    | 0    | - |
 | TEST_AI     | 0    | 0    | 0    | - |
 
