@@ -4,7 +4,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 
 // global font
-const inter = Inter({ subsets: ["latin", "japanese"], display: "swap" })
+const inter = Inter({ subsets: ["latin"], display: "swap" })
 
 export const metadata: Metadata = {
   title: "Certi-AI Hub | SC × AIF 資格学習プラットフォーム",
