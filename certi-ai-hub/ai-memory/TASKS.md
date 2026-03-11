@@ -47,7 +47,7 @@ instruction: "[ ] のタスクを上から順に実装すること。依存関�
 
 ## EPIC-002: コアUI（優先度: HIGH）
 
-- [ ] TASK-006 | priority:HIGH | agent:CURSOR | estimate:60min
+- [x] TASK-006 | priority:HIGH | agent:CURSOR | estimate:60min
   説明: グローバルレイアウト（Header/Sidebar/フォント/カラー）
   依存: TASK-005
   成果物: src/app/layout.tsx, src/components/layout/

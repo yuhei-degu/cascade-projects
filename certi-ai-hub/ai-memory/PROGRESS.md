@@ -1,9 +1,10 @@
 <!--
 @@AGENT_HANDOFF_METADATA@@
 project: certi-ai-hub
-phase: IMPL_PHASE1_DONE
-completed_tasks: [TASK-001..005]
-next_tasks: [TASK-006, TASK-007, TASK-008]
+phase: IMPL_PHASE2_IN_PROGRESS
+completed_tasks: [TASK-001..006]
+next_tasks: [TASK-007, TASK-008, TASK-009, TASK-010]
+completed_by: {TASK-006: "GitHub Copilot (Header.tsx / Sidebar.tsx / index.ts / layout.tsx)"}
 @@END_METADATA@@
 -->
 
@@ -16,7 +17,7 @@ Last Active: 2026-03-08 00:00
 
 ## 全体進捗
 ```
-[█████░░░░░░░░░░░░░░░] 25%  (5/20 tasks)
+[██████░░░░░░░░░░░░░░] 30%  (6/20 tasks)
 ```
 
 ## フェーズ別進捗
@@ -38,19 +39,27 @@ Last Active: 2026-03-08 00:00
 [2026-03-08 00:00] CLAUDE   split_tasks (20 tasks)      DONE
 [2026-03-08 00:00] CURSOR   boilerplate_setup           DONE
 [2026-03-08 00:00] CURSOR   db_schema_sql               DONE
+[2026-03-11 00:00] CURSOR   implement_layout            DONE
 ```
 
 ## エージェント稼働状況
 | Agent        | 担当 | 完了 | 失敗 | 最終稼働 |
 |-------------|------|------|------|---------|
 | CLAUDE-ARCH | 3    | 3    | 0    | 2026-03-08 |
+| COPILOT     | 1    | 1    | 0    | 2026-03-11 |
 | CURSOR      | 2    | 2    | 0    | 2026-03-08 |
 | CODEX       | 0    | 0    | 0    | - |
 | TEST_AI     | 0    | 0    | 0    | - |
 
 ## 次のエージェントへの引き継ぎ事項
-1. **次に実装するタスク**: TASK-006（グローバルレイアウト）
-2. **重要な設計判断**:
+1. **次に実装するタスク**: TASK-007（ランディングページ LP）
+2. **TASK-006完了内容**（GitHub Copilot が実装）:
+   - Header.tsx: モバイル/デスクトップ対応ナビ
+   - Sidebar.tsx: 固定60px サイドバー（md〜表示）
+   - index.ts: レイアウトコンポーネントをエクスポート
+   - layout.tsx: flex構造・Inter フォント・フッター統合
+   - tailwind.config.ts: フォントファミリー追加
+3. **重要な設計判断**:
    - Supabase RLSは全テーブルに適用済み（SQL参照）
    - AIはサーバーサイドAPIルート経由のみ呼ぶ
    - 問題データはシードSQLに含む（question_bank）
