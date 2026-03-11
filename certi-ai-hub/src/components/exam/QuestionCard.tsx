@@ -9,7 +9,7 @@ interface Props {
   question: Question
   questionNumber: number
   total: number
-  onAnswer: (key: string) => void
+  onAnswer: (value: string) => void
   disabled?: boolean
 }
 
@@ -22,6 +22,7 @@ const DIFFICULTY_LABEL = ["", "基本", "標準", "応用"]
 
 export function QuestionCard({ question, questionNumber, total, onAnswer, disabled }: Props) {
   const [selected, setSelected] = useState<string | null>(null)
+  const isMultipleChoice = !!question.options && question.options.length > 0
 
   function handleSelect(key: string) {
     if (disabled || selected) return
@@ -53,8 +54,8 @@ export function QuestionCard({ question, questionNumber, total, onAnswer, disabl
         </pre>
       )}
 
-      {/* 択一選択肢 */}
-      {question.options && (
+      {/* 択一選択肢 or 記述式入力 */}
+      {isMultipleChoice ? (
         <div className="space-y-2">
           {question.options.map(opt => (
             <button
@@ -73,6 +74,18 @@ export function QuestionCard({ question, questionNumber, total, onAnswer, disabl
               {opt.text}
             </button>
           ))}
+        </div>
+      ) : (
+        <div className="mt-2">
+          <textarea
+            className="w-full min-h-[120px] rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/40"
+            placeholder="あなたの回答を記述してください"
+            disabled={disabled || !!selected}
+            onChange={e => !selected && onAnswer(e.target.value)}
+          />
+          <p className="mt-1 text-xs text-gray-400">
+            記述式問題です。キーワードや考え方を日本語でまとめてください。
+          </p>
         </div>
       )}
 

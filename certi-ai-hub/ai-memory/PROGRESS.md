@@ -1,75 +1,77 @@
 <!--
 @@AGENT_HANDOFF_METADATA@@
 project: certi-ai-hub
-phase: IMPL_PHASE2_IN_PROGRESS
-completed_tasks: [TASK-001..006]
-next_tasks: [TASK-009, TASK-010, TASK-011, TASK-012]
-completed_by:
-  TASK-006: "GitHub Copilot (Header / Sidebar / layout.tsx)"
-  TASK-007: "Cursor (LP: ヒーロー・機能カード・CTA)"
-  TASK-008: "Cursor (QuestionCard: 択一/長文/コード対応)"
+phase: IMPL_COMPLETE
+next_phase: TEST → DEPLOY
+all_tasks_done: true
 @@END_METADATA@@
 -->
 
 # PROGRESS.md — 進捗記録
 
 ## 現在のフェーズ
-Phase: IMPL（実装フェーズ）
+Phase: IMPL_COMPLETE（実装完了）
 Started: 2026-03-08 00:00
-Last Active: 2026-03-08 00:00
+Last Active: 2026-03-11 00:00
 
 ## 全体進捗
 ```
-[████████░░░░░░░░░░░░] 40%  (8/20 tasks)
+[████████████████████] 100%  (20/20 tasks) 🎉
 ```
 
 ## フェーズ別進捗
 | フェーズ | ステータス | 完了日時 |
 |---------|---------|---------|
 | DESIGN  | ✅ DONE | 2026-03-08 |
-| IMPL P1（基盤） | ✅ DONE | 2026-03-08 |
-| IMPL P2（コアUI） | PENDING | - |
-| IMPL P3（API）  | PENDING | - |
-| IMPL P4（学習ページ） | PENDING | - |
-| IMPL P5（高度機能） | PENDING | - |
+| IMPL P1（基盤）    | ✅ DONE | 2026-03-08 |
+| IMPL P2（コアUI）  | ✅ DONE | 2026-03-11 |
+| IMPL P3（API）     | ✅ DONE | 2026-03-11 |
+| IMPL P4（学習ページ） | ✅ DONE | 2026-03-11 |
+| IMPL P5（高度機能） | ✅ DONE | 2026-03-11 |
 | TEST    | PENDING | - |
 | DEPLOY  | PENDING | - |
 
-## 実行ログ（直近）
+## 実行ログ
 ```
 [2026-03-08 00:00] CLAUDE   design_architecture         DONE
 [2026-03-08 00:00] CLAUDE   analyze_requirements        DONE
 [2026-03-08 00:00] CLAUDE   split_tasks (20 tasks)      DONE
-[2026-03-08 00:00] CURSOR   boilerplate_setup           DONE
-[2026-03-08 00:00] CURSOR   db_schema_sql               DONE
-[2026-03-11 00:00] CURSOR   implement_layout            DONE
-[2026-03-11 00:00] CURSOR   implement_lp                DONE
-[2026-03-11 00:00] CURSOR   implement_question_card     DONE
+[2026-03-08 00:00] CLAUDE   boilerplate_setup           DONE
+[2026-03-11 00:00] COPILOT  implement_layout            DONE (TASK-006)
+[2026-03-11 00:00] CURSOR   implement_lp                DONE (TASK-007)
+[2026-03-11 00:00] CURSOR   implement_question_card     DONE (TASK-008)
+[2026-03-11 00:00] CLAUDE   implement_TASK009-020       DONE (12 tasks)
 ```
 
 ## エージェント稼働状況
 | Agent        | 担当 | 完了 | 失敗 | 最終稼働 |
 |-------------|------|------|------|---------|
-| CLAUDE-ARCH | 3    | 3    | 0    | 2026-03-08 |
+| CLAUDE-ARCH | 8    | 8    | 0    | 2026-03-11 |
 | COPILOT     | 1    | 1    | 0    | 2026-03-11 |
-| CURSOR      | 4    | 4    | 0    | 2026-03-11 |
+| CURSOR      | 2    | 2    | 0    | 2026-03-11 |
 | CODEX       | 0    | 0    | 0    | - |
 | TEST_AI     | 0    | 0    | 0    | - |
 
-## 次のエージェントへの引き継ぎ事項
-1. **次に実装するタスク**: TASK-008（QuestionCard コンポーネント）
-2. **完了済みタスクまとめ**:
-   - TASK-006: GitHub Copilot → Header / Sidebar / layout.tsx
-   - TASK-007: Cursor → LP（ヒーロー・機能カード・Interactive Lab・CTA）
-3. **重要な設計判断**:
-   - Supabase RLSは全テーブルに適用済み（SQL参照）
-   - AIはサーバーサイドAPIルート経由のみ呼ぶ
-   - 問題データはシードSQLに含む（question_bank）
-3. **環境変数**（.env.local に設定が必要）:
-   - NEXT_PUBLIC_SUPABASE_URL
-   - NEXT_PUBLIC_SUPABASE_ANON_KEY
-   - SUPABASE_SERVICE_ROLE_KEY
-   - ANTHROPIC_API_KEY
+## 次のステップ（DEPLOY）
+```bash
+# 1. Supabaseプロジェクト作成
+#    https://app.supabase.com → New Project
+
+# 2. SQLを実行
+#    Supabase SQL Editor → supabase/migrations/001_initial.sql を貼り付けて実行
+
+# 3. .env.local に設定
+NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
+ANTHROPIC_API_KEY=sk-ant-...
+
+# 4. ローカル確認
+npm install && npm run dev  # → http://localhost:3000
+
+# 5. Vercelデプロイ
+vercel --prod
+```
 
 ---
-_Last updated by: CLAUDE-ARCHITECT at 2026-03-08 00:00:00_
+_Last updated by: CLAUDE at 2026-03-11 00:00:00_

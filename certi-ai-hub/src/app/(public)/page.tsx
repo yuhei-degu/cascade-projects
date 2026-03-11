@@ -46,7 +46,17 @@ export default function HomePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {FEATURES.map(f => (
             <div key={f.title} className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-              <div className="text-3xl mb-3">{f.icon}</div>
+              <div
+                className={`text-3xl mb-3 ${
+                  f.color === "sc"
+                    ? "text-sky-500"
+                    : f.color === "aws"
+                    ? "text-orange-500"
+                    : "text-indigo-500"
+                }`}
+              >
+                {f.icon}
+              </div>
               <h3 className="font-bold text-lg mb-2">{f.title}</h3>
               <p className="text-gray-500 text-sm leading-relaxed">{f.desc}</p>
             </div>

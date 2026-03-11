@@ -2,6 +2,11 @@ import type { Config } from "tailwindcss"
 const config: Config = {
   content: ["./src/**/*.{ts,tsx}"],
   theme: {
+    fontFamily: {
+      sans: ["Inter", "ui-sans-serif", "system-ui"],
+      serif: ["ui-serif", "Georgia"],
+      mono: ["ui-monospace", "SFMono-Regular"],
+    },
     extend: {
       colors: {
         brand: { DEFAULT: "#6366f1", dark: "#4f46e5" },
