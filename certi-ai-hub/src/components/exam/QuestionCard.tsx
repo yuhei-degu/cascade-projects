@@ -22,12 +22,20 @@ const DIFFICULTY_LABEL = ["", "基本", "標準", "応用"]
 
 export function QuestionCard({ question, questionNumber, total, onAnswer, disabled }: Props) {
   const [selected, setSelected] = useState<string | null>(null)
+  const [written, setWritten] = useState("")
   const isMultipleChoice = !!question.options && question.options.length > 0
 
   function handleSelect(key: string) {
     if (disabled || selected) return
     setSelected(key)
     onAnswer(key)
+  }
+
+  function handleSubmitWritten() {
+    if (disabled || selected) return
+    if (!written.trim()) return
+    setSelected("__written__")
+    onAnswer(written)
   }
 
   return (
@@ -57,7 +65,7 @@ export function QuestionCard({ question, questionNumber, total, onAnswer, disabl
       {/* 択一選択肢 or 記述式入力 */}
       {isMultipleChoice ? (
         <div className="space-y-2">
-          {question.options.map(opt => (
+          {question.options?.map(opt => (
             <button
               key={opt.key}
               onClick={() => handleSelect(opt.key)}
@@ -76,16 +84,31 @@ export function QuestionCard({ question, questionNumber, total, onAnswer, disabl
           ))}
         </div>
       ) : (
-        <div className="mt-2">
+        <div className="mt-2 space-y-2">
           <textarea
             className="w-full min-h-[120px] rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand/40"
             placeholder="あなたの回答を記述してください"
             disabled={disabled || !!selected}
-            onChange={e => !selected && onAnswer(e.target.value)}
+            value={written}
+            onChange={e => !selected && setWritten(e.target.value)}
           />
-          <p className="mt-1 text-xs text-gray-400">
-            記述式問題です。キーワードや考え方を日本語でまとめてください。
-          </p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs text-gray-400">
+              記述式問題です。キーワードや考え方を日本語でまとめてください。
+            </p>
+            <button
+              type="button"
+              onClick={handleSubmitWritten}
+              disabled={disabled || !!selected || !written.trim()}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-colors
+                ${disabled || !!selected || !written.trim()
+                  ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  : "bg-brand text-white hover:bg-brand-dark cursor-pointer"
+                }`}
+            >
+              回答を送信
+            </button>
+          </div>
         </div>
       )}
 
