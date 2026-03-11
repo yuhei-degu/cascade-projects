@@ -18,7 +18,9 @@ export default function ExamPage() {
   // 問題取得 & セッション作成
   useEffect(() => {
     async function init() {
-      const qRes = await fetch(`/api/questions?module=${module === "MIXED" ? "" : module}&limit=10&shuffle=true${category ? `&category=${category}` : ""}`)
+      const qRes = await fetch(
+        `/api/questions?module=${module}&limit=10&shuffle=true${category ? `&category=${category}` : ""}`,
+      )
       const qData = await qRes.json()
       if (!qData.data?.length) return
 

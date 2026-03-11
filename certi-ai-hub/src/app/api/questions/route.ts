@@ -4,7 +4,7 @@ import { createServiceClient } from "@/lib/supabase/server"
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
-  const module     = searchParams.get("module")   // SC | AIF
+  const module     = searchParams.get("module")   // SC | AIF | MIXED
   const category   = searchParams.get("category")
   const difficulty = searchParams.get("difficulty")
   const limit      = parseInt(searchParams.get("limit") ?? "20")
@@ -13,7 +13,11 @@ export async function GET(req: NextRequest) {
   const db = createServiceClient()
   let query = db.from("question_bank").select("*")
 
-  if (module)     query = query.eq("module", module)
+  if (module === "MIXED") {
+    query = query.in("module", ["SC", "AIF"])
+  } else if (module) {
+    query = query.eq("module", module)
+  }
   if (category)   query = query.eq("category", category)
   if (difficulty) query = query.eq("difficulty", parseInt(difficulty))
   query = query.limit(Math.min(limit, 100))

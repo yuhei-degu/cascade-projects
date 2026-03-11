@@ -14,7 +14,8 @@ interface Props {
 }
 
 export function ResultPanel({ question, userAnswer, onNext, isLast }: Props) {
-  const isCorrect = userAnswer === question.answer
+  const normalize = (v: string) => v.trim().toUpperCase()
+  const isCorrect = normalize(userAnswer) === normalize(question.answer)
   const [hint, setHint] = useState<HintResponse | null>(null)
   const [loadingHint, setLoadingHint] = useState(false)
 
