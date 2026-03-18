@@ -1,0 +1,155 @@
+[
+    {                                                                          
+    "name": "Meeting Notes Cleaner",                                           
+    "summary": "Paste rough meeting notes and get a cleaned, structured summary  with action items.",                                                       
+    "target_users": ["freelancers", "small teams", "agency owners"],
+    "core_features": [                                                         
+    "paste raw notes",                                                         
+    "auto-format into summary, decisions, and tasks",                          
+    "copy/export cleaned output",
+    "history of recent notes"                                                  
+    ],                                                                         
+    "monetization": "free tier with limited uses, monthly subscription for     
+    unlimited usage",                                                          
+    "why_12_days": "single-page workflow with simple CRUD and one core         
+    transformation feature",                                                   
+    "deployment": "deploy as a small Node or Python app on Vercel, Render, or  
+    Fly.io"                                                                    
+    },                                                                         
+    {
+    "name": "Simple Invoice Reminder",                                         
+    "summary": "Track unpaid invoices and send reminder emails on a schedule.",
+    "target_users": ["freelancers", "consultants", "small agencies"],          
+    "core_features": [                                                         
+    "create and track invoices",                                               
+    "mark paid/unpaid status",                                                 
+    "scheduled reminder emails",                                               
+    "basic dashboard"                                                          
+    ],                                                                         
+    "monetization": "monthly subscription based on invoice count",             
+    "why_12_days": "limited domain, standard forms, basic email automation",   
+    "deployment": "deploy with SQLite or Postgres on Render or Railway"        
+    },                                                                         
+    {                                                                          
+    "name": "FAQ Widget Builder",                                              
+    "summary": "Create a simple embeddable FAQ widget for small business       
+    websites.",                                                                
+    "target_users": ["small businesses", "solo founders", "web agencies"],     
+    "core_features": [                                                         
+    "create FAQ entries",
+    "customize colors and title",
+    "embed script snippet",
+    "basic usage analytics"
+    ],
+    "monetization": "monthly subscription per widget/site",                    
+    "why_12_days": "small admin panel plus embeddable client script",          
+    "deployment": "deploy as a lightweight web app with static widget assets"  
+    },
+    {                                                                          
+    "name": "Link Expiry Manager",                                             
+    "summary": "Create share links for files or pages that automatically       
+    expire.",                                                                  
+    "target_users": ["consultants", "recruiters", "small teams"],              
+    "core_features": [
+    "generate temporary links",
+    "set expiry date or access limit",                                         
+    "view link activity",                                                      
+    "disable links manually"                                                   
+    ],
+    "monetization": "subscription with limits on active links",                
+    "why_12_days": "simple token-based link system with a small dashboard",    
+    "deployment": "deploy on any basic web host with a small database"         
+    },                                                                         
+    {
+    "name": "Testimonial Collector",                                           
+    "summary": "Collect customer testimonials through a branded form and manage  them in one place.",                                                       
+    "target_users": ["freelancers", "agencies", "indie founders"],
+    "core_features": [                                                         
+    "public testimonial submission form",                                      
+    "admin review dashboard",
+    "approve and export testimonials",                                         
+    "shareable collection page"                                                
+    ],                                                                         
+    "monetization": "monthly plan per brand/workspace",                        
+    "why_12_days": "straightforward forms, moderation, and public display      
+    pages",                                                                    
+    "deployment": "deploy as a standard CRUD web app on Vercel or Render"      
+    },                                                                         
+    {                                                                          
+    "name": "Content Idea Vault",
+    "summary": "Save, tag, and organize content ideas for blogs, newsletters,  
+    and social posts.",                                                        
+    "target_users": ["creators", "marketers", "solo founders"],                
+    "core_features": [                                                         
+    "capture ideas quickly",
+    "tag and filter ideas",                                                    
+    "status pipeline like idea/drafting/published",                            
+    "weekly email digest"                                                      
+    ],                                                                         
+    "monetization": "subscription for unlimited ideas and email digests",      
+    "why_12_days": "mostly CRUD with simple filtering and optional email job", 
+    "deployment": "easy to deploy as a small full-stack app with minimal       
+    services"                                                                  
+    },                                                                         
+    {
+    "name": "Waitlist Page Generator",                                         
+    "summary": "Create a hosted waitlist page for a product launch without     
+    building a full site.",                                                    
+    "target_users": ["indie hackers", "startups", "makers"],
+    "core_features": [                                                         
+    "landing page generator",                                                  
+    "email capture form",                                                      
+    "basic referral tracking",                                                 
+    "CSV export"                                                               
+    ],
+    "monetization": "monthly subscription with page and lead limits",          
+    "why_12_days": "small templated page builder with form handling",          
+    "deployment": "deploy mostly as static pages plus a small backend"         
+    },
+    {                                                                          
+    "name": "Policy Update Notifier",
+    "summary": "Monitor a list of URLs and notify users when page content      
+    changes.",                                                                 
+    "target_users": ["compliance teams", "operations managers", "researchers"],  "core_features": [                                                         
+    "add URLs to monitor",                                                     
+    "periodic content checks",                                                 
+    "email alerts on changes",                                                 
+    "view change history"                                                      
+    ],                                                                         
+    "monetization": "subscription based on monitored page count",              
+    "why_12_days": "focused crawler plus diff detection and notifications",    
+    "deployment": "deploy as a small app with a scheduled background job"      
+    },                                                                         
+    {                                                                          
+    "name": "Client Intake Portal",                                            
+    "summary": "Give service businesses a clean intake form and dashboard for  
+    new client requests.",                                                     
+    "target_users": ["freelancers", "agencies", "consultants"],
+    "core_features": [                                                         
+    "custom intake forms",                                                     
+    "submission dashboard",
+    "email notifications",                                                     
+    "status tracking"
+    ],                                                                         
+    "monetization": "monthly subscription per workspace",                      
+    "why_12_days": "form builder can be kept simple and limited to a few field 
+    types",                                                                    
+    "deployment": "deploy as a standard web app with server-rendered pages"    
+    },                                                                         
+    {
+    "name": "Price Quote Builder",                                             
+    "summary": "Create fast, branded service quotes and send them as shareable 
+    links.",                                                                   
+    "target_users": ["freelancers", "small agencies", "contractors"],          
+    "core_features": [                                                         
+    "build quote with line items",                                             
+    "set taxes and discounts",                                                 
+    "generate hosted quote link",                                              
+    "track viewed/accepted status"
+    ],                                                                         
+    "monetization": "subscription for unlimited quotes and branding",          
+    "why_12_days": "well-bounded quoting workflow with basic status tracking", 
+    "deployment": "easy to deploy on Render, Railway, or Fly.io with a small   
+    database"
+    }                                                                          
+    ]

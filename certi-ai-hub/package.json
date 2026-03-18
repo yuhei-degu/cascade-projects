@@ -4,7 +4,7 @@
   "description": "SC × AIF 資格学習統合プラットフォーム（2026年度CBT対応）",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -40,9 +40,10 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "autoprefixer": "^10.4.20",
+    "cross-env": "^10.1.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.16",
-    "typescript": "^5.7.2",
+    "typescript": "5.9.3",
     "vitest": "^2.1.8"
   }
 }

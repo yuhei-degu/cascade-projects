@@ -16,6 +16,8 @@ export type AifCategory =
   | "responsible_ai"  // 責任あるAI
   | "sdk"             // AWS SDK連携
   | "usecase"         // GenAIユースケース
+  | "ml_basics"       // 機械学習基礎
+  | "generative_ai"   // 生成AI概念
 
 export type Category = ScCategory | AifCategory
 
@@ -35,6 +37,7 @@ export interface Question {
   explanation: string
   code_snippet?: string
   synergy_hint?: string
+  hint?: string
   tags: string[]
   created_at: string
 }

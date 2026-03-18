@@ -1,0 +1,9 @@
+[
+  "1. Define the core user flow for pasting notes, generating cleaned output, reviewing action items, and copying the result",
+  "2. Decide the MVP scope and limit it to one input screen, one results screen, and a small history view",
+  "3. Choose the stack for a simple web app with minimal dependencies and easy deployment",
+  "4. Set up the project structure, environment variables, and basic routing",
+  "5. Create the main page layout with a text area for raw meeting notes and a submit button",
+  "6. Build the backend endpoint that accepts pasted notes and returns a structured response",
+  "7. Design the output format with sections for summary, decisions, action items, and follow-ups"
+]

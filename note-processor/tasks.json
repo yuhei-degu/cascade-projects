@@ -1,0 +1,140 @@
+{
+  "_meta": {
+    "project": "note-processor",
+    "reviewed_by": "claude-senior-review",
+    "note": "Codex was unable to locate project files in CascadeProjects. Tasks generated from direct code review. Import into your task queue or process with Claude Code."
+  },
+  "tasks": [
+    {
+      "id": "PERF-001",
+      "area": "performance",
+      "priority": "high",
+      "status": "todo",
+      "title": "Singleton DB connection",
+      "file": "db/init.js",
+      "issue": "getDb() calls `new Database(DB_PATH)` on every request, and re-runs CREATE TABLE IF NOT EXISTS every time. Wastes file handles and prevents WAL optimisations.",
+      "fix": "Add module-level singleton and enable WAL on first open:\n  let _db;\n  function getDb() {\n    if (!_db) {\n      _db = new Database(DB_PATH);\n      _db.pragma('journal_mode = WAL');\n      _db.exec('CREATE TABLE IF NOT EXISTS notes ...');\n    }\n    return _db;\n  }",
+      "acceptance_criteria": [
+        "getDb() returns same instance on repeated calls",
+        "WAL pragma is set exactly once",
+        "All existing tests still pass"
+      ]
+    },
+    {
+      "id": "PERF-002",
+      "area": "performance",
+      "priority": "medium",
+      "status": "todo",
+      "title": "Paginate GET /api/notes",
+      "file": "pages/api/notes.js",
+      "issue": "Line 44: `SELECT * FROM notes ORDER BY id DESC` returns every row with no LIMIT. Full table scan + full JSON serialization on every history load.",
+      "fix": "Add LIMIT/OFFSET with optional ?page= query param. Default page size 50.\n  const page = Math.max(0, parseInt(req.query.page) || 0);\n  const PAGE_SIZE = 50;\n  db.prepare('SELECT * FROM notes ORDER BY id DESC LIMIT ? OFFSET ?').all(PAGE_SIZE, page * PAGE_SIZE);",
+      "acceptance_criteria": [
+        "GET returns max 50 rows by default",
+        "GET ?page=1 returns next 50",
+        "Response includes a `total` count field"
+      ]
+    },
+    {
+      "id": "SEC-001",
+      "area": "security",
+      "priority": "high",
+      "status": "todo",
+      "title": "Enforce raw_text size limit",
+      "file": "pages/api/notes.js",
+      "issue": "Line 9: No upper bound on raw_text length. A 50 MB payload would be passed into parseNote() which splits, maps, and iterates every line — blocking the Node.js event loop.",
+      "fix": "Reject before parsing:\n  if (rawText.length > 50_000) {\n    return res.status(413).json({ error: 'Note exceeds 50 000 character limit.' });\n  }",
+      "acceptance_criteria": [
+        "POST with >50 000 chars returns 413",
+        "POST with exactly 50 000 chars returns 201",
+        "Error body is { error: string }"
+      ]
+    },
+    {
+      "id": "SEC-002",
+      "area": "security",
+      "priority": "medium",
+      "status": "todo",
+      "title": "Validate Content-Type on POST",
+      "file": "pages/api/notes.js",
+      "issue": "If Content-Type is missing or wrong, Next.js skips JSON body parsing and req.body is undefined. The handler then silently returns 400 'raw_text is required' with no explanation.",
+      "fix": "Check header early:\n  if (req.method === 'POST' && !req.headers['content-type']?.includes('application/json')) {\n    return res.status(415).json({ error: 'Content-Type must be application/json' });\n  }",
+      "acceptance_criteria": [
+        "POST without Content-Type: application/json returns 415",
+        "POST with correct header still works"
+      ]
+    },
+    {
+      "id": "SEC-003",
+      "area": "security",
+      "priority": "low",
+      "status": "todo",
+      "title": "Add HTTP security headers",
+      "file": "next.config.js",
+      "issue": "No security headers set. Minor risk locally but a blocker before any deployment.",
+      "fix": "Add to next.config.js:\n  async headers() {\n    return [{ source: '/(.*)', headers: [\n      { key: 'X-Content-Type-Options', value: 'nosniff' },\n      { key: 'X-Frame-Options', value: 'DENY' },\n      { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' }\n    ]}];\n  }",
+      "acceptance_criteria": [
+        "X-Content-Type-Options: nosniff present on all responses",
+        "X-Frame-Options: DENY present on all responses"
+      ]
+    },
+    {
+      "id": "ARCH-001",
+      "area": "architecture",
+      "priority": "medium",
+      "status": "todo",
+      "title": "Extract repository layer from API route",
+      "file": "pages/api/notes.js",
+      "issue": "The handler does HTTP parsing, calls parseNote(), executes SQL, and shapes the response — 4 responsibilities in one 58-line function. This is why api.test.js had to inline the entire handler to avoid HTTP mock complexity.",
+      "fix": "Create lib/notesRepository.js with createNote(rawText) and listNotes(page). The API route becomes a thin adapter:\n  const { createNote, listNotes } = require('../../lib/notesRepository');\n  if (req.method === 'POST') return res.status(201).json(createNote(rawText));",
+      "acceptance_criteria": [
+        "lib/notesRepository.js exists with createNote() and listNotes()",
+        "pages/api/notes.js contains no SQL",
+        "api.test.js tests the repository directly, not via HTTP mock"
+      ]
+    },
+    {
+      "id": "ARCH-002",
+      "area": "architecture",
+      "priority": "low",
+      "status": "todo",
+      "title": "Replace CommonJS/ESM mix",
+      "file": "pages/api/notes.js",
+      "issue": "notes.js uses `export default` (ESM) but imports db/init.js and lib/parser.js via `require()` (CommonJS). This mismatch caused the Jest test to have to inline the handler logic entirely.",
+      "fix": "Convert db/init.js and lib/parser.js to ESM exports (`export function getDb()`, `export function parseNote()`), or set `\"type\": \"module\"` in package.json and update all require() calls. Pick one standard and apply it consistently.",
+      "acceptance_criteria": [
+        "All files use the same module system (ESM or CJS)",
+        "api.test.js can import the handler directly without inlining"
+      ]
+    },
+    {
+      "id": "QUAL-001",
+      "area": "code quality",
+      "priority": "medium",
+      "status": "todo",
+      "title": "Parser: 'agreed to' / 'we decided' false-positive risk",
+      "file": "lib/parser.js",
+      "issue": "Lines 28-29: substring match on `lower.includes('we decided')` and `lower.includes('agreed to')` will misclassify lines like 'We decided not to do this' or 'The team agreed to disagree' — negations are invisible to the parser.",
+      "fix": "Restrict inline phrase matching to lines that start with the phrase, or require a colon to follow:\n  /^we decided/.test(lower) || /^agreed to/.test(lower)\nThis reduces false positives without changing the happy path.",
+      "acceptance_criteria": [
+        "'We decided not to proceed' is NOT classified as a decision",
+        "'Decision: Proceed with plan A' still IS classified as a decision",
+        "Existing parser tests still pass"
+      ]
+    },
+    {
+      "id": "QUAL-002",
+      "area": "code quality",
+      "priority": "low",
+      "status": "todo",
+      "title": "Add error boundary around JSON.parse in GET handler",
+      "file": "pages/api/notes.js",
+      "issue": "Lines 49-51: JSON.parse(row.decisions_json) etc. will throw if a row contains malformed JSON (e.g. from a manual DB edit or a future bug). This crashes the entire GET /api/notes response.",
+      "fix": "Wrap in a helper:\n  function safeParseArray(str) {\n    try { return JSON.parse(str); }\n    catch { return []; }\n  }",
+      "acceptance_criteria": [
+        "GET /api/notes does not 500 when one row has malformed JSON",
+        "The malformed row returns empty arrays for affected fields"
+      ]
+    }
+  ]
+}

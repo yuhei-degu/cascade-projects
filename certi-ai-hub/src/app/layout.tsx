@@ -11,30 +11,27 @@ export const metadata: Metadata = {
   description: "情報処理安全確保支援士(SC)とAWS AI Practitioner(AIF)を統合学習。CBT対応・AI進捗分析・シナジー学習機能搭載。",
 }
 
-import { Header, Sidebar } from "../components/layout"
+import { Header, Sidebar, SidebarProvider } from "../components/layout"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ja" className={inter.className}>
       <body>
-        <div className="flex min-h-screen">
-          {/* desktop sidebar */}
-          <Sidebar />
-
-          <div className="flex-1 flex flex-col">
-            {/* header stays at top of content column */}
-            <Header />
-
-            <main className="flex-1">
-              {children}
-            </main>
-
-            <footer className="border-t border-gray-100 py-10 text-center text-sm text-gray-400">
-              <p className="font-bold text-gray-600 mb-1">🎓 Certi-AI Hub</p>
-              <p>SC × AIF 統合学習プラットフォーム — 2026年度CBT対応</p>
-            </footer>
+        <SidebarProvider>
+          <div className="flex min-h-screen">
+            <Sidebar />
+            <div className="flex-1 flex flex-col min-w-0">
+              <Header />
+              <main className="flex-1">
+                {children}
+              </main>
+              <footer className="border-t border-gray-100 py-10 text-center text-sm text-gray-400">
+                <p className="font-bold text-gray-600 mb-1">🎓 Certi-AI Hub</p>
+                <p>SC × AIF 統合学習プラットフォーム — 2026年度CBT対応</p>
+              </footer>
+            </div>
           </div>
-        </div>
+        </SidebarProvider>
       </body>
     </html>
   )
