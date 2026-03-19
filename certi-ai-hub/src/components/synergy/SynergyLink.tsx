@@ -38,19 +38,11 @@ export function SynergyLinkView({ links }: Props) {
               <span className="text-sm font-semibold text-gray-700">{link.description}</span>
             </div>
 
-            {/* SC ↔ AIF カテゴリ表示のみ */}
-            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-3 items-center">
-              <div className="bg-sky-50 border border-sky-200 rounded-xl px-4 py-2.5">
-                <span className="text-xs font-bold text-sky-600">🔒 SC</span>
-                <p className="text-xs text-sky-700 mt-0.5 font-medium">#{link.sc_question.category}</p>
-              </div>
-
-              <ArrowRight size={18} className="text-amber-400 mx-auto hidden sm:block" />
-
-              <div className="bg-orange-50 border border-orange-200 rounded-xl px-4 py-2.5">
-                <span className="text-xs font-bold text-orange-600">☁️ AIF</span>
-                <p className="text-xs text-orange-700 mt-0.5 font-medium">#{link.aws_question.category}</p>
-              </div>
+            {/* SC ↔ AIF */}
+            <div className="flex items-center gap-2">
+              <span className="bg-sky-100 text-sky-700 text-xs font-bold px-3 py-1 rounded-full">🔒 SC</span>
+              <ArrowRight size={14} className="text-amber-400 shrink-0" />
+              <span className="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full">☁️ AIF</span>
             </div>
           </div>
         )
