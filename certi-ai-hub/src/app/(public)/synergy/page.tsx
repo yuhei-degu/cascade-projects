@@ -1,4 +1,6 @@
 // src/app/(public)/synergy/page.tsx
+export const dynamic = "force-dynamic" // DBが更新されても常に最新を取得
+
 import { createServiceClient } from "@/lib/supabase/server"
 import { SynergyLinkView } from "@/components/synergy/SynergyLink"
 
