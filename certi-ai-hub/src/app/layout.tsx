@@ -2,16 +2,51 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
+import { Header, Sidebar, SidebarProvider } from "../components/layout"
 
-// global font
 const inter = Inter({ subsets: ["latin"], display: "swap" })
 
-export const metadata: Metadata = {
-  title: "Certi-AI Hub | SC × AIF 資格学習プラットフォーム",
-  description: "情報処理安全確保支援士(SC)とAWS AI Practitioner(AIF)を統合学習。CBT対応・AI進捗分析・シナジー学習機能搭載。",
-}
+const SITE_URL = "https://certi-ai-hub.vercel.app"
+const SITE_NAME = "Certi-AI Hub"
+const DESCRIPTION = "情報処理安全確保支援士（SC）とAWS Certified AI Practitioner（AIF）を同時に対策できる無料学習プラットフォーム。204問以上・カテゴリ別・難易度別・模擬試験対応。2026年度CBT方式対応。"
 
-import { Header, Sidebar, SidebarProvider } from "../components/layout"
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_NAME} | SC × AIF 資格学習プラットフォーム`,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: DESCRIPTION,
+  keywords: [
+    "情報処理安全確保支援士", "セキスペ", "SC試験", "SC対策",
+    "AWS Certified AI Practitioner", "AIF", "AIF対策", "AWS AI試験",
+    "CBT模擬試験", "IT資格", "資格学習", "セキュリティ資格",
+    "プロンプトインジェクション", "Bedrock", "生成AI", "機械学習",
+  ],
+  authors: [{ name: SITE_NAME }],
+  creator: SITE_NAME,
+  openGraph: {
+    type: "website",
+    locale: "ja_JP",
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} | SC × AIF 資格学習プラットフォーム`,
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE_NAME} | SC × AIF 資格学習プラットフォーム`,
+    description: DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
+  },
+  alternates: {
+    canonical: SITE_URL,
+  },
+}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
