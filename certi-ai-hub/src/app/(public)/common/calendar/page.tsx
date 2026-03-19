@@ -2,7 +2,7 @@
 // src/app/(public)/common/calendar/page.tsx
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Calendar, Target, BookOpen, Clock } from "lucide-react"
+import { Target, BookOpen, Clock } from "lucide-react"
 
 interface ExamDates {
   sc: string
@@ -10,11 +10,36 @@ interface ExamDates {
 }
 
 const STUDY_PLAN = [
-  { days: 90, label: "3ヶ月前〜", tasks: ["必須問題を全カテゴリ一周", "苦手カテゴリの特定"], color: "bg-green-50 border-green-200 text-green-700" },
-  { days: 60, label: "2ヶ月前〜", tasks: ["標準問題に挑戦", "シナジー学習でSC×AIF連携を把握"], color: "bg-sky-50 border-sky-200 text-sky-700" },
-  { days: 30, label: "1ヶ月前〜", tasks: ["難問チャレンジ", "模擬試験で本番形式に慣れる"], color: "bg-violet-50 border-violet-200 text-violet-700" },
-  { days: 14, label: "2週間前〜", tasks: ["模擬試験を毎日1回", "間違えた問題の集中復習"], color: "bg-amber-50 border-amber-200 text-amber-700" },
-  { days: 7,  label: "1週間前〜", tasks: ["最終確認・弱点の洗い出し", "体調管理・睡眠重視"], color: "bg-red-50 border-red-200 text-red-700" },
+  {
+    days: 180, label: "6ヶ月前〜",
+    sc: ["SC：1日1〜2時間を目標に必須問題を一周", "苦手カテゴリを特定して重点学習"],
+    aif: ["AIF：1日30分〜1時間でAWS基礎を固める", "Bedrockの基本概念を把握"],
+    color: "bg-green-50 border-green-200 text-green-700"
+  },
+  {
+    days: 90, label: "3ヶ月前〜",
+    sc: ["SC：標準問題に挑戦・シナジー学習開始", "科目B長文読解の練習"],
+    aif: ["AIF：Responsible AI・ML基礎を重点学習", "AWS公式ドキュメントで補強"],
+    color: "bg-sky-50 border-sky-200 text-sky-700"
+  },
+  {
+    days: 30, label: "1ヶ月前〜",
+    sc: ["SC：難問チャレンジ・模擬試験を週2〜3回", "間違えた問題を繰り返し復習"],
+    aif: ["AIF：模擬試験で弱点洗い出し", "SDKサービスの使い分けを整理"],
+    color: "bg-violet-50 border-violet-200 text-violet-700"
+  },
+  {
+    days: 14, label: "2週間前〜",
+    sc: ["SC：模擬試験を毎日1回（20問）", "正解率70%以上を安定させる"],
+    aif: ["AIF：全カテゴリ総復習", "模擬試験を毎日1回"],
+    color: "bg-amber-50 border-amber-200 text-amber-700"
+  },
+  {
+    days: 7, label: "1週間前〜",
+    sc: ["SC：最終確認・弱点の洗い出し", "体調管理・睡眠重視"],
+    aif: ["AIF：新しいことをやらず復習に徹する", "体調管理・睡眠重視"],
+    color: "bg-red-50 border-red-200 text-red-700"
+  },
 ]
 
 function daysUntil(dateStr: string): number | null {
@@ -22,8 +47,7 @@ function daysUntil(dateStr: string): number | null {
   const target = new Date(dateStr)
   const today  = new Date()
   today.setHours(0, 0, 0, 0)
-  const diff = Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-  return diff
+  return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 }
 
 function getCurrentPhase(days: number | null) {
@@ -51,8 +75,8 @@ export default function CalendarPage() {
 
   if (!mounted) return null
 
-  const scDays  = daysUntil(dates.sc)
-  const aifDays = daysUntil(dates.aif)
+  const scDays   = daysUntil(dates.sc)
+  const aifDays  = daysUntil(dates.aif)
   const scPhase  = getCurrentPhase(scDays)
   const aifPhase = getCurrentPhase(aifDays)
 
@@ -64,6 +88,39 @@ export default function CalendarPage() {
         </div>
         <h1 className="text-3xl font-black mb-2">試験日カウントダウン</h1>
         <p className="text-gray-500 text-sm">試験日を設定すると、残り日数と学習フェーズが表示されます。</p>
+      </div>
+
+      {/* 必要学習時間の目安 */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-8">
+        <h2 className="font-black text-gray-700 mb-3">⏱ 必要学習時間の目安</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-100">
+                <th className="text-left py-2 pr-4 text-gray-500 font-bold text-xs">試験</th>
+                <th className="text-center py-2 px-3 text-gray-500 font-bold text-xs">資格未経験</th>
+                <th className="text-center py-2 px-3 text-sky-600 font-bold text-xs">IT経験者</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-gray-50">
+                <td className="py-3 pr-4">
+                  <span className="font-bold text-sky-700">🔒 SC（セキスペ）</span>
+                </td>
+                <td className="text-center py-3 px-3 text-gray-600 font-medium">300〜500時間</td>
+                <td className="text-center py-3 px-3 text-sky-700 font-bold">120〜200時間</td>
+              </tr>
+              <tr>
+                <td className="py-3 pr-4">
+                  <span className="font-bold text-orange-700">☁️ AIF</span>
+                </td>
+                <td className="text-center py-3 px-3 text-gray-600 font-medium">40〜80時間</td>
+                <td className="text-center py-3 px-3 text-orange-700 font-bold">20〜40時間</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-gray-400 mt-2">※ IT経験者（システム開発・運用経験あり）の場合の目安です</p>
       </div>
 
       {/* 試験日設定 */}
@@ -120,18 +177,32 @@ export default function CalendarPage() {
           const isCurrent = isCurrentSC || isCurrentAIF
           return (
             <div key={i} className={`rounded-2xl border-2 p-4 transition-all ${p.color} ${isCurrent ? "ring-2 ring-offset-2 ring-brand" : ""}`}>
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-3">
                 {isCurrent && <span className="text-xs font-black bg-brand text-white px-2 py-0.5 rounded-full">現在のフェーズ</span>}
                 <span className="font-bold text-sm">{p.label}</span>
               </div>
-              <ul className="space-y-1">
-                {p.tasks.map((t, j) => (
-                  <li key={j} className="text-xs flex items-start gap-1.5">
-                    <Clock size={11} className="mt-0.5 shrink-0 opacity-60" />
-                    {t}
-                  </li>
-                ))}
-              </ul>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <p className="text-xs font-bold opacity-60 mb-1">🔒 SC</p>
+                  <ul className="space-y-1">
+                    {p.sc.map((t, j) => (
+                      <li key={j} className="text-xs flex items-start gap-1.5">
+                        <Clock size={10} className="mt-0.5 shrink-0 opacity-50" />{t}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <p className="text-xs font-bold opacity-60 mb-1">☁️ AIF</p>
+                  <ul className="space-y-1">
+                    {p.aif.map((t, j) => (
+                      <li key={j} className="text-xs flex items-start gap-1.5">
+                        <Clock size={10} className="mt-0.5 shrink-0 opacity-50" />{t}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </div>
           )
         })}
