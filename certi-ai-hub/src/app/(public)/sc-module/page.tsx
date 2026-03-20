@@ -6,8 +6,8 @@ import { SqlInjectionLab } from "@/components/lab/SqlInjectionLab"
 import { PromptInjectionLab } from "@/components/lab/PromptInjectionLab"
 
 const CATEGORIES = [
-  { key: "ai_threat",  label: "AI脇威対策",         icon: Brain,       color: "red",    desc: "プロンプトインジェクション・データポイズニング・モデル反転攻撃" },
-  { key: "threat",     label: "脇威・攻撃手法",      icon: ShieldCheck, color: "orange", desc: "SQLi・XSS・CSRF・フィッシング・マルウェア" },
+  { key: "ai_threat",  label: "AI脅威対策",         icon: Brain,       color: "red",    desc: "プロンプトインジェクション・データポイズニング・モデル反転攻撃" },
+  { key: "threat",     label: "脅威・攻撃手法",      icon: ShieldCheck, color: "orange", desc: "SQLi・XSS・CSRF・フィッシング・マルウェア" },
   { key: "coding",     label: "セキュアコーディング", icon: Code2,       color: "sky",    desc: "脆弱なコードの特定・修正・セキュアな実装パターン" },
   { key: "crypto",     label: "暗号・PKI",           icon: Lock,        color: "violet", desc: "公開鍵暗号・電子署名・TLS・証明書管理" },
   { key: "management", label: "セキュリティ管理",     icon: ShieldCheck, color: "teal",   desc: "ISMS・リスク管理・インシデント対応・法規制" },
@@ -36,7 +36,7 @@ export default function ScModulePage() {
           🔒 情報処理安全確保支援士（SC）
         </div>
         <h1 className="text-3xl font-black mb-3">情報処理安全確保支援士 学習モジュール</h1>
-        <p className="text-gray-500">科目B長文・AI脇威・セキュアコーディングを完全網羅。2026年度CBT対応。</p>
+        <p className="text-gray-500">科目B長文・AI脅威・セキュアコーディングを完全網羅。2026年度CBT対応。</p>
       </div>
 
       <div className="bg-gradient-to-r from-sky-900 to-indigo-900 rounded-2xl p-6 text-white mb-8 flex items-center justify-between">
