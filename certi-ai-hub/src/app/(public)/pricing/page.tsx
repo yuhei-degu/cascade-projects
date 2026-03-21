@@ -6,8 +6,25 @@ import Link from "next/link"
 import { createAuthClient } from "@/lib/supabase/auth"
 import { Check } from "lucide-react"
 
-const FREE_FEATURES = ["全カテゴリ学習（1日10問まで）", "SC × AIF 模擬試験", "ヒント表示", "シナジーマップ閲覧", "Interactive Lab"]
-const PAID_FEATURES = ["全問題 無制限アクセス（204問+）", "SC × AIF 模擬試験（20問）", "ヒント表示", "シナジーマップ閲覧", "Interactive Lab", "ダッシュボード（学習履歴永続保存）", "AI進捗分析", "試験日カレンダー"]
+const FREE_FEATURES = [
+  "全カテゴリ学習（1日10問まで）",
+  "SC / AIF 模擬試験（1日10問の範囲内）",
+  "ヒント表示・解説",
+  "SC × AIF シナジーマップ",
+  "Interactive Lab（SQLi・プロンプトインジェクション体験）",
+  "試験日カレンダー",
+]
+
+const PAID_FEATURES = [
+  "全問題 無制限アクセス（204問+）",
+  "1日の問題数制限なし",
+  "SC / AIF 模擬試験（20問）を何度でも",
+  "間違い問題の集中復習",
+  "ダッシュボード・学習履歴",
+  "AI進捗分析",
+]
+
+const ONLY_DIFF = "無料プランと有料プランの違いは「1日の問題数」だけです。"
 
 function PricingContent() {
   const router  = useRouter()
@@ -59,16 +76,21 @@ function PricingContent() {
     <main className="min-h-screen bg-gray-50 py-14 px-4">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-10">
-          <h1 className="text-3xl font-black mb-2">シンプルな料金プラン</h1>
-          <p className="text-gray-500">一回払いで全機能を永久に解放</p>
+          <h1 className="text-3xl font-black mb-2">料金プラン</h1>
+          <p className="text-gray-500 text-sm">無料で始めて、必要になったらアップグレード</p>
           {cancelled && <p className="mt-3 text-sm text-amber-600 bg-amber-50 border border-amber-200 rounded-xl px-4 py-2 inline-block">決済がキャンセルされました</p>}
+        </div>
+
+        {/* 違いの一言説明 */}
+        <div className="bg-indigo-50 border border-indigo-100 rounded-2xl px-5 py-3.5 text-center mb-6">
+          <p className="text-indigo-700 text-sm font-medium">{ONLY_DIFF}</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="bg-white rounded-3xl border-2 border-gray-100 p-7">
             <p className="text-xs font-bold text-gray-400 mb-1">無料プラン</p>
             <p className="text-3xl font-black mb-1">¥0</p>
-            <p className="text-gray-400 text-xs mb-6">登録不要でお試し</p>
+            <p className="text-gray-400 text-xs mb-6">登録不要・1日10問まで</p>
             <ul className="space-y-2.5 mb-6">
               {FREE_FEATURES.map(f => (
                 <li key={f} className="flex items-start gap-2 text-sm text-gray-600">
@@ -85,7 +107,7 @@ function PricingContent() {
             <div className="absolute top-4 right-4 bg-amber-400 text-amber-900 text-xs font-black px-3 py-1 rounded-full">買い切り</div>
             <p className="text-xs font-bold text-indigo-300 mb-1">プレミアムプラン</p>
             <p className="text-3xl font-black mb-1">¥1,980</p>
-            <p className="text-indigo-300 text-xs mb-6">一回払い・永久利用</p>
+            <p className="text-indigo-300 text-xs mb-6">買い切り・永久利用・問題数無制限</p>
             <ul className="space-y-2.5 mb-6">
               {PAID_FEATURES.map(f => (
                 <li key={f} className="flex items-start gap-2 text-sm text-indigo-100">
