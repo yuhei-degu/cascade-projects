@@ -10,7 +10,7 @@ export interface ExamState {
   currentIdx:  number
   answers:     Record<string, string>
   results:     Record<string, boolean>
-  phase:       "loading" | "running" | "reviewing" | "finished"
+  phase:       "loading" | "running" | "reviewing" | "finished" | "limit_reached"
   startedAt:   number
 }
 
@@ -22,6 +22,7 @@ export type ExamAction =
   | { type: "TIME_UP" }
   | { type: "RETRY_WRONGS" }
   | { type: "RESET" }
+  | { type: "LIMIT_REACHED" }
 
 export function examReducer(state: ExamState, action: ExamAction): ExamState {
   switch (action.type) {
@@ -78,6 +79,8 @@ export function examReducer(state: ExamState, action: ExamAction): ExamState {
     }
     case "RESET":
       return { ...initialExamState }
+    case "LIMIT_REACHED":
+      return { ...initialExamState, phase: "limit_reached" }
     default:
       return state
   }

@@ -7,6 +7,7 @@ import type { ExamMode } from "@/lib/exam/engine"
 import { QuestionCard } from "@/components/exam/QuestionCard"
 import { ResultPanel }  from "@/components/exam/ResultPanel"
 import { ExamTimer }    from "@/components/exam/ExamTimer"
+import Link from "next/link"
 import type { Question } from "@/types"
 
 const DIFFICULTY_LABEL: Record<string, string> = {
@@ -23,13 +24,18 @@ function ExamContent() {
   const [state, dispatch] = useReducer(examReducer, initialExamState)
 
   useEffect(() => {
-    // URLパラメータが変わったら即ローディング状態にリセット
     dispatch({ type: "RESET" })
     async function init() {
       const qs = new URLSearchParams({ module, limit: String(limit), shuffle: "true" })
       if (category)   qs.set("category", category)
       if (difficulty) qs.set("difficulty", difficulty)
-      const qRes  = await fetch(`/api/questions?${qs}`)
+      const qRes = await fetch(`/api/questions?${qs}`)
+
+      if (qRes.status === 403) {
+        dispatch({ type: "LIMIT_REACHED" })
+        return
+      }
+
       const qData = await qRes.json()
       if (!qData.data?.length) return
       const mockSession = {
@@ -57,6 +63,26 @@ function ExamContent() {
     dispatch({ type: "ANSWER", questionId: q.id, answer, correct: is_correct })
   }, [state.questions, state.currentIdx, state.session])
 
+  // ── 制限エラー画面 ──────────────────────────────────────
+  if (state.phase === "limit_reached") return (
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="bg-white rounded-3xl shadow-xl p-8 max-w-sm w-full text-center">
+        <div className="text-5xl mb-4">🔒</div>
+        <h1 className="text-xl font-black mb-2">本日の無料問題数に達しました</h1>
+        <p className="text-gray-500 text-sm mb-6">
+          無料プランは1日10問まで。<br />
+          プレミアムプランで無制限に学習できます。
+        </p>
+        <Link href="/pricing"
+          className="block w-full bg-brand text-white font-black py-3 rounded-xl hover:bg-indigo-700 transition-colors mb-3">
+          ✨ プレミアムで無制限に学ぶ
+        </Link>
+        <Link href="/" className="text-sm text-gray-400 hover:text-gray-600">トップに戻る</Link>
+      </div>
+    </div>
+  )
+
+  // ── ローディング ────────────────────────────────────────
   if (state.phase === "loading") return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
@@ -66,6 +92,7 @@ function ExamContent() {
     </div>
   )
 
+  // ── 試験完了画面 ────────────────────────────────────────
   if (state.phase === "finished") {
     const { correct, total, pct } = calcScore(state.results)
     const passing    = isPassing(pct)
@@ -73,15 +100,10 @@ function ExamContent() {
     const modeLabel  = difficulty ? DIFFICULTY_LABEL[difficulty] : category ? `#${category}` : (mode === "exam" ? "模擬試験" : "全問")
     const retryUrl   = `/common/exam?module=${module}${category ? `&category=${category}` : ""}${difficulty ? `&difficulty=${difficulty}` : ""}&mode=${mode}`
     const backUrl    = module === "AIF" ? "/aws-module" : "/sc-module"
-
-    // localStorageに記録（ゲストモード）
     if (typeof window !== "undefined") {
       try {
         const prev = JSON.parse(localStorage.getItem("certi_sessions") ?? "[]")
-        prev.push({
-          date: new Date().toLocaleDateString("ja-JP"),
-          module, correct, total, pct, mode,
-        })
+        prev.push({ date: new Date().toLocaleDateString("ja-JP"), module, correct, total, pct, mode })
         localStorage.setItem("certi_sessions", JSON.stringify(prev.slice(-50)))
       } catch { /* ignore */ }
     }
@@ -94,8 +116,7 @@ function ExamContent() {
             <h1 className="text-2xl font-black mb-2">{passing ? "合格ライン達成！" : "もう少し！"}</h1>
             <p className="text-gray-500 mb-4">{correct} / {total} 問正解</p>
             <div className="relative h-4 bg-gray-100 rounded-full overflow-hidden mb-1">
-              <div className={`h-full rounded-full transition-all duration-1000 ${passing ? "bg-green-500" : "bg-amber-400"}`}
-                style={{ width: `${pct}%` }} />
+              <div className={`h-full rounded-full transition-all duration-1000 ${passing ? "bg-green-500" : "bg-amber-400"}`} style={{ width: `${pct}%` }} />
             </div>
             <p className={`text-3xl font-black mb-1 ${passing ? "text-green-600" : "text-amber-600"}`}>{pct}%</p>
             <p className="text-xs text-gray-400 mb-6">合格ライン: 70%</p>
@@ -114,15 +135,13 @@ function ExamContent() {
             <div className="space-y-4">
               <h2 className="text-lg font-black text-gray-700">📖 解説一覧</h2>
               {state.questions.map((q, i) => {
-                const userAns = state.answers[q.id]
+                const userAns   = state.answers[q.id]
                 const isCorrect = state.results[q.id]
                 const isTimeout = userAns === "__timeout__"
                 return (
                   <div key={q.id} className={`bg-white rounded-2xl border-2 p-5 ${isCorrect ? "border-green-200" : "border-red-200"}`}>
                     <div className="flex items-start gap-3 mb-3">
-                      <span className={`text-lg shrink-0 ${isCorrect ? "text-green-500" : "text-red-500"}`}>
-                        {isCorrect ? "✅" : "❌"}
-                      </span>
+                      <span className={`text-lg shrink-0 ${isCorrect ? "text-green-500" : "text-red-500"}`}>{isCorrect ? "✅" : "❌"}</span>
                       <div className="flex-1">
                         <p className="text-xs text-gray-400 mb-1">Q{i + 1} · {q.category} · 難易度{q.difficulty}</p>
                         <p className="font-medium text-gray-800 text-sm leading-relaxed">{q.question}</p>
@@ -154,30 +173,20 @@ function ExamContent() {
       <div className="sticky top-14 z-30 bg-white border-b border-gray-100 px-4 py-3">
         <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
           <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div className="h-full bg-brand rounded-full transition-all"
-              style={{ width: `${(state.currentIdx / state.questions.length) * 100}%` }} />
+            <div className="h-full bg-brand rounded-full transition-all" style={{ width: `${(state.currentIdx / state.questions.length) * 100}%` }} />
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            {mode === "exam" && (
-              <span className="text-xs font-bold bg-red-50 text-red-600 border border-red-200 px-2 py-1 rounded-full">📋 模擬試験</span>
-            )}
-            {difficulty && (
-              <span className="text-xs font-bold bg-indigo-50 text-brand px-2 py-1 rounded-full">{DIFFICULTY_LABEL[difficulty]}</span>
-            )}
+            {mode === "exam" && <span className="text-xs font-bold bg-red-50 text-red-600 border border-red-200 px-2 py-1 rounded-full">📋 模擬試験</span>}
+            {difficulty && <span className="text-xs font-bold bg-indigo-50 text-brand px-2 py-1 rounded-full">{DIFFICULTY_LABEL[difficulty]}</span>}
             <span className="text-sm font-bold text-gray-500">{state.currentIdx + 1} / {state.questions.length}</span>
           </div>
-          <ExamTimer key={state.currentIdx} timeLimitSeconds={180}
-            onTimeUp={() => dispatch({ type: "TIME_UP" })} paused={state.phase === "reviewing"} />
+          <ExamTimer key={state.currentIdx} timeLimitSeconds={180} onTimeUp={() => dispatch({ type: "TIME_UP" })} paused={state.phase === "reviewing"} />
         </div>
       </div>
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <QuestionCard key={current.id} question={current}
-          questionNumber={state.currentIdx + 1} total={state.questions.length}
-          onAnswer={handleAnswer} disabled={state.phase === "reviewing"} />
+        <QuestionCard key={current.id} question={current} questionNumber={state.currentIdx + 1} total={state.questions.length} onAnswer={handleAnswer} disabled={state.phase === "reviewing"} />
         {state.mode === "study" && state.phase === "reviewing" && answered && (
-          <ResultPanel question={current} userAnswer={answered}
-            onNext={() => dispatch({ type: "NEXT" })}
-            isLast={state.currentIdx === state.questions.length - 1} />
+          <ResultPanel question={current} userAnswer={answered} onNext={() => dispatch({ type: "NEXT" })} isLast={state.currentIdx === state.questions.length - 1} />
         )}
       </div>
     </div>
@@ -186,14 +195,7 @@ function ExamContent() {
 
 export default function ExamPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4 animate-bounce">📝</div>
-          <p className="text-gray-500 font-medium">読み込み中...</p>
-        </div>
-      </div>
-    }>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-center"><div className="text-4xl mb-4 animate-bounce">📝</div><p className="text-gray-500 font-medium">読み込み中...</p></div></div>}>
       <ExamContent />
     </Suspense>
   )
