@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: session.url })
   } catch (err: any) {
-    console.error("Stripe checkout error:", err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    console.error("Stripe checkout error:", err?.message, err?.type, err?.code)
+    return NextResponse.json({ error: err?.message ?? "Unknown error", type: err?.type }, { status: 500 })
   }
 }
