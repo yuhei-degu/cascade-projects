@@ -212,7 +212,7 @@ export default function HomePage() {
         <h2 className="text-xl sm:text-2xl font-black text-gray-900 mb-2">
           判断力は、問題を解くことで鍛えられる。
         </h2>
-        <p className="text-gray-400 text-sm mb-8">模擬試験・カテゴリ別学習・シナジーマップがすべて無料</p>
+        <p className="text-gray-400 text-sm mb-8">無料プランで今日からすぐ始められます</p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link href="/common/exam?module=SC&mode=exam"
             className="bg-sky-600 text-white font-black px-8 py-3.5 rounded-2xl hover:bg-sky-500 transition-colors shadow-lg text-sm">
