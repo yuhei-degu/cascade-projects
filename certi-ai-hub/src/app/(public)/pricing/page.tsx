@@ -1,21 +1,21 @@
 "use client"
 // src/app/(public)/pricing/page.tsx
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { createAuthClient } from "@/lib/supabase/auth"
 import { Check } from "lucide-react"
-import { Suspense } from "react"
 
-const FREE_FEATURES  = ["全カテゴリ学習（1日10問まで）", "SC × AIF 模擬試験", "ヒント表示", "シナジーマップ閲覧", "Interactive Lab"]
-const PAID_FEATURES  = ["全問題 無制限アクセス（204問+）", "SC × AIF 模擬試験（20問）", "ヒント表示", "シナジーマップ閲覧", "Interactive Lab", "ダッシュボード（学習履歴永続保存）", "AI進捗分析", "試験日カレンダー"]
+const FREE_FEATURES = ["全カテゴリ学習（1日10問まで）", "SC × AIF 模擬試験", "ヒント表示", "シナジーマップ閲覧", "Interactive Lab"]
+const PAID_FEATURES = ["全問題 無制限アクセス（204問+）", "SC × AIF 模擬試験（20問）", "ヒント表示", "シナジーマップ閲覧", "Interactive Lab", "ダッシュボード（学習履歴永続保存）", "AI進捗分析", "試験日カレンダー"]
 
 function PricingContent() {
-  const router       = useRouter()
-  const params       = useSearchParams()
-  const [user, setUser]       = useState<any>(null)
-  const [premium, setPremium] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const router  = useRouter()
+  const params  = useSearchParams()
+  const [user, setUser]         = useState<any>(null)
+  const [premium, setPremium]   = useState(false)
+  const [loading, setLoading]   = useState(false)
+  const [error, setError]       = useState("")
   const cancelled = params.get("payment") === "cancelled"
 
   useEffect(() => {
@@ -31,14 +31,28 @@ function PricingContent() {
 
   async function handleCheckout() {
     if (!user) { router.push("/login"); return }
-    setLoading(true)
-    const res  = await fetch("/api/stripe/checkout", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_id: user.id, email: user.email }),
-    })
-    const data = await res.json()
-    if (data.url) window.location.href = data.url
-    else { alert(data.error); setLoading(false) }
+    setLoading(true); setError("")
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: user.id, email: user.email }),
+      })
+      const text = await res.text()
+      let data: any = {}
+      try { data = JSON.parse(text) } catch {
+        setError(`サーバーエラー (${res.status}): レスポンスが不正です`)
+        setLoading(false); return
+      }
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        setError(data.error ?? `エラーが発生しました (${res.status})`)
+        setLoading(false)
+      }
+    } catch (e: any) {
+      setError("通信エラーが発生しました: " + e.message)
+      setLoading(false)
+    }
   }
 
   return (
@@ -51,7 +65,6 @@ function PricingContent() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* 無料 */}
           <div className="bg-white rounded-3xl border-2 border-gray-100 p-7">
             <p className="text-xs font-bold text-gray-400 mb-1">無料プラン</p>
             <p className="text-3xl font-black mb-1">¥0</p>
@@ -68,7 +81,6 @@ function PricingContent() {
             </Link>
           </div>
 
-          {/* 有料 */}
           <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-3xl border-2 border-indigo-500 p-7 text-white relative overflow-hidden">
             <div className="absolute top-4 right-4 bg-amber-400 text-amber-900 text-xs font-black px-3 py-1 rounded-full">買い切り</div>
             <p className="text-xs font-bold text-indigo-300 mb-1">プレミアムプラン</p>
@@ -81,6 +93,11 @@ function PricingContent() {
                 </li>
               ))}
             </ul>
+            {error && (
+              <div className="mb-3 bg-red-500/20 border border-red-400/30 text-red-200 text-xs p-3 rounded-xl">
+                ⚠️ {error}
+              </div>
+            )}
             {premium ? (
               <div className="w-full text-center py-2.5 rounded-xl bg-green-500 text-white text-sm font-black">
                 ✅ 購入済み
@@ -93,7 +110,6 @@ function PricingContent() {
             )}
           </div>
         </div>
-
         <p className="text-center text-xs text-gray-400 mt-6">
           Stripe 決済（SSL暗号化）• クレジットカード対応 • 領収書発行可能
         </p>
