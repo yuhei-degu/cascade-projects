@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { Header, Sidebar, SidebarProvider } from "../components/layout"
+import { FeedbackWidget } from "../components/feedback/FeedbackWidget"
 
 const inter = Inter({ subsets: ["latin"], display: "swap" })
 
@@ -60,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <main className="flex-1">
                 {children}
               </main>
+              <FeedbackWidget />
               <footer className="border-t border-gray-100 py-10 text-center text-sm text-gray-400">
                 <p className="font-bold text-gray-600 mb-1">🎓 Certi-AI Hub</p>
                 <p>SC × AIF 統合学習プラットフォーム — 2026年度CBT対応</p>

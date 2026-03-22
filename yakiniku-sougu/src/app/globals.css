@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@300;400;500;700&family=Cormorant+Garamond:ital,wght@1,300&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* 背景：琥珀色が少し混じった暖かい黒 */
+  --bg:        #131110;
+  --surface:   #1b1816;
+  --surface2:  #211e1b;
+
+  /* アクセント */
+  --red:       #921c1c;
+  --red-h:     #ab2222;
+  --amber:     #c8916a;   /* 暖色ランプの色 */
+  --amber-dim: #8a6040;
+
+  /* テキスト */
+  --cream:     #f0e8dc;   /* 少し黄みがかった白 */
+  --text:      #e2d8ce;
+  --muted:     #9a8d82;
+  --dim:       #55493f;
+
+  /* ボーダー */
+  --border:    #2a2420;
+  --border2:   #342e28;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Zen Kaku Gothic New', sans-serif;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Cormorant は英字装飾のみ */
+.fc { font-family: 'Cormorant Garamond', serif; }
+
+/* ── フェードイン（控えめ） ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade { animation: fadeIn 0.85s ease both; }
+.d1   { animation-delay: 0.2s; }
+.d2   { animation-delay: 0.38s; }
+.d3   { animation-delay: 0.56s; }
+.d4   { animation-delay: 0.74s; }
+
+/* スクロールバー */
+::-webkit-scrollbar       { width: 3px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); }
