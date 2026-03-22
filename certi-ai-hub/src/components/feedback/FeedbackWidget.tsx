@@ -25,7 +25,10 @@ export function FeedbackWidget() {
     try {
       const res = await fetch("/api/feedback", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ category, message, page_url: window.location.pathname }),
+        body: JSON.stringify({
+          category, message,
+          page_url: typeof window !== "undefined" ? window.location.pathname : null,
+        }),
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error); setLoading(false); return }
