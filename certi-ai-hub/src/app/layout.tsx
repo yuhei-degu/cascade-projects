@@ -39,9 +39,9 @@ export const metadata: Metadata = {
     title: `${SITE_NAME} | SC × AIF 資格学習プラットフォーム`,
     description: DESCRIPTION,
   },
-  verification: {
+  verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ? {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
-  },
+  } : undefined,
   robots: {
     index: true,
     follow: true,
