@@ -7,7 +7,7 @@ import { FeedbackWidget } from "../components/feedback/FeedbackWidget"
 
 const inter = Inter({ subsets: ["latin"], display: "swap" })
 
-const SITE_URL = "https://certi-ai-hub.vercel.app"
+const SITE_URL = "https://cascade-projects-lvq1.vercel.app"
 const SITE_NAME = "Certi-AI Hub"
 const DESCRIPTION = "情報処理安全確保支援士（SC）とAWS Certified AI Practitioner（AIF）を同時に対策できる無料学習プラットフォーム。204問以上・カテゴリ別・難易度別・模擬試験対応。2026年度CBT方式対応。"
 

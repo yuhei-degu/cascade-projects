@@ -1,7 +1,7 @@
 // src/app/sitemap.ts
 import type { MetadataRoute } from "next"
 
-const BASE = "https://certi-ai-hub.vercel.app"
+const BASE = "https://cascade-projects-lvq1.vercel.app"
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date()
