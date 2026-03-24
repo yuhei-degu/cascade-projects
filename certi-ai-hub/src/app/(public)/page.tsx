@@ -27,63 +27,99 @@ export default function HomePage() {
   return (
     <main>
 
-      {/* ① ヒーロー — 象徴・理念 */}
-      <section className="bg-gradient-to-br from-indigo-950 via-indigo-900 to-blue-900 text-white pt-16 pb-24 px-4">
-        <div className="max-w-2xl mx-auto text-center">
-          <h1 className="text-4xl sm:text-6xl font-black leading-tight mb-6 tracking-tight">
-            <span className="text-sky-400">支援士（SC）</span>と<br />
-            <span className="text-orange-400">AWS AIF</span>を<br />
-            <span className="text-white">同時に合格する</span>
-          </h1>
-          <p className="text-indigo-200 text-sm sm:text-base leading-relaxed mb-10">
-            AI時代に必要なのは、知識ではなく<strong className="text-white">判断力</strong>。<br />
-            守る設計力と、AIを使いこなす力を、ここで同時に鍛える。
-          </p>
-          <Link href="/common/exam?module=MIXED"
-            className="inline-block border border-amber-400/40 text-amber-200 font-bold px-6 py-2.5 rounded-xl hover:bg-amber-500/10 transition-colors text-sm">
-            SC × AIF シナジー模擬試験 →
-          </Link>
-        </div>
-      </section>
+      {/* ① ヒーロー — 左テキスト・右ビジュアル */}
+      <section className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white min-h-[520px] flex items-center px-4 py-16">
+        <div className="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
 
-      {/* ② サポート — 理念の補足 */}
-      <section className="py-16 px-4 border-b border-gray-100">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-5 leading-snug text-center">
-            覚えるだけでは、足りない。
-          </h2>
-          <p className="text-gray-500 text-sm sm:text-base leading-loose text-center mb-12">
-            AIが知識を代替する時代、問われるのは<br />
-            「何を使うか」「どう守るか」を自分で判断できる力だ。
-          </p>
+          {/* 左：テキスト */}
+          <div>
+            <p className="text-indigo-400 text-sm font-bold tracking-widest mb-4 uppercase">
+              Certi-AI Hub
+            </p>
+            <h1 className="text-4xl sm:text-5xl font-black leading-tight mb-6 tracking-tight">
+              支援士（SC）と<br />
+              AWS AIFを<br />
+              <span className="text-indigo-400">同時に合格する</span>
+            </h1>
+            <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-8 max-w-md">
+              AI時代、判断力こそが究極のスキル。<br />
+              知識の暗記ではなく、セキュリティ設計力と<br />
+              クラウドAI活用力を、ここで同時に鍛える。
+            </p>
+            <Link href="/common/exam?module=MIXED"
+              className="inline-block bg-white text-slate-900 font-black px-7 py-3 rounded-xl hover:bg-indigo-100 transition-colors text-sm">
+              SC × AIF シナジー模擬試験
+            </Link>
+          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
-            <div className="border border-sky-100 bg-sky-50 rounded-2xl p-6">
-              <p className="text-[11px] font-bold text-sky-500 mb-3 tracking-wide uppercase">SC 情報処理安全確保支援士</p>
-              <p className="text-xl font-black text-gray-900 mb-2">リスクを見抜き、守る力</p>
-              <p className="text-gray-500 text-sm leading-relaxed">
-                脅威の構造を理解し、設計・コード・運用の各層でセキュリティを判断できる実務力。
-              </p>
-            </div>
-            <div className="border border-orange-100 bg-orange-50 rounded-2xl p-6">
-              <p className="text-[11px] font-bold text-orange-500 mb-3 tracking-wide uppercase">AIF AWS Certified AI Practitioner</p>
-              <p className="text-xl font-black text-gray-900 mb-2">AIを実務で使いこなす力</p>
-              <p className="text-gray-500 text-sm leading-relaxed">
-                生成AIの可能性と限界を把握し、クラウド上でAIを正しく選択・設計できる判断力。
-              </p>
+          {/* 右：ビジュアル */}
+          <div className="hidden lg:flex items-center justify-center">
+            <div className="relative w-80 h-80">
+              {/* 中央のメインアイコン */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-48 h-48 rounded-3xl bg-gradient-to-br from-indigo-500/30 to-sky-500/20 border border-indigo-400/30 flex items-center justify-center backdrop-blur-sm">
+                  <div className="text-center">
+                    <div className="text-6xl mb-2">🛡️</div>
+                    <div className="text-indigo-300 text-xs font-bold tracking-widest">AI × SECURITY</div>
+                  </div>
+                </div>
+              </div>
+              {/* 周囲のアイコン群 */}
+              {[
+                { icon: "🔒", top: "4%",  left: "40%",  bg: "from-sky-500/20 to-sky-500/10" },
+                { icon: "☁️", top: "20%", left: "78%",  bg: "from-orange-500/20 to-orange-500/10" },
+                { icon: "🤖", top: "68%", left: "75%",  bg: "from-violet-500/20 to-violet-500/10" },
+                { icon: "🔑", top: "75%", left: "20%",  bg: "from-amber-500/20 to-amber-500/10" },
+                { icon: "⚡", top: "18%", left: "4%",   bg: "from-green-500/20 to-green-500/10" },
+              ].map((item, i) => (
+                <div key={i}
+                  className={`absolute w-12 h-12 rounded-2xl bg-gradient-to-br ${item.bg} border border-white/10 flex items-center justify-center text-xl backdrop-blur-sm`}
+                  style={{ top: item.top, left: item.left }}>
+                  {item.icon}
+                </div>
+              ))}
+              {/* 接続線（装飾） */}
+              <svg className="absolute inset-0 w-full h-full opacity-20" viewBox="0 0 320 320">
+                <line x1="160" y1="160" x2="160" y2="20"  stroke="#818cf8" strokeWidth="1" strokeDasharray="4 4"/>
+                <line x1="160" y1="160" x2="290" y2="80"  stroke="#818cf8" strokeWidth="1" strokeDasharray="4 4"/>
+                <line x1="160" y1="160" x2="270" y2="240" stroke="#818cf8" strokeWidth="1" strokeDasharray="4 4"/>
+                <line x1="160" y1="160" x2="80"  y2="260" stroke="#818cf8" strokeWidth="1" strokeDasharray="4 4"/>
+                <line x1="160" y1="160" x2="50"  y2="80"  stroke="#818cf8" strokeWidth="1" strokeDasharray="4 4"/>
+              </svg>
             </div>
           </div>
 
-          <div className="border border-indigo-100 bg-indigo-50 rounded-2xl px-7 py-5 text-center">
-            <p className="text-gray-700 text-sm leading-relaxed">
-              <span className="font-black text-indigo-700">Certi-AI Hub</span> は、AI・セキュリティ・クラウドを横断して<br className="hidden sm:inline" />
-              実務で使える判断力を鍛えるための学習プラットフォームです。
+        </div>
+      </section>
+
+      {/* ② SC / AIF 対比カード */}
+      <section className="bg-slate-900 px-4 pb-16 pt-2">
+        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-7 hover:border-sky-500/40 transition-colors">
+            <p className="text-sky-400 text-xs font-bold tracking-widest mb-3 uppercase">SC 情報処理安全確保支援士</p>
+            <p className="text-white text-xl font-black mb-2">リスクを見抜き、守る力</p>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              脅威の構造を理解し、設計・コード・運用の各層でセキュリティを判断できる実務力を鍛える。
+            </p>
+          </div>
+          <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-7 hover:border-orange-500/40 transition-colors">
+            <p className="text-orange-400 text-xs font-bold tracking-widest mb-3 uppercase">AIF AWS Certified AI Practitioner</p>
+            <p className="text-white text-xl font-black mb-2">AIを実務で使いこなす力</p>
+            <p className="text-slate-400 text-sm leading-relaxed">
+              生成AIの可能性と限界を把握し、クラウド上でAIを正しく選択・設計できる判断力を鍛える。
             </p>
           </div>
         </div>
       </section>
 
-      {/* ③ ディテール — SC カテゴリ */}
+      {/* ③ プラットフォーム説明 — 1行 */}
+      <section className="bg-slate-900 border-t border-slate-800 px-4 py-10 text-center">
+        <p className="text-slate-400 text-sm sm:text-base">
+          <span className="text-white font-black">Certi-AI Hub</span> は、AI・セキュリティ・クラウドを横断して、実務で使える判断力を鍛えるための学習プラットフォームです。
+        </p>
+      </section>
+
+      {/* ④ SC カテゴリ */}
       <section className="py-10 px-4 max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
@@ -124,7 +160,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ③ ディテール — AIF カテゴリ */}
+      {/* ④ AIF カテゴリ */}
       <section className="py-10 px-4 max-w-5xl mx-auto border-t border-gray-100">
         <div className="flex items-center justify-between mb-5">
           <span className="text-xs font-bold text-orange-700 border border-orange-200 px-3 py-1 rounded-full">
@@ -155,7 +191,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ③ ディテール — ツール */}
+      {/* ⑤ ツール */}
       <section className="py-8 px-4 max-w-5xl mx-auto border-t border-gray-100">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {[
@@ -172,7 +208,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ④ CTA — 行動喚起 */}
+      {/* ⑥ CTA */}
       <section className="py-20 px-4 text-center border-t border-gray-100">
         <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-3">
           判断力は、問題を解くことで鍛えられる。
