@@ -77,20 +77,20 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
           
           {/* SC Card */}
-          <div className="group bg-gradient-to-br from-sky-50 to-white text-slate-900 rounded-[2rem] p-8 sm:p-10 shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl">
-            <h3 className="text-2xl font-black mb-4">RISS: Security Strategy</h3>
+          <Link href="/sc-module" className="block group bg-gradient-to-br from-sky-50 to-white text-slate-900 rounded-[2rem] p-8 sm:p-10 shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-sky-200">
+            <h3 className="text-2xl font-black mb-4 group-hover:text-sky-600 transition-colors">RISS: Security Strategy</h3>
             <p className="text-slate-600 font-medium leading-relaxed">
               Build resilient architecture to predict, defend, and secure code.
             </p>
-          </div>
+          </Link>
 
           {/* AIF Card */}
-          <div className="group bg-gradient-to-br from-orange-50 to-white text-slate-900 rounded-[2rem] p-8 sm:p-10 shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl">
-            <h3 className="text-2xl font-black mb-4">AWS AIF: AI Command</h3>
+          <Link href="/aws-module" className="block group bg-gradient-to-br from-orange-50 to-white text-slate-900 rounded-[2rem] p-8 sm:p-10 shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-orange-200">
+            <h3 className="text-2xl font-black mb-4 group-hover:text-orange-600 transition-colors">AWS AIF: AI Command</h3>
             <p className="text-slate-600 font-medium leading-relaxed">
               Apply generative AI with precision for powerful real-world impact.
             </p>
-          </div>
+          </Link>
 
         </div>
       </section>
