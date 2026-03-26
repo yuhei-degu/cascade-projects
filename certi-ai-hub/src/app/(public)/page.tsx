@@ -1,5 +1,5 @@
-// src/app/(public)/page.tsx
 import Link from "next/link"
+import Image from "next/image"
 
 const DIFFICULTIES = [
   { d: "1", label: "基本", bg: "bg-green-50 text-green-700 hover:bg-green-100" },
@@ -25,207 +25,190 @@ const AIF_CATEGORIES = [
 
 export default function HomePage() {
   return (
-    <main>
+    <main className="bg-slate-950 min-h-screen text-slate-100 font-sans">
+      
+      {/* 1. Hero Section (Mockup Inspired) */}
+      <section className="relative px-4 pt-16 pb-12 overflow-hidden">
+        {/* Background Gradients */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] bg-gradient-to-b from-indigo-900/30 via-slate-900/10 to-transparent pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-500/10 blur-[130px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-20 left-0 w-[500px] h-[500px] bg-cyan-500/10 blur-[100px] rounded-full pointer-events-none" />
 
-      {/* ① ヒーロー — 左テキスト・右ビジュアル */}
-      <section className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white min-h-[520px] flex items-center px-4 py-16">
-        <div className="max-w-6xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-
-          {/* 左：テキスト */}
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
+          
+          {/* Left Text */}
           <div>
-            <p className="text-indigo-400 text-sm font-bold tracking-widest mb-4 uppercase">
+            <p className="text-gray-400 text-sm font-semibold tracking-[0.2em] mb-4 uppercase">
               Certi-AI Hub
             </p>
-            <h1 className="text-4xl sm:text-5xl font-black leading-tight mb-6 tracking-tight">
-              支援士（SC）と<br />
-              AWS AIFを<br />
-              <span className="text-indigo-400">同時に合格する</span>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight mb-6 text-white text-glow">
+              SYNCHRONIZED<br />
+              CERTIFICATION
             </h1>
-            <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-8 max-w-md">
-              AI時代、判断力こそが究極のスキル。<br />
-              知識の暗記ではなく、セキュリティ設計力と<br />
-              クラウドAI活用力を、ここで同時に鍛える。
+            <h2 className="text-lg sm:text-xl font-medium text-slate-300 mb-6 leading-snug max-w-lg">
+              Master RISS and AWS AI Practitioner Together.
+            </h2>
+            <p className="text-slate-400 text-sm sm:text-base leading-relaxed mb-10 max-w-md font-medium">
+              In the Age of AI, judgement is the ultimate skill. Master security and cloud architecture, not just knowledge.
             </p>
             <Link href="/common/exam?module=MIXED"
-              className="inline-block bg-white text-slate-900 font-black px-7 py-3 rounded-xl hover:bg-indigo-100 transition-colors text-sm">
-              SC × AIF シナジー模擬試験
+              className="inline-flex items-center justify-center bg-white/5 border border-white/10 text-white hover:bg-white/10 backdrop-blur-md font-bold px-8 py-3.5 rounded-2xl transition-all hover:scale-105 active:scale-100 shadow-[0_0_20px_rgba(255,255,255,0.05)]">
+              Access Synergy Mock Exam
             </Link>
           </div>
 
-          {/* 右：ビジュアル */}
-          <div className="hidden lg:flex items-center justify-center">
-            <div className="relative w-80 h-80">
-              {/* 中央のメインアイコン */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-48 h-48 rounded-3xl bg-gradient-to-br from-indigo-500/30 to-sky-500/20 border border-indigo-400/30 flex items-center justify-center backdrop-blur-sm">
-                  <div className="text-center">
-                    <div className="text-6xl mb-2">🛡️</div>
-                    <div className="text-indigo-300 text-xs font-bold tracking-widest">AI × SECURITY</div>
+          {/* Right Visual Image */}
+          <div className="flex items-center justify-center relative">
+             <div className="relative w-full max-w-xs sm:max-w-md aspect-[4/3] rounded-[2rem] overflow-hidden shadow-[0_0_50px_rgba(99,102,241,0.15)] border border-white/10 bg-slate-900/50 backdrop-blur-xl">
+               <Image 
+                 src="/ai-cube-cyber.png" 
+                 alt="Cyber AI Cube"
+                 fill
+                 className="object-cover mix-blend-lighten"
+                 priority
+               />
+             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. Concept Cards (Mockup Inspired) */}
+      <section className="px-4 pb-20 relative z-10">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          {/* SC Card */}
+          <div className="group bg-gradient-to-br from-sky-50 to-white text-slate-900 rounded-[2rem] p-8 sm:p-10 shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl">
+            <h3 className="text-2xl font-black mb-4">RISS: Security Strategy</h3>
+            <p className="text-slate-600 font-medium leading-relaxed">
+              Build resilient architecture to predict, defend, and secure code.
+            </p>
+          </div>
+
+          {/* AIF Card */}
+          <div className="group bg-gradient-to-br from-orange-50 to-white text-slate-900 rounded-[2rem] p-8 sm:p-10 shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl">
+            <h3 className="text-2xl font-black mb-4">AWS AIF: AI Command</h3>
+            <p className="text-slate-600 font-medium leading-relaxed">
+              Apply generative AI with precision for powerful real-world impact.
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 3. Main Navigation & Categories Segment (Light Area) */}
+      <div className="bg-white text-slate-900 rounded-t-[3rem] pt-16 pb-20 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] relative z-20">
+        
+        {/* Core Message */}
+        <div className="max-w-4xl mx-auto text-center px-4 mb-14">
+          <p className="text-base sm:text-lg font-bold text-slate-800 tracking-wide leading-relaxed">
+            <span className="text-indigo-600 font-black">Certi-AI Hub</span> は、AI・セキュリティ・クラウドを横断して<br className="hidden sm:block" />実戦で使える判断力を鍛えるための学習プラットフォームです。
+          </p>
+          <div className="flex justify-center items-center gap-6 mt-8 font-bold text-sm">
+            <Link href="/common/exam?module=SC&mode=exam" className="text-slate-700 hover:text-indigo-600 transition-colors">
+              RISS Mock Exam <span className="text-indigo-500 ml-1">✧</span>
+            </Link>
+            <Link href="/common/exam?module=AIF&mode=exam" className="text-slate-700 hover:text-indigo-600 transition-colors">
+              AWS AIF Mock Exam <span className="text-indigo-500 ml-1">✧</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* 4. Categorized Problems (SC & AIF) */}
+        <div className="max-w-6xl mx-auto space-y-16 px-4">
+          
+          {/* SC 領域 */}
+          <section>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+              <div className="flex items-center gap-4 border-l-4 border-sky-500 pl-3">
+                <span className="text-lg font-black text-slate-800">
+                  🔒 情報処理安全確保支援士 (SC)
+                </span>
+              </div>
+              <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500 font-medium bg-slate-50 px-4 py-2 rounded-full border border-slate-100">
+                難易度で絞る：
+                <span className="text-green-600 flex items-center gap-1">🟢 基本</span> /
+                <span className="text-amber-600 flex items-center gap-1">🟡 標準</span> /
+                <span className="text-red-600 flex items-center gap-1">🔴 難問</span>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              {SC_CATEGORIES.map(c => (
+                <div key={c.key} className="bg-slate-50 border border-slate-200 hover:border-sky-300 rounded-2xl p-4 transition-all hover:shadow-md group">
+                  <Link href={`/common/exam?module=SC&category=${c.key}`} className="block mb-4">
+                    <span className="text-2xl block mb-2">{c.icon}</span>
+                    <h3 className="font-bold text-sm text-slate-800 group-hover:text-sky-700 transition-colors">{c.label}</h3>
+                  </Link>
+                  <div className="flex gap-1.5 flex-wrap border-t border-slate-200 pt-3">
+                    {DIFFICULTIES.map(({ d, label, bg }) => (
+                      <Link key={d} href={`/common/exam?module=SC&category=${c.key}&difficulty=${d}`}
+                        className={`text-[11px] font-bold px-2 py-0.5 rounded transition-transform hover:scale-105 ${bg}`}>
+                        {label}
+                      </Link>
+                    ))}
                   </div>
                 </div>
+              ))}
+            </div>
+          </section>
+
+          {/* AIF 領域 */}
+          <section>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+              <div className="flex items-center gap-4 border-l-4 border-orange-500 pl-3">
+                <span className="text-lg font-black text-slate-800">
+                  ☁️ AWS Certified AI Practitioner (AIF)
+                </span>
               </div>
-              {/* 周囲のアイコン群 */}
-              {[
-                { icon: "🔒", top: "4%",  left: "40%",  bg: "from-sky-500/20 to-sky-500/10" },
-                { icon: "☁️", top: "20%", left: "78%",  bg: "from-orange-500/20 to-orange-500/10" },
-                { icon: "🤖", top: "68%", left: "75%",  bg: "from-violet-500/20 to-violet-500/10" },
-                { icon: "🔑", top: "75%", left: "20%",  bg: "from-amber-500/20 to-amber-500/10" },
-                { icon: "⚡", top: "18%", left: "4%",   bg: "from-green-500/20 to-green-500/10" },
-              ].map((item, i) => (
-                <div key={i}
-                  className={`absolute w-12 h-12 rounded-2xl bg-gradient-to-br ${item.bg} border border-white/10 flex items-center justify-center text-xl backdrop-blur-sm`}
-                  style={{ top: item.top, left: item.left }}>
-                  {item.icon}
+              <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500 font-medium bg-slate-50 px-4 py-2 rounded-full border border-slate-100">
+                難易度で絞る：
+                <span className="text-green-600">🟢 基本</span> /
+                <span className="text-amber-600">🟡 標準</span> /
+                <span className="text-red-600">🔴 難問</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              {AIF_CATEGORIES.map(c => (
+                <div key={c.key} className="bg-slate-50 border border-slate-200 hover:border-orange-300 rounded-2xl p-4 transition-all hover:shadow-md group">
+                  <Link href={`/common/exam?module=AIF&category=${c.key}`} className="block mb-4">
+                    <span className="text-2xl block mb-2">{c.icon}</span>
+                    <h3 className="font-bold text-sm text-slate-800 group-hover:text-orange-700 transition-colors">{c.label}</h3>
+                  </Link>
+                  <div className="flex gap-1.5 flex-wrap border-t border-slate-200 pt-3">
+                    {DIFFICULTIES.map(({ d, label, bg }) => (
+                      <Link key={d} href={`/common/exam?module=AIF&category=${c.key}&difficulty=${d}`}
+                        className={`text-[11px] font-bold px-2 py-0.5 rounded transition-transform hover:scale-105 ${bg}`}>
+                        {label}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               ))}
-              {/* 接続線（装飾） */}
-              <svg className="absolute inset-0 w-full h-full opacity-20" viewBox="0 0 320 320">
-                <line x1="160" y1="160" x2="160" y2="20"  stroke="#818cf8" strokeWidth="1" strokeDasharray="4 4"/>
-                <line x1="160" y1="160" x2="290" y2="80"  stroke="#818cf8" strokeWidth="1" strokeDasharray="4 4"/>
-                <line x1="160" y1="160" x2="270" y2="240" stroke="#818cf8" strokeWidth="1" strokeDasharray="4 4"/>
-                <line x1="160" y1="160" x2="80"  y2="260" stroke="#818cf8" strokeWidth="1" strokeDasharray="4 4"/>
-                <line x1="160" y1="160" x2="50"  y2="80"  stroke="#818cf8" strokeWidth="1" strokeDasharray="4 4"/>
-              </svg>
             </div>
-          </div>
+          </section>
 
         </div>
-      </section>
 
-      {/* ② SC / AIF 対比カード */}
-      <section className="bg-slate-900 px-4 pb-16 pt-2">
-        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-7 hover:border-sky-500/40 transition-colors">
-            <p className="text-sky-400 text-xs font-bold tracking-widest mb-3 uppercase">SC 情報処理安全確保支援士</p>
-            <p className="text-white text-xl font-black mb-2">リスクを見抜き、守る力</p>
-            <p className="text-slate-400 text-sm leading-relaxed">
-              脅威の構造を理解し、設計・コード・運用の各層でセキュリティを判断できる実務力を鍛える。
-            </p>
-          </div>
-          <div className="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-7 hover:border-orange-500/40 transition-colors">
-            <p className="text-orange-400 text-xs font-bold tracking-widest mb-3 uppercase">AIF AWS Certified AI Practitioner</p>
-            <p className="text-white text-xl font-black mb-2">AIを実務で使いこなす力</p>
-            <p className="text-slate-400 text-sm leading-relaxed">
-              生成AIの可能性と限界を把握し、クラウド上でAIを正しく選択・設計できる判断力を鍛える。
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ③ プラットフォーム説明 — 1行 */}
-      <section className="bg-slate-900 border-t border-slate-800 px-4 py-10 text-center">
-        <p className="text-slate-400 text-sm sm:text-base">
-          <span className="text-white font-black">Certi-AI Hub</span> は、AI・セキュリティ・クラウドを横断して、実務で使える判断力を鍛えるための学習プラットフォームです。
-        </p>
-      </section>
-
-      {/* ④ SC カテゴリ */}
-      <section className="py-10 px-4 max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-bold text-sky-700 border border-sky-200 px-3 py-1 rounded-full">
-              🔒 SC 情報処理安全確保支援士
-            </span>
-            <span className="hidden sm:flex items-center gap-1 text-xs text-gray-300">
-              <span className="text-green-600 font-medium">基本</span>
-              <span className="text-gray-200">/</span>
-              <span className="text-amber-600 font-medium">標準</span>
-              <span className="text-gray-200">/</span>
-              <span className="text-red-500 font-medium">難問</span>
-              <span className="ml-1">で絞れます</span>
-            </span>
-          </div>
-          <Link href="/common/exam?module=SC&mode=exam"
-            className="text-xs font-bold text-sky-700 border border-sky-200 px-4 py-1.5 rounded-xl hover:bg-sky-50 transition-colors shrink-0">
-            SC模擬試験 →
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-          {SC_CATEGORIES.map(c => (
-            <div key={c.key} className="border border-gray-100 hover:border-sky-200 rounded-xl p-4 transition-colors group">
-              <Link href={`/common/exam?module=SC&category=${c.key}`} className="block mb-3">
-                <span className="text-xl block mb-2">{c.icon}</span>
-                <h3 className="font-bold text-sm text-gray-800 group-hover:text-sky-700 transition-colors leading-tight">{c.label}</h3>
+        {/* 5. Useful Tools */}
+        <div className="max-w-5xl mx-auto mt-20 px-4">
+          <h4 className="text-sm font-bold text-slate-400 text-center mb-6 tracking-widest uppercase">Useful Tools</h4>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { href: "/synergy",         label: "SC×AIF シナジー" },
+              { href: "/dashboard",       label: "ダッシュボード" },
+              { href: "/common/calendar", label: "試験日カレンダー" },
+              { href: "/sc-module",       label: "Interactive Lab" },
+            ].map(t => (
+              <Link key={t.href} href={t.href}
+                className="bg-slate-50 border border-slate-200 hover:border-indigo-300 hover:text-indigo-700 rounded-xl px-4 py-3 text-center text-xs font-bold text-slate-600 transition-all hover:bg-indigo-50/50">
+                {t.label}
               </Link>
-              <div className="flex gap-1 flex-wrap border-t border-gray-50 pt-2">
-                {DIFFICULTIES.map(({ d, label, bg }) => (
-                  <Link key={d} href={`/common/exam?module=SC&category=${c.key}&difficulty=${d}`}
-                    className={`text-xs font-bold px-2 py-0.5 rounded-md transition-colors ${bg}`}>
-                    {label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </section>
 
-      {/* ④ AIF カテゴリ */}
-      <section className="py-10 px-4 max-w-5xl mx-auto border-t border-gray-100">
-        <div className="flex items-center justify-between mb-5">
-          <span className="text-xs font-bold text-orange-700 border border-orange-200 px-3 py-1 rounded-full">
-            ☁️ AIF AWS Certified AI Practitioner
-          </span>
-          <Link href="/common/exam?module=AIF&mode=exam"
-            className="text-xs font-bold text-orange-700 border border-orange-200 px-4 py-1.5 rounded-xl hover:bg-orange-50 transition-colors shrink-0">
-            AIF模擬試験 →
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-          {AIF_CATEGORIES.map(c => (
-            <div key={c.key} className="border border-gray-100 hover:border-orange-200 rounded-xl p-4 transition-colors group">
-              <Link href={`/common/exam?module=AIF&category=${c.key}`} className="block mb-3">
-                <span className="text-xl block mb-2">{c.icon}</span>
-                <h3 className="font-bold text-sm text-gray-800 group-hover:text-orange-700 transition-colors leading-tight">{c.label}</h3>
-              </Link>
-              <div className="flex gap-1 flex-wrap border-t border-gray-50 pt-2">
-                {DIFFICULTIES.map(({ d, label, bg }) => (
-                  <Link key={d} href={`/common/exam?module=AIF&category=${c.key}&difficulty=${d}`}
-                    className={`text-xs font-bold px-2 py-0.5 rounded-md transition-colors ${bg}`}>
-                    {label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ⑤ ツール */}
-      <section className="py-8 px-4 max-w-5xl mx-auto border-t border-gray-100">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {[
-            { href: "/synergy",         label: "SC×AIFシナジーマップ" },
-            { href: "/dashboard",       label: "ダッシュボード" },
-            { href: "/common/calendar", label: "試験日カレンダー" },
-            { href: "/sc-module",       label: "Interactive Lab" },
-          ].map(t => (
-            <Link key={t.href} href={t.href}
-              className="border border-gray-100 hover:border-indigo-200 hover:text-indigo-700 rounded-xl px-4 py-3 text-center text-xs font-bold text-gray-500 transition-colors">
-              {t.label}
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* ⑥ CTA */}
-      <section className="py-20 px-4 text-center border-t border-gray-100">
-        <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-3">
-          判断力は、問題を解くことで鍛えられる。
-        </h2>
-        <p className="text-gray-400 text-sm mb-10">無料プランで今日からすぐ始められます</p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link href="/common/exam?module=SC&mode=exam"
-            className="bg-indigo-700 hover:bg-indigo-600 text-white font-black px-10 py-4 rounded-2xl transition-colors text-sm">
-            SC模擬試験を始める
-          </Link>
-          <Link href="/common/exam?module=AIF&mode=exam"
-            className="border-2 border-indigo-700 text-indigo-700 hover:bg-indigo-50 font-black px-10 py-4 rounded-2xl transition-colors text-sm">
-            AIF模擬試験を始める
-          </Link>
-        </div>
-      </section>
-
+      </div>
     </main>
   )
 }

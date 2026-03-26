@@ -38,12 +38,7 @@ export function SynergyLinkView({ links }: Props) {
               <span className="text-sm font-semibold text-gray-700">{link.description}</span>
             </div>
 
-            {/* SC ↔ AIF */}
-            <div className="flex items-center gap-2">
-              <span className="bg-sky-100 text-sky-700 text-xs font-bold px-3 py-1 rounded-full">🔒 SC</span>
-              <ArrowRight size={14} className="text-amber-400 shrink-0" />
-              <span className="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full">☁️ AIF</span>
-            </div>
+
           </div>
         )
       })}
