@@ -42,20 +42,18 @@ export default function HomePage() {
               Certi-AI Hub
             </p>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-[1.1] tracking-tight mb-6 text-white text-glow">
-              支援士（SC）と<br />
-              AWS AIFを<br />
-              同時に合格する
+              SYNCHRONIZED<br />
+              CERTIFICATION
             </h1>
             <h2 className="text-lg sm:text-xl font-medium text-slate-300 mb-6 leading-snug max-w-lg">
-              AI時代に、セキュリティ設計力とクラウドAI活用力を同時に鍛える。
+              Master RISS and AWS AI Practitioner Together.
             </h2>
             <p className="text-slate-400 text-sm sm:text-base leading-relaxed mb-10 max-w-md font-medium">
-              AI時代、判断力こそが究極のスキル。<br />
-              知識の暗記ではなく、守る設計力と使いこなす力を。
+              In the Age of AI, judgement is the ultimate skill. Master security and cloud architecture, not just knowledge.
             </p>
             <Link href="/common/exam?module=MIXED"
               className="inline-flex items-center justify-center bg-white/5 border border-white/10 text-white hover:bg-white/10 backdrop-blur-md font-bold px-8 py-3.5 rounded-2xl transition-all hover:scale-105 active:scale-100 shadow-[0_0_20px_rgba(255,255,255,0.05)]">
-              SC × AIF シナジー模擬試験
+              Access Synergy Mock Exam
             </Link>
           </div>
 
@@ -80,17 +78,17 @@ export default function HomePage() {
           
           {/* SC Card */}
           <Link href="/sc-module" className="block group bg-gradient-to-br from-sky-50 to-white text-slate-900 rounded-[2rem] p-8 sm:p-10 shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-sky-200">
-            <h3 className="text-2xl font-black mb-4 group-hover:text-sky-600 transition-colors">SC：リスクを見抜き、守る力</h3>
+            <h3 className="text-2xl font-black mb-4 group-hover:text-sky-600 transition-colors">RISS: Security Strategy</h3>
             <p className="text-slate-600 font-medium leading-relaxed">
-              脅威の構造を理解し、設計・コード・運用の各層でセキュリティを判断できる実務力。
+              Build resilient architecture to predict, defend, and secure code.
             </p>
           </Link>
 
           {/* AIF Card */}
           <Link href="/aws-module" className="block group bg-gradient-to-br from-orange-50 to-white text-slate-900 rounded-[2rem] p-8 sm:p-10 shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-orange-200">
-            <h3 className="text-2xl font-black mb-4 group-hover:text-orange-600 transition-colors">AIF：AIを実務で使いこなす力</h3>
+            <h3 className="text-2xl font-black mb-4 group-hover:text-orange-600 transition-colors">AWS AIF: AI Command</h3>
             <p className="text-slate-600 font-medium leading-relaxed">
-              生成AIの可能性と限界を把握し、クラウド上でAIを正しく選択・設計できる判断力。
+              Apply generative AI with precision for powerful real-world impact.
             </p>
           </Link>
 
@@ -107,10 +105,10 @@ export default function HomePage() {
           </p>
           <div className="flex justify-center items-center gap-6 mt-8 font-bold text-sm">
             <Link href="/common/exam?module=SC&mode=exam" className="text-slate-700 hover:text-indigo-600 transition-colors">
-              SC 模擬試験 <span className="text-indigo-500 ml-1">✧</span>
+              RISS Mock Exam <span className="text-indigo-500 ml-1">✧</span>
             </Link>
             <Link href="/common/exam?module=AIF&mode=exam" className="text-slate-700 hover:text-indigo-600 transition-colors">
-              AIF 模擬試験 <span className="text-indigo-500 ml-1">✧</span>
+              AWS AIF Mock Exam <span className="text-indigo-500 ml-1">✧</span>
             </Link>
           </div>
         </div>
