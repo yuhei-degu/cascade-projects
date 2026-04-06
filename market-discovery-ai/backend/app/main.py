@@ -27,10 +27,24 @@ logger = structlog.get_logger()
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator:
     logger.info("Starting Market Discovery AI", version=settings.APP_VERSION)
+
+    # DB テーブル作成
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     logger.info("DB initialized")
+
+    # スケジューラー起動（毎朝 SCHEDULER_HOUR 時に自動収集）
+    from app.services.scheduler import start_scheduler
+    start_scheduler(
+        hour=settings.SCHEDULER_HOUR,
+        run_now=settings.FIRST_RUN_COLLECT,
+    )
+
     yield
+
+    # クリーンアップ
+    from app.services.scheduler import stop_scheduler
+    stop_scheduler()
     logger.info("Shutting down")
     await engine.dispose()
 

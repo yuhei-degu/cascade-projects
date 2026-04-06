@@ -1,14 +1,11 @@
 """
 ⑬⑮ NLPモデル実装 — カテゴリ分類 / 収益化スコア / 緊急度検出
-日本語BERTベースのゼロショット分類 + ルールベースハイブリッド
+キーワードベースのルール分類（torch/transformers 不要）
 """
 
 import re
 from typing import Dict, List, Optional, Tuple
 import structlog
-import torch
-import numpy as np
-from transformers import pipeline, AutoTokenizer, AutoModel
 
 logger = structlog.get_logger()
 
@@ -99,24 +96,13 @@ class TextPreprocessor:
 
 class CategoryClassifier:
     """
-    日本語BERTによるゼロショットカテゴリ分類器。
-    モデルは遅延ロード（初回呼び出し時に読み込む）。
+    キーワードベースのカテゴリ分類器。
+    torch/transformers 不要のルールベース実装。
     """
 
-    def __init__(self, model_name: str = "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli") -> None:
-        self.model_name = model_name
-        self._classifier = None
-
-    def _load(self) -> None:
-        if self._classifier is not None:
-            return
-        logger.info("Loading zero-shot classifier", model=self.model_name)
-        self._classifier = pipeline(
-            "zero-shot-classification",
-            model=self.model_name,
-            device=-1,  # CPU
-        )
-        logger.info("Zero-shot classifier loaded")
+    def __init__(self, model_name: str = "") -> None:
+        # model_name は後方互換のためのみ保持
+        pass
 
     def classify(self, text: str) -> Tuple[str, float]:
         """
@@ -125,27 +111,21 @@ class CategoryClassifier:
         Returns:
             (カテゴリ名, 信頼度スコア0-1)
         """
-        try:
-            self._load()
-            result = self._classifier(
-                text[:512],
-                candidate_labels=CATEGORIES,
-                hypothesis_template="これは{}に関する質問です。",
-            )
-            return result["labels"][0], float(result["scores"][0])
-        except Exception as e:
-            logger.warning("Classification failed, using fallback", error=str(e))
-            return self._keyword_fallback(text)
+        return self._keyword_fallback(text)
 
     def _keyword_fallback(self, text: str) -> Tuple[str, float]:
-        """キーワードベースのフォールバック分類"""
+        """キーワードベース分類"""
         keyword_map = {
-            "お金・投資": ["投資", "株", "FX", "仮想通貨", "お金", "稼ぐ", "副業"],
-            "健康・医療": ["病気", "症状", "医者", "薬", "病院", "健康", "痛い"],
-            "仕事・副業": ["仕事", "転職", "求人", "副業", "給料", "会社", "残業"],
-            "IT・テック": ["プログラム", "アプリ", "PC", "スマホ", "エラー", "コード"],
-            "恋愛・結婚": ["恋愛", "彼氏", "彼女", "結婚", "デート", "告白"],
-            "法律・手続き": ["法律", "契約", "裁判", "離婚", "手続き", "登記"],
+            "お金・投資": ["投資", "株", "FX", "仮想通貨", "お金", "稼ぐ", "副業", "NISA", "節税", "確定申告"],
+            "健康・医療": ["病気", "症状", "医者", "薬", "病院", "健康", "痛い", "治療", "診断"],
+            "仕事・副業": ["仕事", "転職", "求人", "副業", "給料", "会社", "残業", "フリーランス", "在宅"],
+            "IT・テック": ["プログラム", "アプリ", "PC", "スマホ", "エラー", "コード", "AI", "Python", "Next.js"],
+            "恋愛・結婚": ["恋愛", "彼氏", "彼女", "結婚", "デート", "告白", "婚活"],
+            "法律・手続き": ["法律", "契約", "裁判", "離婚", "手続き", "登記", "弁護士"],
+            "子育て・育児": ["子供", "育児", "保育", "学校", "塾", "子育て", "赤ちゃん"],
+            "美容・ダイエット": ["ダイエット", "痩せ", "美容", "スキンケア", "コスメ", "筋トレ"],
+            "学習・資格": ["勉強", "資格", "試験", "学習", "英語", "語学", "検定"],
+            "住宅・不動産": ["家", "マンション", "引越し", "賃貸", "購入", "ローン", "不動産"],
         }
         best_cat, best_score = "その他", 0.3
         for cat, kws in keyword_map.items():

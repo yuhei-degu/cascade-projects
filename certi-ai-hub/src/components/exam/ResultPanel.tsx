@@ -85,6 +85,14 @@ export function ResultPanel({ question, userAnswer, onNext, isLast }: Props) {
         </div>
       )}
 
+      {/* AI開発での活用 */}
+      {question.ai_dev_usage && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+          <p className="text-xs font-bold text-emerald-700 mb-1">💡 AI開発での実践</p>
+          <p className="text-sm text-emerald-800 leading-relaxed">{question.ai_dev_usage}</p>
+        </div>
+      )}
+
       {/* 次へ */}
       <button
         onClick={onNext}

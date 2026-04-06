@@ -23,12 +23,6 @@ class Settings(BaseSettings):
     CACHE_TTL_RANKING: int = 3600    # ランキングキャッシュ 1h
     CACHE_TTL_CATEGORY: int = 21600  # カテゴリキャッシュ 6h
 
-    # NLP
-    BERT_MODEL: str = "cl-tohoku/bert-base-japanese-v3"
-    SBERT_MODEL: str = "sonoisa/sentence-bert-base-ja-mean-tokens-v2"
-    NLP_DEVICE: str = "cpu"  # "cuda" for GPU
-    NLP_BATCH_SIZE: int = 8
-
     # Crawler設定
     CRAWLER_USER_AGENT: str = "MarketDiscoveryAI/1.0 +https://github.com/yourname/market-discovery-ai"
     CRAWLER_DELAY_SECONDS: float = 3.0   # robots.txt 準拠のウェイト
@@ -36,6 +30,14 @@ class Settings(BaseSettings):
 
     # SerpAPI (競合調査 - オプション)
     SERPAPI_KEY: str = Field(default="", description="SerpAPI キー (競合調査)")
+
+    # Claude API — デイリーブリーフ生成用
+    ANTHROPIC_API_KEY: str = Field(default="", description="Claude API キー")
+
+    # Reddit API (オプション — 未設定時はスキップ)
+    REDDIT_CLIENT_ID: str = Field(default="")
+    REDDIT_CLIENT_SECRET: str = Field(default="")
+    REDDIT_USER_AGENT: str = Field(default="MarketDiscoveryAI/1.0")
 
     # スコアリング重み
     WEIGHT_DEMAND: float = 0.40
@@ -46,8 +48,9 @@ class Settings(BaseSettings):
     # CORS
     CORS_ORIGINS: List[str] = ["http://localhost:3000"]
 
-    # Scheduler
-    BATCH_INTERVAL_MINUTES: int = 60
+    # スケジューラー
+    SCHEDULER_HOUR: int = Field(default=6, description="毎日実行時刻 JST（0〜23）")
+    FIRST_RUN_COLLECT: bool = Field(default=True, description="起動時に即座にデータ収集を実行するか")
 
     model_config = {
         "env_file": ".env",

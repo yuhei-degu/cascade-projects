@@ -1,0 +1,107 @@
+/* app/globals.css */
+/* RamenFlow グローバルスタイル */
+
+@import "tailwindcss";
+
+/* ============================================================
+   CSS カスタムプロパティ（Tailwind CSS v4 との互換性）
+   ============================================================ */
+@theme {
+  /* ブランドカラー */
+  --color-brand-red:    #C0392B;
+  --color-brand-orange: #E67E22;
+  --color-brand-cream:  #FDF6E3;
+  --color-brand-dark:   #2C1810;
+  --color-brand-light:  #FAF0DC;
+
+  /* ステータスカラー */
+  --color-status-new:       #3498DB;
+  --color-status-cooking:   #E67E22;
+  --color-status-ready:     #F1C40F;
+  --color-status-delivered: #27AE60;
+  --color-status-alert:     #E74C3C;
+
+  /* フォント */
+  --font-serif: var(--font-noto-serif-jp), serif;
+  --font-sans:  var(--font-noto-sans-jp), sans-serif;
+}
+
+/* ============================================================
+   ベーススタイル
+   ============================================================ */
+@layer base {
+  /* タップ時のハイライトを無効化（iOS Safari） */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* フォームリセット */
+  input,
+  textarea,
+  select {
+    font-family: var(--font-sans);
+    font-size: 16px; /* iOS Safari のズーム防止（16px未満でズームが発生） */
+  }
+
+  /* スクロールバーを細くする（スタッフ画面のリスト用） */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #D4C5A9;
+    border-radius: 2px;
+  }
+}
+
+/* ============================================================
+   コンポーネント層
+   ============================================================ */
+@layer components {
+  /* 客向け画面の最大幅制限（スマホ中心） */
+  .customer-container {
+    @apply max-w-[430px] mx-auto min-h-screen;
+  }
+
+  /* 長時間待ちのハイライト（スタッフ画面） */
+  .overdue-highlight {
+    @apply border-2 border-status-alert bg-red-50;
+    animation: pulse-border 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-border {
+    0%, 100% { border-color: #E74C3C; }
+    50%       { border-color: #ff8a80; }
+  }
+
+  /* 厨房ビュー用の大きなテキスト */
+  .kitchen-item-name {
+    @apply text-2xl font-bold font-sans text-brand-dark leading-tight;
+  }
+
+  /* 下部固定ボタンエリアの余白 */
+  .bottom-safe-area {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+  }
+}
+
+/* ============================================================
+   印刷スタイル（QRコード印刷用）
+   ============================================================ */
+@media print {
+  body {
+    background: white;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .qr-print-container {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

@@ -38,6 +38,7 @@ export interface Question {
   code_snippet?: string
   synergy_hint?: string
   hint?: string
+  ai_dev_usage?: string   // AI開発・実務での活用例
   tags: string[]
   created_at: string
 }

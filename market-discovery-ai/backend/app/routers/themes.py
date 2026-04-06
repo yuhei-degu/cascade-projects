@@ -5,9 +5,12 @@ GET /api/v1/themes           — テーマランキング
 GET /api/v1/themes/{id}      — テーマ詳細
 GET /api/v1/categories       — カテゴリ一覧
 POST /api/v1/ingest          — 手動テキストインポート
+POST /api/v1/collect         — 全ソースからデータ収集トリガー
 POST /api/v1/analyze         — 再解析トリガー
+GET /api/v1/brief            — デイリーAI開発アイデア（Claude生成）
 GET /api/v1/health           — ヘルスチェック
 """
+import json
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -59,13 +62,8 @@ async def get_theme_ranking(
     ),
     db: AsyncSession = Depends(get_db),
 ) -> RankingResponse:
-    """
-    総合ビジネス指数降順でテーマランキングを返す。
-    低競合フィルター (max_competition) が UI の「低競合のみ表示」に対応する。
-    """
     logger.info("Fetching ranking", category=category, max_competition=max_competition)
 
-    # ── クエリ構築 ────────────────────────────────────────────────
     stmt = (
         select(Theme, BusinessScore)
         .join(BusinessScore, BusinessScore.theme_id == Theme.id, isouter=True)
@@ -80,11 +78,9 @@ async def get_theme_ranking(
     if min_business_index is not None:
         stmt = stmt.where(BusinessScore.business_index >= min_business_index)
 
-    # カウント
     count_stmt = select(func.count()).select_from(stmt.subquery())
     total = (await db.execute(count_stmt)).scalar_one()
 
-    # ページネーション
     stmt = stmt.offset((page - 1) * per_page).limit(per_page)
     rows = (await db.execute(stmt)).all()
 
@@ -136,18 +132,15 @@ async def get_theme_detail(
     theme_id: int,
     db: AsyncSession = Depends(get_db),
 ) -> ThemeDetailResponse:
-    """テーマの詳細情報（スコア内訳・キーワードリスト）を返す"""
     stmt = select(Theme).where(Theme.id == theme_id, Theme.is_active == True)
     result = await db.execute(stmt)
     theme = result.scalar_one_or_none()
     if theme is None:
         raise HTTPException(status_code=404, detail=f"Theme {theme_id} not found")
 
-    # スコア取得
     score_stmt = select(BusinessScore).where(BusinessScore.theme_id == theme_id)
     score = (await db.execute(score_stmt)).scalar_one_or_none()
 
-    # キーワード取得
     kw_stmt = select(Keyword).where(Keyword.theme_id == theme_id).order_by(
         desc(Keyword.tfidf_score)
     ).limit(30)
@@ -198,7 +191,6 @@ async def get_theme_detail(
 
 @router.get("/categories", summary="カテゴリ一覧取得")
 async def get_categories() -> dict:
-    """利用可能なカテゴリ一覧を返す"""
     return {"categories": sorted(CATEGORIES)}
 
 
@@ -213,9 +205,6 @@ async def ingest_texts(
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ) -> IngestResponse:
-    """
-    テキストリストをインポートして非同期で NLP 処理 → スコア算出を実行する。
-    """
     from app.services.collector.crawler import ManualTextImporter
     importer = ManualTextImporter(db)
     posts = await importer.import_texts(body.texts, body.source, body.category_hint)
@@ -226,11 +215,153 @@ async def ingest_texts(
     )
 
 
+@router.post(
+    "/collect",
+    status_code=202,
+    summary="全ソースからデータ収集トリガー",
+    description="Yahoo知恵袋・Zenn・GitHub から即座にデータ収集してスコアリングまで実行する。",
+)
+async def trigger_collect(background_tasks: BackgroundTasks) -> dict:
+    """手動で全パイプライン（収集 → 集約 → スコアリング）を起動する。"""
+    from app.services.scheduler import run_full_pipeline
+    background_tasks.add_task(run_full_pipeline)
+    return {
+        "status": "started",
+        "message": "データ収集を開始しました。1〜3分後に /api/v1/themes でランキングが確認できます。",
+        "sources": ["Yahoo知恵袋", "Zenn.dev", "GitHub Trending"],
+    }
+
+
 @router.post("/analyze", summary="全テーマ再解析トリガー", status_code=202)
 async def trigger_analyze(background_tasks: BackgroundTasks) -> dict:
-    """全テーマのスコアをバックグラウンドで再計算する"""
     background_tasks.add_task(_run_pipeline_bg)
     return {"status": "started", "message": "スコア再計算を開始しました"}
+
+
+@router.get(
+    "/brief",
+    summary="デイリーAI開発アイデア",
+    description=(
+        "今日のトップテーマを Claude AI が分析し、"
+        "個人開発者が 1〜3 日で作れる具体的なアプリアイデアを TOP5 提案する。"
+        "ANTHROPIC_API_KEY が必要。"
+    ),
+)
+async def get_daily_brief(db: AsyncSession = Depends(get_db)) -> dict:
+    from datetime import date
+
+    # トップテーマを取得（スコア付きのもの優先）
+    stmt = (
+        select(Theme, BusinessScore)
+        .join(BusinessScore, BusinessScore.theme_id == Theme.id)
+        .where(Theme.is_active == True)
+        .order_by(desc(BusinessScore.business_index))
+        .limit(12)
+    )
+    rows = (await db.execute(stmt)).all()
+
+    if not rows:
+        return {
+            "status": "no_data",
+            "message": (
+                "データがまだありません。"
+                "POST /api/v1/collect を呼び出してデータ収集を実行してください。"
+            ),
+            "ideas": [],
+        }
+
+    # Claude API キー未設定の場合はランキングのみ返す
+    if not settings.ANTHROPIC_API_KEY:
+        return {
+            "status": "no_api_key",
+            "message": ".env に ANTHROPIC_API_KEY を追加すると AI アイデア提案が使えます。",
+            "raw_themes": [
+                {
+                    "rank": i + 1,
+                    "title": t.title,
+                    "category": t.category,
+                    "keywords": (t.top_keywords or [])[:5],
+                    "business_index": round(s.business_index, 1),
+                    "demand_score": round(s.demand_score, 1),
+                    "competition_score": round(s.competition_score, 1),
+                }
+                for i, (t, s) in enumerate(rows)
+            ],
+        }
+
+    # テーマデータをプロンプト用に整形
+    themes_text = "\n".join([
+        f"{i + 1}. [{t.category}] {t.title} | "
+        f"需要:{s.demand_score:.0f} 収益化:{s.monetization_score:.0f} "
+        f"競合:{s.competition_score:.0f} BI:{s.business_index:.0f} | "
+        f"キーワード: {', '.join((t.top_keywords or [])[:5])}"
+        for i, (t, s) in enumerate(rows)
+    ])
+
+    prompt = f"""あなたは個人開発者向けのビジネスアイデアアドバイザーです。
+以下は今日の市場需要データ（Yahoo知恵袋・Zenn.dev・GitHub Trending から収集）です。
+
+=== 需要データ ({date.today()}) ===
+{themes_text}
+
+上記データをもとに、**個人開発者が 1〜3 日で作れるアプリ**のアイデアを 5 つ提案してください。
+
+重要な条件:
+- 他の開発者が作っていなそうなニッチなアイデアを優先する
+- 日本語ユーザー向けで日本市場の需要に根ざしている
+- 収益化の道筋が具体的（月額課金・買い切り・広告など）
+- 技術的に 1〜3 人で現実的に作れる規模
+- BI スコアが高く競合スコアが低いテーマを特に参考にする
+
+必ず以下の JSON 配列形式のみで返してください（説明文・前置き不要）:
+[
+  {{
+    "rank": 1,
+    "app_name": "アプリ名",
+    "tagline": "一行キャッチコピー",
+    "target_user": "ターゲットユーザー（具体的に）",
+    "core_problem": "解決する具体的な問題",
+    "unique_angle": "既存サービスとの差別化ポイント",
+    "key_features": ["機能1", "機能2", "機能3"],
+    "monetization": "収益化方法と想定月収",
+    "tech_stack": "推奨技術スタック",
+    "estimated_hours": "開発時間の目安",
+    "demand_basis": "このアイデアの需要データの根拠"
+  }}
+]"""
+
+    try:
+        import anthropic
+        client = anthropic.AsyncAnthropic(api_key=settings.ANTHROPIC_API_KEY)
+        message = await client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=2500,
+            messages=[{"role": "user", "content": prompt}],
+        )
+
+        text = message.content[0].text.strip()
+        # JSON 部分を抽出（```json ... ``` で囲まれることがある）
+        start = text.find("[")
+        end = text.rfind("]") + 1
+        if start == -1 or end == 0:
+            raise ValueError("JSON array not found in response")
+
+        ideas = json.loads(text[start:end])
+
+        return {
+            "status": "ok",
+            "date": str(date.today()),
+            "ideas": ideas,
+            "data_sources": ["Yahoo知恵袋", "Zenn.dev", "GitHub Trending"],
+            "themes_analyzed": len(rows),
+        }
+
+    except json.JSONDecodeError as e:
+        logger.error("Brief JSON parse failed", error=str(e))
+        return {"status": "parse_error", "error": str(e), "raw_response": text}
+    except Exception as e:
+        logger.error("Brief generation failed", error=str(e))
+        return {"status": "error", "error": str(e)}
 
 
 @router.get("/health", response_model=HealthResponse, summary="ヘルスチェック")
@@ -250,7 +381,7 @@ async def health(db: AsyncSession = Depends(get_db)) -> HealthResponse:
 
 
 async def _run_pipeline_bg() -> None:
-    """バックグラウンド解析パイプライン（集約 → スコア計算）"""
+    """バックグラウンド解析パイプライン（集約 → スコア計算のみ）"""
     from app.db.session import AsyncSessionLocal
     from app.services.scoring.business_scorer import BusinessScoreCalculator, ThemeAggregator
     async with AsyncSessionLocal() as db:
