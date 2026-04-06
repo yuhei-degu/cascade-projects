@@ -8,21 +8,21 @@ import { FeedbackWidget } from "../components/feedback/FeedbackWidget"
 const inter = Inter({ subsets: ["latin"], display: "swap" })
 
 const SITE_URL = "https://cascade-projects-lvq1.vercel.app"
-const SITE_NAME = "Certi-AI Hub"
-const DESCRIPTION = "情報処理安全確保支援士（SC）とAWS Certified AI Practitioner（AIF）を同時に対策できる無料学習プラットフォーム。204問以上・カテゴリ別・難易度別・模擬試験対応。2026年度CBT方式対応。"
+const SITE_NAME = "AIセキュリティエンジニア養成所"
+const DESCRIPTION = "資格で終わらない、AI時代に通用する実務力を。セキスペ（SC）・AWS AIF対策をしながら、実際のAI駆動開発で役立つセキュリティ設計力・クラウドAI活用力を鍛える学習プラットフォーム。AI開発者・エンジニア向け。"
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} | SC × AIF 資格学習プラットフォーム`,
+    default: `${SITE_NAME} | 資格で終わらない、AI時代の実務力を`,
     template: `%s | ${SITE_NAME}`,
   },
   description: DESCRIPTION,
   keywords: [
-    "情報処理安全確保支援士", "セキスペ", "SC試験", "SC対策",
+    "AIセキュリティエンジニア", "情報処理安全確保支援士", "セキスペ", "SC試験", "SC対策",
     "AWS Certified AI Practitioner", "AIF", "AIF対策", "AWS AI試験",
-    "CBT模擬試験", "IT資格", "資格学習", "セキュリティ資格",
-    "プロンプトインジェクション", "Bedrock", "生成AI", "機械学習",
+    "AI駆動開発", "AI開発セキュリティ", "セキュリティ設計", "LLMセキュリティ",
+    "プロンプトインジェクション", "Bedrock", "生成AI", "CBT模擬試験",
   ],
   authors: [{ name: SITE_NAME }],
   creator: SITE_NAME,
@@ -31,12 +31,12 @@ export const metadata: Metadata = {
     locale: "ja_JP",
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: `${SITE_NAME} | SC × AIF 資格学習プラットフォーム`,
+    title: `${SITE_NAME} | 資格で終わらない、AI時代の実務力を`,
     description: DESCRIPTION,
   },
   twitter: {
     card: "summary_large_image",
-    title: `${SITE_NAME} | SC × AIF 資格学習プラットフォーム`,
+    title: `${SITE_NAME} | 資格で終わらない、AI時代の実務力を`,
     description: DESCRIPTION,
   },
   verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ? {
@@ -66,8 +66,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </main>
               <FeedbackWidget />
               <footer className="border-t border-gray-100 py-10 text-center text-sm text-gray-400">
-                <p className="font-bold text-gray-600 mb-1">🎓 Certi-AI Hub</p>
-                <p>SC × AIF 統合学習プラットフォーム — 2026年度CBT対応</p>
+                <p className="font-bold text-gray-600 mb-1">🛡️ AIセキュリティエンジニア養成所</p>
+                <p>資格で終わらない、AI時代に通用する実務力を</p>
               </footer>
             </div>
           </div>

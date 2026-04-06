@@ -45,7 +45,7 @@ export default function Header() {
         </button>
 
         <Link href="/" className="flex items-center gap-1.5 font-black text-lg md:hidden tracking-tight">
-          <span className="text-xl drop-shadow-sm">🎓</span><span className="text-slate-900">Certi-AI <span className="text-indigo-600">Hub</span></span>
+          <span className="text-xl drop-shadow-sm">🛡️</span><span className="text-slate-900 text-sm font-black">AIセキュリティ<span className="text-indigo-600">エンジニア養成所</span></span>
         </Link>
 
         {/* モバイルナビ */}
