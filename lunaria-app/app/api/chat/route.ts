@@ -16,7 +16,6 @@ import { applyFreeMemoryDecay, getMemoryFadeHint } from '../../../lib/lunaria/su
 import { getProfile, getPendingUpdates, setProfile, savePendingUpdate, clearPendingUpdate, buildProfileContext, detectProfileConflicts } from '../../../lib/lunaria/profile'
 import type { ProfileField } from '../../../lib/lunaria/profile'
 import { supabaseAdmin } from '../../../lib/supabase'
-import { LUNARIA_SYSTEM_PROMPT, getSeriousPrompt } from '../../../lib/prompt'
 import { buildNormalPrompt, buildSeriousPrompt } from '../../../lib/lunaria/prompt-builder'
 import { tryGrantTicketByScore } from '../../../lib/lunaria/gacha'
 
@@ -31,6 +30,59 @@ const T = {
   routingLog:  'lunaria_routing_log',
   extractions: 'lunaria_extractions',
 } as const
+
+const DEBUG_PROMPT = process.env.LUNARIA_DEBUG_PROMPT === '1'
+const MAX_MESSAGE_CHARS = 2000
+const MAX_HISTORY_ITEMS = 20
+
+type ChatHistoryItem = { role: 'user' | 'assistant'; content: string }
+
+function asFiniteNumber(value: unknown, fallback = 0): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback
+}
+
+function asString(value: unknown, fallback = ''): string {
+  return typeof value === 'string' ? value : fallback
+}
+
+function normalizeScores(value: unknown): number[] {
+  if (!Array.isArray(value)) return []
+  return value
+    .filter((score): score is number => typeof score === 'number' && Number.isFinite(score))
+    .slice(-5)
+}
+
+function normalizeHistory(value: unknown): ChatHistoryItem[] {
+  if (!Array.isArray(value)) return []
+  return value
+    .slice(-MAX_HISTORY_ITEMS)
+    .filter((message): message is ChatHistoryItem => {
+      if (!message || typeof message !== 'object') return false
+      const candidate = message as Partial<ChatHistoryItem>
+      return (
+        (candidate.role === 'user' || candidate.role === 'assistant') &&
+        typeof candidate.content === 'string'
+      )
+    })
+    .map(message => ({
+      role: message.role,
+      content: message.content.slice(0, MAX_MESSAGE_CHARS),
+    }))
+}
+
+function normalizeCoverage(value: unknown): DailyCoverageState {
+  if (!value || typeof value !== 'object') return DEFAULT_COVERAGE
+  const candidate = value as Partial<Record<keyof DailyCoverageState, unknown>>
+  return {
+    work:           candidate.work === true,
+    health:         candidate.health === true,
+    meal:           candidate.meal === true,
+    relation:       candidate.relation === true,
+    hobby:          candidate.hobby === true,
+    tomorrow:       candidate.tomorrow === true,
+    small_positive: candidate.small_positive === true,
+  }
+}
 
 // 文末で切り詰め：100文字超 OR 文末記号で終わっていない場合に最後の文末位置で切る
 function truncateAtSentence(text: string, maxChars: number): string {
@@ -53,18 +105,28 @@ function truncateAtSentence(text: string, maxChars: number): string {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
-    const userMessage: string       = body.message
-    const prevScores: number[]      = body.prevScores ?? []
-    const prevHeavy: number         = body.prevHeavy ?? 0
-    const lastSeriousAt: number     = body.lastSeriousAt ?? 0
-    const history                   = body.history ?? []
-    const consecutiveTopicCount: number  = body.consecutiveTopicCount ?? 0
-    const coverage: DailyCoverageState   = body.coverage ?? DEFAULT_COVERAGE
-    const lastTopic: string              = body.lastTopic ?? 'other'
-    const lastSubtopic: string           = body.lastSubtopic ?? 'unknown'
+    const body = await req.json().catch(() => null)
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({ reply: 'メッセージの形が読めなかったみたい', error: true }, { status: 400 })
+    }
+
+    const payload = body as Record<string, unknown>
+    const rawMessage = asString(payload.message).trim()
+    if (!rawMessage) {
+      return NextResponse.json({ reply: 'メッセージが空みたい', error: true }, { status: 400 })
+    }
+
+    const userMessage: string       = rawMessage.slice(0, MAX_MESSAGE_CHARS)
+    const prevScores: number[]      = normalizeScores(payload.prevScores)
+    const prevHeavy: number         = asFiniteNumber(payload.prevHeavy)
+    const lastSeriousAt: number     = asFiniteNumber(payload.lastSeriousAt)
+    const history                   = normalizeHistory(payload.history)
+    const consecutiveTopicCount: number  = asFiniteNumber(payload.consecutiveTopicCount)
+    const coverage: DailyCoverageState   = normalizeCoverage(payload.coverage)
+    const lastTopic: string              = asString(payload.lastTopic, 'other')
+    const lastSubtopic: string           = asString(payload.lastSubtopic, 'unknown')
     // 記憶表出タイムスタンプ（クライアント側で保持）
-    const lastMemorySurfacedAt: number   = body.lastMemorySurfacedAt ?? 0
+    const lastMemorySurfacedAt: number   = asFiniteNumber(payload.lastMemorySurfacedAt)
 
     // 名前を即時検出して保存（Gemini抽出を待たない）
     const detectedName = detectNameFromMessage(userMessage)
@@ -183,7 +245,7 @@ export async function POST(req: NextRequest) {
       : buildNormalPrompt(promptPayload)
     if (precomputedReply === null) {
       console.log('[intent] answer_directly, topic:', topicResult.current_topic)
-      console.log('[DEBUG-PROMPT]\n' + systemWithContext)
+      if (DEBUG_PROMPT) console.log('[DEBUG-PROMPT]\n' + systemWithContext)
     }
     const llmMsgs: OpenAI.Chat.ChatCompletionMessageParam[] = [
       { role: 'system', content: systemWithContext },
