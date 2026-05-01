@@ -2,6 +2,7 @@ import OpenAI from 'openai'
 import { z } from 'zod'
 import { ExtractionSchema } from './types'
 import type { Extraction } from './types'
+import { debugLog, warnLog } from './logger'
 
 const gemini = new OpenAI({
   apiKey: process.env.GEMINI_API_KEY,
@@ -109,10 +110,10 @@ export async function extractConversation(
 
   try {
     const parsed = ExtractionSchema.parse(JSON.parse(json))
-    console.log('[extract] ok, score:', parsed.importance_score, 'summary:', parsed.summary.slice(0, 30))
+    debugLog('[extract] ok, score:', parsed.importance_score, 'summary:', parsed.summary.slice(0, 30))
     return parsed
   } catch (e) {
-    console.warn('[extract] parse error, raw:', raw.slice(0, 100))
+    warnLog('[extract] parse error, raw:', raw.slice(0, 100))
     // パースエラー時はデフォルト値を返す
     return ExtractionSchema.parse({
       summary: '会話の記録', emotions: {

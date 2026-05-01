@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '../supabase'
+import { debugLog } from './logger'
 
 export type Plan = 'free' | 'premium'
 
@@ -46,7 +47,7 @@ export async function applyFreeMemoryDecay(userId: string = USER_ID): Promise<vo
       .eq('id', (mem as any).id)
   }
 
-  console.log(`[subscription] free plan decay: ${oldMemories.length} memories degraded`)
+  debugLog(`[subscription] free plan decay: ${oldMemories.length} memories degraded`)
 }
 
 // ── 記憶フェードヒント（課金フック）─────────────────────────
