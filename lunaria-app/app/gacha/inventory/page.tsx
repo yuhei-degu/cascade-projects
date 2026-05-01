@@ -72,9 +72,19 @@ export default function InventoryPage() {
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
         <Link href="/gacha" style={{ color: '#888', textDecoration: 'none', fontSize: '14px' }}>← ガチャ</Link>
         <h1 style={{ flex: 1, textAlign: 'center', fontSize: '18px', fontWeight: 'normal', color: '#ddd5c5' }}>
-          コレクション
+          月箱の棚
         </h1>
         <div style={{ width: '60px' }} />
+      </div>
+
+      <div style={{
+        color: '#7a7060',
+        fontSize: 12,
+        lineHeight: 1.7,
+        textAlign: 'center',
+        marginBottom: 16,
+      }}>
+        ルナから受け取ったものだけを、静かに並べておく場所。
       </div>
 
       {/* フィルター */}
@@ -105,7 +115,7 @@ export default function InventoryPage() {
           <div style={{ textAlign: 'center', color: '#888', padding: '40px' }}>読み込み中...</div>
         ) : filtered.length === 0 ? (
           <div style={{ textAlign: 'center', color: '#888', padding: '40px', fontSize: '13px' }}>
-            まだ何も持ってないよ。ガチャを引いてみて
+            棚はまだ空っぽ。月箱を受け取ると、ここに少しずつ並んでいくよ。
           </div>
         ) : (
           <div style={{

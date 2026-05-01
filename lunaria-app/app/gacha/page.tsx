@@ -47,6 +47,22 @@ const CATEGORY_GLYPH: Record<string, string> = {
   urban_legend: '☾',
 }
 
+const PHASE_COPY: Record<Exclude<Phase, 'idle' | 'result'>, string> = {
+  stage1: 'ルナが箱を選んでる...',
+  stage2: 'リボンをほどいてる',
+  reveal: 'そっと受け取って',
+}
+
+const RARITY_NOTE: Record<string, string> = {
+  common_a: '日常に置いておきたい、ささやかなもの。',
+  common_b: 'いつもの時間に少しだけ光を足すもの。',
+  rare_a: '部屋の空気がふっと変わる、ちょっと特別なもの。',
+  rare_b: '身につけたくなる、小さな物語つきのもの。',
+  epic: 'ルナも少し声を弾ませる、めずらしい贈り物。',
+  legendary: '今日は覚えておきたくなる夜かもしれない。',
+  urban_legend: '見つけた人だけが知っている、静かな噂。',
+}
+
 function itemGlyph(item: PoolItem): string {
   if (item.rarity === 'urban_legend') return '☾'
   return CATEGORY_GLYPH[item.category] ?? '✦'
@@ -143,7 +159,7 @@ export default function GachaPage() {
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
         <Link href="/" style={{ color: '#888', textDecoration: 'none', fontSize: '14px' }}>← 戻る</Link>
         <h1 style={{ flex: 1, textAlign: 'center', fontSize: '18px', fontWeight: 'normal', color: '#ddd5c5' }}>
-          ガチャ
+          月箱
         </h1>
         <Link href="/gacha/inventory" style={{ color: '#888', textDecoration: 'none', fontSize: '14px' }}>
           所持品 →
@@ -175,7 +191,7 @@ export default function GachaPage() {
         color: '#7a7060', fontSize: 12, lineHeight: 1.7,
         textAlign: 'center', marginBottom: '18px',
       }}>
-        会話のついでに集まる、ちいさなおみやげ。結果は思い出を汚さず、ここだけでそっと楽しむ。
+        ルナがときどき持ってくる、ちいさな月箱。思い出とは混ぜず、ここだけでそっと楽しむ。
       </div>
 
       {/* デイリーボーナス */}
@@ -188,7 +204,7 @@ export default function GachaPage() {
             padding: '10px', fontSize: '13px', cursor: 'pointer', marginBottom: '16px',
           }}
         >
-          ✨ デイリーボーナス（チケット +1）
+          今日の月箱チケットを受け取る
         </button>
       )}
 
@@ -212,7 +228,7 @@ export default function GachaPage() {
           onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
           onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
         >
-          {drawing ? '…' : (state?.ticket_count ?? 0) < 1 ? 'おやすみ' : '引く'}
+          {drawing ? '…' : (state?.ticket_count ?? 0) < 1 ? 'またあとで' : '受け取る'}
         </button>
       </div>
 
@@ -223,7 +239,7 @@ export default function GachaPage() {
       )}
 
       <div style={{ textAlign: 'center', fontSize: '11px', color: '#666', marginBottom: '8px' }}>
-        本日の獲得チケット {state?.earned_today ?? 0}/5
+        会話から届いたチケット {state?.earned_today ?? 0}/5
       </div>
 
       {/* 演出オーバーレイ */}
@@ -234,29 +250,44 @@ export default function GachaPage() {
           zIndex: 100,
         }}>
           {phase === 'stage1' && (
-            <div style={{
-              width: '60vw', maxWidth: '300px', aspectRatio: '1',
-              borderRadius: '50%',
-              background: `radial-gradient(circle, ${meta.glow} 0%, transparent 70%)`,
-              animation: 'orbPulse 1.5s ease-in-out',
-            }} />
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                width: '60vw', maxWidth: '300px', aspectRatio: '1',
+                borderRadius: '50%',
+                background: `radial-gradient(circle, ${meta.glow} 0%, transparent 70%)`,
+                animation: 'orbPulse 1.5s ease-in-out',
+              }} />
+              <div style={{ color: '#7a7060', fontSize: 13, marginTop: 22, letterSpacing: '.06em' }}>
+                {PHASE_COPY.stage1}
+              </div>
+            </div>
           )}
           {phase === 'stage2' && (
-            <div style={{
-              fontSize: '60px', color: meta.color,
-              textShadow: `0 0 30px ${meta.glow}, 0 0 60px ${meta.glow}`,
-              animation: 'fadeUp 0.6s ease-out',
-            }}>
-              ✦
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                fontSize: '60px', color: meta.color,
+                textShadow: `0 0 30px ${meta.glow}, 0 0 60px ${meta.glow}`,
+                animation: 'fadeUp 0.6s ease-out',
+              }}>
+                ✦
+              </div>
+              <div style={{ color: '#7a7060', fontSize: 13, marginTop: 18, letterSpacing: '.06em' }}>
+                {PHASE_COPY.stage2}
+              </div>
             </div>
           )}
           {phase === 'reveal' && (
-            <div style={{
-              fontSize: '24px', color: meta.color,
-              textShadow: `0 0 20px ${meta.glow}`,
-              animation: 'fadeUp 0.6s ease-out',
-            }}>
-              {meta.label}
+            <div style={{ textAlign: 'center', animation: 'fadeUp 0.6s ease-out' }}>
+              <div style={{
+                fontSize: '24px', color: meta.color,
+                textShadow: `0 0 20px ${meta.glow}`,
+                marginBottom: 10,
+              }}>
+                {meta.label}
+              </div>
+              <div style={{ color: '#7a7060', fontSize: 13, letterSpacing: '.06em' }}>
+                {PHASE_COPY.reveal}
+              </div>
             </div>
           )}
         </div>
@@ -286,7 +317,7 @@ export default function GachaPage() {
               fontSize: '12px', color: meta.color, letterSpacing: '0.2em',
               marginBottom: '16px',
             }}>
-              {meta.label}
+              LUNA'S SMALL GIFT / {meta.label}
             </div>
             <div style={{
               width: '120px', height: '120px', margin: '0 auto 16px',
@@ -308,6 +339,14 @@ export default function GachaPage() {
                 {drawResult.result.description}
               </div>
             )}
+            <div style={{
+              fontSize: '12px',
+              color: '#7a7060',
+              lineHeight: 1.6,
+              marginBottom: '16px',
+            }}>
+              {RARITY_NOTE[drawResult.result.rarity] ?? 'ルナが選んだ、今日だけの小さなもの。'}
+            </div>
             {drawResult.was_duplicate && (
               <div style={{
                 fontSize: '13px', color: '#f7ca18',
