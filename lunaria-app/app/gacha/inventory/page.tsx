@@ -30,6 +30,18 @@ const CATEGORY_LABEL: Record<string, string> = {
   urban_legend: '都市伝説',
 }
 
+const CATEGORY_GLYPH: Record<string, string> = {
+  furniture: '▣',
+  small_item: '✧',
+  accessory: '◇',
+  urban_legend: '☾',
+}
+
+function itemGlyph(item: InventoryItem): string {
+  if (item.rarity === 'urban_legend') return '☾'
+  return CATEGORY_GLYPH[item.category] ?? '✦'
+}
+
 const CATEGORIES = ['all', 'furniture', 'small_item', 'accessory', 'urban_legend'] as const
 type Category = typeof CATEGORIES[number]
 
@@ -54,6 +66,7 @@ export default function InventoryPage() {
     <div style={{
       height: '100dvh', display: 'flex', flexDirection: 'column',
       maxWidth: '480px', margin: '0 auto', padding: '20px',
+      background: 'radial-gradient(circle at 50% 0%, rgba(127,179,213,0.07), transparent 36%)',
     }}>
       {/* ヘッダー */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
@@ -110,13 +123,14 @@ export default function InventoryPage() {
                 }}
               >
                 <div style={{
-                  width: '100%', flex: 1, background: 'rgba(0,0,0,0.3)', borderRadius: '4px',
+                  width: '100%', flex: 1,
+                  background: `radial-gradient(circle at 50% 35%, ${(RARITY_COLOR[item.rarity] ?? '#333')}33, rgba(0,0,0,0.3) 68%)`,
+                  borderRadius: '8px',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '32px', marginBottom: '6px',
+                  color: RARITY_COLOR[item.rarity] ?? '#ddd5c5',
                 }}>
-                  {item.image_url
-                    ? <img src={item.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                    : '🎁'}
+                  <span aria-hidden="true">{itemGlyph(item)}</span>
                 </div>
                 <div style={{
                   fontSize: '10px', color: '#ddd5c5', textAlign: 'center',

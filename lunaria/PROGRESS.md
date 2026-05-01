@@ -2,6 +2,40 @@
 
 ## 本日（5/1）の作業
 
+### 並行開発ルール整備 ✅
+
+Claude Code と Codex の並行開発で二重 Git / migration 衝突が起きないよう、運用ルールを確定。
+
+**Git の正本**：
+- 正本は `C:\Users\yuuve\CascadeProjects` ルートの Git リポジトリ。
+- `lunaria-app/` 単独の `git init` はしない。
+- `lunaria-app/.git` が生成された場合は残骸扱いで削除し、ルート Git に戻す。
+
+**作業開始時のルール**：
+- まず `C:\Users\yuuve\CascadeProjects` で `master` を最新化してから作業する。
+- Agent ごとにブランチを分ける（例：`codex/*`, `claude/*`）。
+- 同じ日に同じ巨大ファイルを触る場合は、先に担当範囲を宣言する。
+
+**衝突しやすいファイル**：
+- `lunaria-app/app/page.tsx`
+- `lunaria-app/app/api/chat/route.ts`
+- `lunaria-app/lib/prompt.ts`
+- `lunaria-app/lib/supabase.ts`
+- `lunaria-app/supabase/migrations/*.sql`
+
+**migration ルール**：
+- 現在 `001` から `011` まで使用済み。
+- 次の新規 migration は `012_*.sql` から開始する。
+- Supabase 側へ適用済みの番号は再利用しない。
+
+**5/1 時点の確認済み状態**：
+- PR #1 merge 済み、`master` は `e0d74e5`。
+- `009_gacha.sql` / `010_gacha_seed.sql` / `011_lock_gacha_rpc.sql` は Supabase 適用済み。
+- `lunaria-app/.git` は削除済み。
+- ホーム表示、ガチャ画面、デイリーボーナス、ガチャ実行、結果リアクションをブラウザで確認済み。
+
+---
+
 ### Phase G：Supabase 適用・検証 ✅
 
 4/28 時点で「ユーザーが Supabase SQL Editor で実行」として残っていたガチャDB適用を、接続先 Supabase project `uegefcjabpqinhokgkxe` に反映済み。

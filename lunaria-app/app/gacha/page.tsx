@@ -40,6 +40,18 @@ const RARITY_META: Record<string, { label: string; color: string; glow: string }
   urban_legend: { label: '都市伝説',     color: '#ff6b6b', glow: 'rgba(255,107,107,1)' },
 }
 
+const CATEGORY_GLYPH: Record<string, string> = {
+  furniture: '▣',
+  small_item: '✧',
+  accessory: '◇',
+  urban_legend: '☾',
+}
+
+function itemGlyph(item: PoolItem): string {
+  if (item.rarity === 'urban_legend') return '☾'
+  return CATEGORY_GLYPH[item.category] ?? '✦'
+}
+
 // 演出フェーズ
 type Phase = 'idle' | 'stage1' | 'stage2' | 'reveal' | 'result'
 
@@ -125,6 +137,7 @@ export default function GachaPage() {
     <div style={{
       height: '100dvh', display: 'flex', flexDirection: 'column',
       padding: '20px', maxWidth: '480px', margin: '0 auto',
+      background: 'radial-gradient(circle at 50% 10%, rgba(127,179,213,0.08), transparent 38%)',
     }}>
       {/* ヘッダー */}
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
@@ -140,8 +153,11 @@ export default function GachaPage() {
       {/* 状態表示 */}
       {state && (
         <div style={{
-          background: 'rgba(255,255,255,0.04)', borderRadius: '12px', padding: '16px',
-          marginBottom: '24px', display: 'flex', justifyContent: 'space-around',
+          background: 'linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025))',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: '16px', padding: '16px',
+          marginBottom: '12px', display: 'flex', justifyContent: 'space-around',
+          boxShadow: '0 18px 50px rgba(0,0,0,0.22)',
         }}>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '11px', color: '#888' }}>チケット</div>
@@ -154,6 +170,13 @@ export default function GachaPage() {
           </div>
         </div>
       )}
+
+      <div style={{
+        color: '#7a7060', fontSize: 12, lineHeight: 1.7,
+        textAlign: 'center', marginBottom: '18px',
+      }}>
+        会話のついでに集まる、ちいさなおみやげ。結果は思い出を汚さず、ここだけでそっと楽しむ。
+      </div>
 
       {/* デイリーボーナス */}
       {state?.daily_bonus_available && (
@@ -176,16 +199,20 @@ export default function GachaPage() {
           disabled={drawing || (state?.ticket_count ?? 0) < 1}
           style={{
             width: '180px', height: '180px', borderRadius: '50%',
-            background: drawing ? '#1a1a1a' : 'radial-gradient(circle at 30% 30%, #2c3e50 0%, #1a1a1a 70%)',
-            color: '#ddd5c5', border: '2px solid rgba(255,255,255,0.1)',
+            background: drawing
+              ? '#1a1a1a'
+              : 'radial-gradient(circle at 30% 28%, rgba(127,179,213,0.42) 0%, #202b30 34%, #11100e 72%)',
+            color: '#ddd5c5', border: '1px solid rgba(221,213,197,0.18)',
             fontSize: '20px', cursor: drawing ? 'not-allowed' : 'pointer',
-            transition: 'transform 0.2s', opacity: drawing ? 0.4 : 1,
+            transition: 'transform 0.2s, box-shadow 0.2s, opacity 0.2s',
+            opacity: drawing ? 0.4 : ((state?.ticket_count ?? 0) < 1 ? 0.35 : 1),
+            boxShadow: drawing ? 'none' : '0 0 42px rgba(127,179,213,0.18), inset 0 0 32px rgba(255,255,255,0.04)',
           }}
           onMouseDown={e => { if (!drawing) e.currentTarget.style.transform = 'scale(0.95)' }}
           onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
           onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
         >
-          {drawing ? '…' : '引く'}
+          {drawing ? '…' : (state?.ticket_count ?? 0) < 1 ? 'おやすみ' : '引く'}
         </button>
       </div>
 
@@ -263,13 +290,15 @@ export default function GachaPage() {
             </div>
             <div style={{
               width: '120px', height: '120px', margin: '0 auto 16px',
-              background: 'rgba(255,255,255,0.05)', borderRadius: '8px',
+              background: `radial-gradient(circle at 50% 35%, ${meta.glow}, rgba(255,255,255,0.04) 62%)`,
+              border: `1px solid ${meta.color}55`,
+              borderRadius: '18px',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: '48px',
             }}>
-              {drawResult.result.image_url
-                ? <img src={drawResult.result.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                : '🎁'}
+              <span aria-hidden="true" style={{ color: meta.color, textShadow: `0 0 22px ${meta.glow}` }}>
+                {itemGlyph(drawResult.result)}
+              </span>
             </div>
             <div style={{ fontSize: '18px', color: '#ddd5c5', marginBottom: '8px' }}>
               {drawResult.result.name}
