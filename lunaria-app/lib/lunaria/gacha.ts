@@ -186,17 +186,33 @@ export async function getInventory(): Promise<InventoryItem[]> {
 export async function claimDailyBonus(): Promise<{ granted: boolean; ticket_count: number }> {
   const today = new Date().toISOString().slice(0, 10)
 
+  const fetchTicketCount = async () => {
+    const { data: t } = await supabaseAdmin
+      .from(T.gachaTickets).select('count').eq('user_id', USER_ID).maybeSingle()
+    return t?.count ?? 0
+  }
+
   // 既に受取済みかチェック
-  const { data: existing } = await supabaseAdmin
+  const { data: existing, error: existingErr } = await supabaseAdmin
     .from(T.gachaDailyBonus)
     .select('user_id')
     .eq('user_id', USER_ID)
     .eq('given_date', today)
     .maybeSingle()
+  if (existingErr) throw existingErr
   if (existing) {
-    const { data: t } = await supabaseAdmin
-      .from(T.gachaTickets).select('count').eq('user_id', USER_ID).maybeSingle()
-    return { granted: false, ticket_count: t?.count ?? 0 }
+    return { granted: false, ticket_count: await fetchTicketCount() }
+  }
+
+  // 受取記録を先に作り、同時クリックでも1回だけ付与されるようにする
+  const { error: bonusErr } = await supabaseAdmin
+    .from(T.gachaDailyBonus)
+    .insert({ user_id: USER_ID, given_date: today })
+  if (bonusErr) {
+    if (bonusErr.code === '23505') {
+      return { granted: false, ticket_count: await fetchTicketCount() }
+    }
+    throw bonusErr
   }
 
   // チケット +1
@@ -204,15 +220,19 @@ export async function claimDailyBonus(): Promise<{ granted: boolean; ticket_coun
     p_user_id: USER_ID,
     p_amount:  1,
   })
-  if (rpcErr) throw rpcErr
-
-  // 受取記録
-  await supabaseAdmin.from(T.gachaDailyBonus).insert({ user_id: USER_ID, given_date: today })
+  if (rpcErr) {
+    await supabaseAdmin
+      .from(T.gachaDailyBonus)
+      .delete()
+      .eq('user_id', USER_ID)
+      .eq('given_date', today)
+    throw rpcErr
+  }
 
   return { granted: true, ticket_count: Number(count ?? 0) }
 }
 
-// ── 質スコア配布（/api/chat から呼ぶ） ────────────────────
+// 質スコア配布（/api/chat から呼ぶ）
 // score 1-2: 5%, 3-4: 15%, 5+: 30%
 // 1 日上限 5 枚を超えたら配布しない。
 export async function tryGrantTicketByScore(score: number): Promise<{ granted: boolean; ticket_count: number }> {
