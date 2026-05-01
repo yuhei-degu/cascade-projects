@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server'
 import { drawGacha } from '../../../../lib/lunaria/gacha'
 import { generateGachaReaction } from '../../../../lib/lunaria/gacha-reaction'
 
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : ''
+}
+
 export async function POST() {
   try {
     const draw = await drawGacha()
@@ -18,11 +22,12 @@ export async function POST() {
     })
 
     return NextResponse.json({ ...draw, reaction })
-  } catch (e: any) {
-    if (e?.message === 'no_ticket') {
+  } catch (e: unknown) {
+    const message = errorMessage(e)
+    if (message === 'no_ticket') {
       return NextResponse.json({ error: 'no_ticket' }, { status: 400 })
     }
-    if (e?.message === 'gacha_pool_empty') {
+    if (message === 'gacha_pool_empty') {
       return NextResponse.json({ error: 'gacha_pool_empty' }, { status: 500 })
     }
     console.error('[gacha/draw]', e)

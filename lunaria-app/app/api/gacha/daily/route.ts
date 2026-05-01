@@ -5,7 +5,7 @@ export async function POST() {
   try {
     const result = await claimDailyBonus()
     return NextResponse.json(result)
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error('[gacha/daily]', e)
     return NextResponse.json({ error: 'internal_error' }, { status: 500 })
   }
