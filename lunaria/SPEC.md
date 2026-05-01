@@ -220,3 +220,33 @@ session_context   直近20発言のキャッシュ
 core_memory       長期記憶エントリ
 routing_log       スコア履歴（デバッグ用）
 ```
+
+---
+
+## プロフィール × コアメモリ 役割分離（2026-04-18 追加・v2）
+
+詳細は `PROFILE_MEMORY_INTEGRATION.md`（v2）。ここには原則だけ残す。
+
+### 原則
+
+- **user_profile**（EAV：`field, value, source` 行単位）は「安定的属性」の Source of Truth。扱う field は `name` / `gender` / `occupation` / `age_band` / `user_nickname` / `lunaria_nickname` / `lifestyle_pattern` 等。
+- **core_memory** は「エピソード・価値観・関係性」だけを持つ。属性の単純言及は入れない。DB 上は `memory_category='profile'` マーカーで profile 相当行を分離可能（既存運用）。
+- 書き込み経路はセッション終了時の抽出バッチに一本化し、`profile_updates`（→ `lunaria_pending_profile_updates`）と `memory_candidates`（→ `lunaria_core_memory` with `memory_category != 'profile'`）に振り分ける。
+
+### プロンプト 5 層構造（4 層 → 拡張）
+
+```
+[Identity]   LUNARIA_CORE_IDENTITY
+[State]      state-summary.ts の自然文タグ
+[Profile]    user_profile(EAV) から 1 行サマリ（全ルート常時）
+[Memories]   core_memory で memory_category != 'profile' のもの（claude_serious のみ 1 件）
+[Rules]      会話ルール・禁止表現
+```
+
+### 重複除去
+
+**DB の `memory_category='profile'` マーカーを除外する WHERE 句 1 つ**で済む（`(memory_category IS NULL OR memory_category <> 'profile')`）。v1 で想定していた「Profile キーワードで substring 一致して弾く」クライアント側処理は不要になった。
+
+### 矛盾時の真実権限
+
+Profile 優先。矛盾を検知したら既存 `lunaria_pending_profile_updates` に積み、ユーザー確認で確定 → `lunaria_user_profile` を UPDATE、`lunaria_profile_archive` に old/new を記録。DB レベルの supersede フラグは持たない（v1 案は破棄）。

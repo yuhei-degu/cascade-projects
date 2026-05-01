@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { generateDiary } from '@/lib/lunaria/diary'
-import { updateAffinity } from '@/lib/lunaria/affinity'
-import { supabaseAdmin } from '@/lib/supabase'
+import { generateDiary } from '../../../lib/lunaria/diary'
+import { updateAffinity } from '../../../lib/lunaria/affinity'
+import { supabaseAdmin } from '../../../lib/supabase'
 
 const USER_ID = '00000000-0000-0000-0000-000000000001'
 

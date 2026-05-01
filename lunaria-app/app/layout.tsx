@@ -1,11 +1,31 @@
 import type { Metadata } from 'next'
-import './globals.css'
 
-export const metadata: Metadata = { title: 'ルナリア', description: '幼なじみAI' }
+export const metadata: Metadata = { title: 'ルナ', description: 'AI日記ルナリア' }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ja">
+      <head>
+        <style>{`
+          *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+          body {
+            background: #0e0d0b;
+            color: #ddd5c5;
+            font-family: 'Hiragino Sans', 'Noto Sans JP', 'Meiryo', sans-serif;
+            height: 100dvh;
+            overflow: hidden;
+          }
+          .scroll-thin::-webkit-scrollbar { width: 3px; }
+          .scroll-thin::-webkit-scrollbar-thumb { background: rgba(255,255,255,.06); border-radius: 2px; }
+          @keyframes fadeUp { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+          @keyframes orbPulse { 0%,100% { transform: scale(1); opacity: .7; } 50% { transform: scale(1.3); opacity: 1; } }
+          @keyframes blink { 0%,100% { opacity: .1; } 55% { opacity: 1; } }
+          .fade-up { animation: fadeUp .35s ease-out; }
+          .orb-anim { animation: orbPulse 4s ease-in-out infinite; }
+          .blink-dot { animation: blink 1.2s ease-in-out infinite; }
+          input:focus, button:focus { outline: none; }
+        `}</style>
+      </head>
       <body>{children}</body>
     </html>
   )

@@ -46,19 +46,51 @@ export default function ChatPage() {
   const [input, setInput]         = useState('')
   const [loading, setLoading]     = useState(false)
   const [routeType, setRoute]     = useState<RouteType>('light_normal')
-  const [prevScores, setPrevScores] = useState<number[]>([])
-  const [prevHeavy, setPrevHeavy] = useState(0)
-  const [showDev, setShowDev]     = useState(false)
+  const [prevScores, setPrevScores]           = useState<number[]>([])
+  const [prevHeavy, setPrevHeavy]             = useState(0)
+  const [lastSeriousAt, setLastSeriousAt]     = useState(0)
+  const [showDev, setShowDev]                 = useState(false)
+  const [consecutiveTopicCount, setConsCount] = useState(0)
+  const [lastTopic, setLastTopic]             = useState('other')
+  const [lastSubtopic, setLastSub]            = useState('unknown')
+  const [coverage, setCoverage]               = useState<any>({
+    work: false, health: false, meal: false,
+    relation: false, hobby: false, tomorrow: false, small_positive: false,
+  })
+  const [convMode, setConvMode]               = useState<string>('continue')
+  const [userName, setUserName]               = useState<string>('')
+  const [ticketToast, setTicketToast]         = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef  = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    setMsgs(load<Msg[]>('luna_msgs', []).slice(-30))
+    // DB から履歴を取得（リロード後も続きから話せる）
+    fetch('/api/messages')
+      .then(r => r.json())
+      .then(data => {
+        if (data.messages?.length > 0) {
+          setMsgs(data.messages)
+        } else {
+          setMsgs(load<Msg[]>('luna_msgs', []).slice(-30))
+        }
+      })
+      .catch(() => setMsgs(load<Msg[]>('luna_msgs', []).slice(-30)))
     setPrevScores(load('luna_scores', []))
     setPrevHeavy(load('luna_heavy', 0))
+    setLastSeriousAt(load('luna_lastSeriousAt', 0))
+    setConsCount(load('luna_consCount', 0))
+    setLastTopic(load('luna_lastTopic', 'other'))
+    setLastSub(load('luna_lastSub', 'unknown'))
+    setCoverage(load('luna_coverage', {
+      work: false, health: false, meal: false,
+      relation: false, hobby: false, tomorrow: false, small_positive: false,
+    }))
   }, [])
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [msgs, loading])
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    setTimeout(() => inputRef.current?.focus(), 100)
+  }, [msgs, loading])
 
   // セッション終了検知（5分無操作で日記生成）
   useEffect(() => {
@@ -77,26 +109,101 @@ export default function ChatPage() {
     const newMsgs = [...msgs, userMsg]
     setMsgs(newMsgs); setInput(''); setLoading(true)
 
+    // 受信開始したら typing インジケータを切って placeholder を出す
+    let placeholderInserted = false
+    let live = ''
+    const ensurePlaceholder = () => {
+      if (placeholderInserted) return
+      placeholderInserted = true
+      setLoading(false)
+      setMsgs(p => [...p, { role: 'assistant', content: '', ts: Date.now() }])
+    }
+    const updateLive = (next: string) => {
+      live = next
+      setMsgs(p => {
+        if (p.length === 0) return p
+        const last = p[p.length - 1]
+        if (last.role !== 'assistant') return p
+        return [...p.slice(0, -1), { ...last, content: next }]
+      })
+    }
+
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, prevScores, prevHeavy, history: msgs.slice(-6).map(m => ({ role: m.role, content: m.content })) }),
+        body: JSON.stringify({
+          message: text, prevScores, prevHeavy, lastSeriousAt,
+          history: msgs.slice(-6).map(m => ({ role: m.role, content: m.content })),
+          consecutiveTopicCount, lastTopic, lastSubtopic, coverage,
+        }),
       })
-      const data = await res.json()
-      const aiMsg: Msg = { role: 'assistant', content: data.reply, ts: Date.now() }
-      const finalMsgs = [...newMsgs, aiMsg].slice(-30)
-      setMsgs(finalMsgs)
-      setRoute(data.routeType ?? 'light_normal')
-      setPrevScores(data.prevScores ?? [])
-      setPrevHeavy(data.prevHeavy ?? 0)
-      save('luna_msgs', finalMsgs)
-      save('luna_scores', data.prevScores ?? [])
-      save('luna_heavy', data.prevHeavy ?? 0)
+      if (!res.ok || !res.body) throw new Error(`http ${res.status}`)
+
+      const reader  = res.body.getReader()
+      const decoder = new TextDecoder()
+      let buf = ''
+      // NDJSON：1行 = 1イベント
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buf += decoder.decode(value, { stream: true })
+        let nl
+        while ((nl = buf.indexOf('\n')) !== -1) {
+          const line = buf.slice(0, nl).trim()
+          buf = buf.slice(nl + 1)
+          if (!line) continue
+          let event: any
+          try { event = JSON.parse(line) } catch { continue }
+          if (event.type === 'chunk') {
+            ensurePlaceholder()
+            updateLive(live + (event.text ?? ''))
+          } else if (event.type === 'replace') {
+            ensurePlaceholder()
+            updateLive(event.text ?? '')
+          } else if (event.type === 'done') {
+            ensurePlaceholder()
+            const d = event.data ?? {}
+            // canonical reply で確定（途中の chunk と差があれば snap）
+            if (typeof d.reply === 'string' && d.reply !== live) updateLive(d.reply)
+
+            setMsgs(p => p.slice(-30))
+            setRoute(d.routeType ?? 'light_normal')
+            setPrevScores(d.prevScores ?? [])
+            setPrevHeavy(d.prevHeavy ?? 0)
+            setLastSeriousAt(d.lastSeriousAt ?? lastSeriousAt)
+            setConsCount(d.consecutiveTopicCount ?? 0)
+            setLastTopic(d.lastTopic ?? 'other')
+            setLastSub(d.lastSubtopic ?? 'unknown')
+            setCoverage(d.coverage ?? coverage)
+            setConvMode(d.conversationMode ?? 'continue')
+            if (d.userName) setUserName(d.userName)
+            save('luna_scores', d.prevScores ?? [])
+            save('luna_heavy', d.prevHeavy ?? 0)
+            save('luna_lastSeriousAt', d.lastSeriousAt ?? lastSeriousAt)
+            save('luna_consCount', d.consecutiveTopicCount ?? 0)
+            save('luna_lastTopic', d.lastTopic ?? 'other')
+            save('luna_lastSub', d.lastSubtopic ?? 'unknown')
+            save('luna_coverage', d.coverage ?? coverage)
+
+            // ガチャチケット獲得通知（3 秒間トースト表示）
+            if (d.ticketGranted) {
+              setTicketToast(`🎟 ガチャ券もらった！（${d.ticketTotal ?? '?'}枚）`)
+              setTimeout(() => setTicketToast(null), 3000)
+            }
+          }
+        }
+      }
+      // 何も来ずに終わった保険
+      if (!placeholderInserted) {
+        setMsgs(p => [...p, { role: 'assistant', content: 'ちょい待って', ts: Date.now() }])
+      }
     } catch {
-      setMsgs(p => [...p, { role: 'assistant', content: 'ちょい待って', ts: Date.now() }])
+      if (!placeholderInserted) {
+        setMsgs(p => [...p, { role: 'assistant', content: 'ちょい待って', ts: Date.now() }])
+      }
     } finally { setLoading(false); inputRef.current?.focus() }
-  }, [input, loading, msgs, prevScores, prevHeavy])
+  }, [input, loading, msgs, prevScores, prevHeavy, lastSeriousAt, consecutiveTopicCount, lastTopic, lastSubtopic, coverage])
 
   const onKey = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
@@ -112,15 +219,59 @@ export default function ChatPage() {
           <div className="orb-anim" style={{ width: 8, height: 8, borderRadius: '50%', background: orbColor, transition: 'background 1s' }} />
           <span style={{ fontSize: 15, fontWeight: 500, letterSpacing: '.06em' }}>ルナ</span>
         </div>
-        <button onClick={() => setShowDev(v => !v)} style={{ fontSize: 10, color: showDev ? '#7a7060' : '#2e2c28', background: 'none', border: 'none', cursor: 'pointer' }}>dev</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <a href="/gacha" style={{ fontSize: 12, color: '#7a7060', textDecoration: 'none' }}>🎟</a>
+          <button onClick={() => setShowDev(v => !v)} style={{ fontSize: 10, color: showDev ? '#7a7060' : '#2e2c28', background: 'none', border: 'none', cursor: 'pointer' }}>dev</button>
+        </div>
       </div>
+
+      {/* ガチャチケット獲得トースト */}
+      {ticketToast && (
+        <div style={{
+          position: 'fixed', top: 50, left: '50%', transform: 'translateX(-50%)',
+          background: 'rgba(127,179,213,0.15)', border: '1px solid rgba(127,179,213,0.4)',
+          color: '#7fb3d5', borderRadius: 20, padding: '6px 14px', fontSize: 12,
+          zIndex: 200, animation: 'fadeUp .35s ease-out',
+        }}>
+          {ticketToast}
+        </div>
+      )}
 
       {/* devパネル */}
       {showDev && (
-        <div style={{ background: '#0c0b09', borderBottom: '1px solid rgba(255,255,255,.05)', padding: '6px 16px', fontSize: 10, color: '#5a5450', flexShrink: 0 }}>
-          route: <span style={{ color: orbColor }}>{routeType}</span>
-          　scores: [{prevScores.join(',')}]　heavy: {prevHeavy}
-          　<button onClick={() => fetch('/api/diary', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date: new Date().toISOString().split('T')[0] }) })} style={{ fontSize: 10, color: '#4a4640', background: 'none', border: '1px solid rgba(255,255,255,.08)', borderRadius: 3, padding: '1px 6px', cursor: 'pointer', marginLeft: 8 }}>日記生成</button>
+        <div style={{ background: '#0c0b09', borderBottom: '1px solid rgba(255,255,255,.05)', padding: '8px 16px', fontSize: 11, color: '#5a5450', flexShrink: 0, lineHeight: 1.8 }}>
+          <div>
+            <span style={{ color: '#888', marginRight: 6 }}>ルート</span>
+            <span style={{
+              color: '#fff', background: orbColor,
+              padding: '1px 8px', borderRadius: 4, fontSize: 11, fontWeight: 700,
+            }}>
+              {routeType === 'light_normal' ? '💬 通常' : routeType === 'light_probe' ? '👀 probe' : '🔴 serious'}
+            </span>
+            <span style={{ color: '#555', margin: '0 8px' }}>|</span>
+            <span style={{ color: '#888', marginRight: 6 }}>モード</span>
+            <span style={{ color: '#8a7' }}>{convMode}</span>
+            {userName && <><span style={{ color: '#555', margin: '0 8px' }}>|</span><span style={{ color: '#c8a060' }}>{userName}</span></>}
+          </div>
+          <div>
+            <span style={{ color: '#888', marginRight: 6 }}>話題</span>{lastTopic}/{lastSubtopic}
+            <span style={{ color: '#555', margin: '0 8px' }}>|</span>
+            <span style={{ color: '#888', marginRight: 6 }}>スコア</span>
+            {prevScores.map((s, i) => (
+              <span key={i} style={{ color: s >= 4 ? '#e87' : s >= 2 ? '#ca7' : '#556', marginRight: 3 }}>{s}</span>
+            ))}
+            <span style={{ color: '#888', marginLeft: 6, marginRight: 4 }}>heavy</span>
+            <span style={{ color: prevHeavy >= 2 ? '#e87' : '#556' }}>{prevHeavy}</span>
+          </div>
+          <div>
+            <span style={{ color: '#888', marginRight: 6 }}>CD残り</span>
+            <span style={{ color: lastSeriousAt > 0 && (Date.now() - lastSeriousAt < 15*60*1000) ? '#e87' : '#556' }}>
+              {lastSeriousAt > 0 ? Math.max(0, Math.ceil((lastSeriousAt + 15*60*1000 - Date.now()) / 60000)) + '分' : '-'}
+            </span>
+            <span style={{ color: '#555', margin: '0 8px' }}>|</span>
+            <button onClick={() => fetch('/api/diary', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date: new Date().toISOString().split('T')[0] }) })}
+              style={{ fontSize: 10, color: '#4a4640', background: 'none', border: '1px solid rgba(255,255,255,.08)', borderRadius: 3, padding: '1px 6px', cursor: 'pointer' }}>日記生成</button>
+          </div>
         </div>
       )}
 

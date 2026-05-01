@@ -3,6 +3,8 @@
 
 // AI臭いパターンと置換ルール
 const AI_PATTERNS: [RegExp, string][] = [
+  [/わかるわかる[！!]?\s*/g, ''],
+  [/知ってる知ってる[！!]?\s*/g, ''],
   [/もちろんです[。！]?/g, ''],
   [/承知しました[。！]?/g, ''],
   [/ご質問ありがとうございます[。！]?/g, ''],
@@ -37,13 +39,27 @@ function removeAISmell(text: string): string {
   return result.replace(/\s{2,}/g, ' ').trim()
 }
 
-// 文字数チェック（長すぎる場合は最初の2〜3文に絞る）
+// 文字数チェック（長すぎる場合は最初の1〜2文に絞る）
 function enforceLength(text: string, policy: 'short' | 'natural' | 'extended'): string {
   const sentences = text.split(/(?<=[。！？])\s*/)
     .map(s => s.trim()).filter(Boolean)
 
-  if (policy === 'short'    && sentences.length > 2) return sentences.slice(0, 2).join('')
-  if (policy === 'natural'  && sentences.length > 3) return sentences.slice(0, 3).join('')
+  if (policy === 'short'   && sentences.length > 1) return sentences.slice(0, 1).join('')
+  if (policy === 'natural' && sentences.length > 2) return sentences.slice(0, 2).join('')
+  return text
+}
+
+// 「例えばさ〜とか〜」の羅列を検知して最初の1文だけ残す
+function removeSuggestionList(text: string): string {
+  // 「例えばさ」「例えば」で始まる文が含まれる場合、その文の前の文だけ残す
+  const match = text.match(/^([\s\S]*?[。！？])\s*例えば/)
+  if (match && match[1].trim().length > 3) return match[1].trim()
+  // 「〜とか、〜とか」の羅列を検知
+  const tokaCount = (text.match(/とか/g) ?? []).length
+  if (tokaCount >= 2) {
+    const sentences = text.split(/(?<=[。！？])/).map(s => s.trim()).filter(Boolean)
+    return sentences[0] ?? text
+  }
   return text
 }
 
@@ -65,7 +81,16 @@ export function humanize(
   const original = rawOutput
   let text = rawOutput
 
+  // thinking モデルの内部推論が漏れた場合に除去
+  // 英語の長いブロックや ## で始まるセクションが含まれている場合、最後の日本語部分を抽出
+  if (/##\s+\w|^\d+\.\s+\*\*/m.test(text)) {
+    const lines = text.split('\n')
+    const jpLines = lines.filter(l => /[ぁ-んァ-ン一-龥]/.test(l) && l.trim().length > 3)
+    if (jpLines.length > 0) text = jpLines[jpLines.length - 1].trim()
+  }
+
   text = removeBullets(text)
+  text = removeSuggestionList(text)
   text = removeAISmell(text)
   text = removeEnglish(text)
   text = enforceLength(text, lengthPolicy)

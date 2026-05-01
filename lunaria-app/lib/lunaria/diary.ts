@@ -2,7 +2,7 @@ import OpenAI from 'openai'
 import { z } from 'zod'
 import { DiarySchema } from './types'
 import type { Diary, Extraction } from './types'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabaseAdmin } from '../supabase'
 
 const gemini = new OpenAI({
   apiKey: process.env.GEMINI_API_KEY,
@@ -52,7 +52,7 @@ luna_commentの例:
 「いろいろあった日だったな。少し休んでいいと思うよ」`
 
   const res = await gemini.chat.completions.create({
-    model: 'gemini-1.5-flash',
+    model: 'gemini-2.5-flash',
     max_tokens: 500,
     messages: [{ role: 'user', content: prompt }],
   })
@@ -79,7 +79,7 @@ luna_commentの例:
   } catch { return null }
 }
 
-// 翌朝の第一声：前日の unresolved_issues から生成
+// 翌朝の第一声：前日の unresolved_issues / next_topics から生成
 export async function getMorningOpening(): Promise<string | null> {
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
@@ -87,22 +87,36 @@ export async function getMorningOpening(): Promise<string | null> {
 
   const { data } = await supabaseAdmin
     .from(T.diary)
-    .select('unresolved_issues, luna_comment')
+    .select('unresolved_issues, next_topics, luna_comment, importance')
     .eq('user_id', USER_ID)
     .eq('diary_date', date)
     .single()
 
-  if (!data?.unresolved_issues?.length) return null
+  if (!data) return null
 
-  const issue = data.unresolved_issues[0]
-  const prompt = `ルナリア（戦友・共犯者キャラ）として、昨日の未解決事項について朝の第一声を作ってください。
-未解決事項：「${issue}」
-ルール：タメ口・ユーモアあり・20文字以内・文末は「？」
-例：「昨日のあの件、どうなった？」「あれ、結局どうしたん？」
+  // unresolved_issues 優先、なければ next_topics から選ぶ
+  const candidates = [
+    ...(data.unresolved_issues ?? []),
+    ...(data.next_topics ?? []),
+  ].filter(Boolean)
+
+  if (candidates.length === 0) return null
+
+  // 重要度が高い日は unresolved_issues を必ず使う
+  const useIssue = (data.importance ?? 1) >= 4 && (data.unresolved_issues ?? []).length > 0
+  const topic = useIssue
+    ? data.unresolved_issues[0]
+    : candidates[Math.floor(Math.random() * Math.min(candidates.length, 3))]
+
+  const prompt = `ルナリア（明るく自然体・戦友キャラ）として、昨日の話題について朝の第一声を作ってください。
+話題：「${topic}」
+ルール：タメ口・自然・20文字以内・文末は「？」・押しつけない
+良い例：「昨日のあの件、どうなった？」「あれ、結局どうしたん？」「今日どうするか決めた？」
+悪い例：「昨日は大変だったね、今日は大丈夫？」（長すぎ・説教っぽい）
 JSONのみ：{"message":"一言"}`
 
   const res = await gemini.chat.completions.create({
-    model: 'gemini-1.5-flash',
+    model: 'gemini-2.5-flash',
     max_tokens: 80,
     messages: [{ role: 'user', content: prompt }],
   })

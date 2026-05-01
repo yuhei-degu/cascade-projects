@@ -1,0 +1,14 @@
+-- =============================================================
+-- 🚫 DEPRECATED（2026-04-18 破棄）
+-- =============================================================
+-- 当初 `lunaria_user_profile` に age_band / user_nickname /
+-- lunaria_nickname / lifestyle_pattern / archived を列追加する
+-- 案だったが、Phase A の実測で user_profile が EAV 形式
+-- (field, value, source) と判明したため不要になった。
+--
+-- 新属性の追加は INSERT で済む。履歴は既存 lunaria_profile_archive。
+-- pending は既存 lunaria_pending_profile_updates。
+--
+-- 新プランは PROFILE_MEMORY_INTEGRATION.md v2 を参照。
+-- このファイルは流さないこと。
+-- =============================================================

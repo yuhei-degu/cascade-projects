@@ -1,5 +1,5 @@
 import type { Affinity } from './types'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabaseAdmin } from '../supabase'
 
 const USER_ID = '00000000-0000-0000-0000-000000000001'
 const T = { affinity: 'lunaria_affinity' } as const

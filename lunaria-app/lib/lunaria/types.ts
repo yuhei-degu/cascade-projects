@@ -28,7 +28,7 @@ export const ExtractionSchema = z.object({
   })).default([]),
   unresolved_issues:     z.array(z.string()).default([]),
   long_term_candidate:   z.object({
-    type:    z.enum(['value', 'pattern', 'goal', 'trigger']),
+    type:    z.enum(['value', 'pattern', 'goal', 'trigger', 'name']),
     content: z.string(),
   }).nullable().default(null),
 })
@@ -63,4 +63,53 @@ export interface Message {
   role: 'user' | 'assistant'
   content: string
   ts: number
+}
+
+// ── 話題転換ロジック ─────────────────────────────────────────
+export type TopicCategory =
+  | 'work' | 'health' | 'meal' | 'hobby' | 'relation'
+  | 'future' | 'daily_event' | 'money' | 'self_image' | 'sleep' | 'other'
+
+export interface TurnTopicExtraction {
+  summary:              string
+  emotions:             string[]
+  current_topic:        TopicCategory
+  subtopic:             string
+  topic_depth:          1 | 2 | 3 | 4 | 5
+  novelty:              0 | 1 | 2
+  needs_followup:       boolean
+  user_initiated_shift: boolean
+  intent:               'clarify_first' | 'answer_directly'
+  clarifying_question:  string
+}
+
+export const FALLBACK_TOPIC: TurnTopicExtraction = {
+  summary: '', emotions: [], current_topic: 'other',
+  subtopic: 'unknown', topic_depth: 1, novelty: 1,
+  needs_followup: false, user_initiated_shift: false,
+  intent: 'answer_directly', clarifying_question: '',
+}
+
+export type ConversationMode = 'deepen' | 'continue' | 'shift_soft'
+
+export interface DailyCoverageState {
+  work:           boolean
+  health:         boolean
+  meal:           boolean
+  relation:       boolean
+  hobby:          boolean
+  tomorrow:       boolean
+  small_positive: boolean
+}
+
+export const DEFAULT_COVERAGE: DailyCoverageState = {
+  work: false, health: false, meal: false,
+  relation: false, hobby: false, tomorrow: false, small_positive: false,
+}
+
+export interface TopicCluster {
+  topic:           string
+  subtopic:        string
+  count:           number
+  emotionalWeight: number
 }
