@@ -1,35 +1,49 @@
-# Git管理除外ファイル設定
-# ===========================
+﻿# CascadeProjects monorepo: lunaria + lunaria-app のみ追跡
+# 他プロジェクトは各々で git 化する想定
 
-# OS生成ファイル
-.DS_Store
-Thumbs.db
-desktop.ini
+# トップレベルは基本的に全て除外
+/*
+
+# 追跡対象を明示
+!/.gitignore
+!/README.md
+!/lunaria/
+!/lunaria-app/
+
+# === 内部の除外ルール ===
+
+# OS 生成ファイル
+**/.DS_Store
+**/Thumbs.db
+**/desktop.ini
 
 # エディタ設定
-.vscode/settings.json
-.cursor/
-*.swp
-*.swo
+**/.vscode/settings.json
+**/.cursor/
+**/*.swp
+**/*.swo
 
 # 一時ファイル
-*.tmp
-*.log
-*~
+**/*.tmp
+**/*.log
+**/*~
 
-# Node.js（将来使う場合）
-node_modules/
-npm-debug.log
+# Node.js / Next.js
+**/node_modules/
+**/npm-debug.log
+**/.next/
+**/*.tsbuildinfo
 
-# Python（将来使う場合）
-__pycache__/
-*.pyc
-.env
-venv/
+# Python
+**/__pycache__/
+**/*.pyc
+**/venv/
 
 # ビルド成果物
-dist/
-build/
+**/dist/
+**/build/
 
-# Next.js ビルドキャッシュ（全プロジェクト共通）
-**/.next/
+# 環境変数
+**/.env
+**/.env.local
+**/.env*.local
