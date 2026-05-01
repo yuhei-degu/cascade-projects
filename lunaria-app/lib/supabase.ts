@@ -16,4 +16,12 @@ export const T = {
   routingLog:    'lunaria_routing_log',
   routingReview: 'lunaria_routing_review',
   routeMaster:   'lunaria_route_master',
+  // Phase G: ガチャ関連
+  gachaPool:        'lunaria_gacha_pool',
+  gachaTickets:     'lunaria_gacha_tickets',
+  gachaCoins:       'lunaria_gacha_coins',
+  gachaInventory:   'lunaria_gacha_inventory',
+  gachaHistory:     'lunaria_gacha_history',
+  gachaDailyBonus:  'lunaria_gacha_daily_bonus',
+  gachaDailyQuota:  'lunaria_gacha_daily_quota',
 } as const

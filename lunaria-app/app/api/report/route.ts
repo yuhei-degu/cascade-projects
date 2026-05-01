@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin, T } from '@/lib/supabase'
+import { supabaseAdmin, T } from '../../../lib/supabase'
 
 const USER_ID = '00000000-0000-0000-0000-000000000001'
 

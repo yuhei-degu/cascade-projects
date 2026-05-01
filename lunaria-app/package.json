@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "set NODE_ENV=development&& next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -13,6 +13,8 @@
     "@supabase/supabase-js": "^2.49.4",
     "next": "15.2.4",
     "openai": "^4.77.0",
+    "postcss": "^8.5.8",
+    "postcss-preset-env": "^11.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "zod": "^3.25.76"
@@ -21,6 +23,7 @@
     "@types/node": "^20",
     "@types/react": "19.2.14",
     "@types/react-dom": "^19",
+    "cross-env": "^10.1.0",
     "typescript": "5.9.3"
   }
 }

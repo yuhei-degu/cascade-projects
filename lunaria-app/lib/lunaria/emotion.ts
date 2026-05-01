@@ -1,6 +1,6 @@
 import type { Emotion } from './types'
 import { DEFAULT_EMOTION } from './types'
-import { supabaseAdmin } from '@/lib/supabase'
+import { supabaseAdmin } from '../supabase'
 
 const USER_ID = '00000000-0000-0000-0000-000000000001'
 const T = { emotion: 'lunaria_emotion_state' } as const

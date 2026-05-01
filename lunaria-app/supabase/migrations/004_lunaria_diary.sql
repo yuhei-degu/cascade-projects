@@ -64,6 +64,11 @@ alter table public.lunaria_affinity      enable row level security;
 alter table public.lunaria_extractions   enable row level security;
 alter table public.lunaria_diary_logs    enable row level security;
 
+drop policy if exists "lunaria_own_emotion"  on public.lunaria_emotion_state;
+drop policy if exists "lunaria_own_affinity" on public.lunaria_affinity;
+drop policy if exists "lunaria_own_extract"  on public.lunaria_extractions;
+drop policy if exists "lunaria_own_diary"    on public.lunaria_diary_logs;
+
 create policy "lunaria_own_emotion"  on public.lunaria_emotion_state for all using (auth.uid() = user_id);
 create policy "lunaria_own_affinity" on public.lunaria_affinity      for all using (auth.uid() = user_id);
 create policy "lunaria_own_extract"  on public.lunaria_extractions   for all using (auth.uid() = user_id);
