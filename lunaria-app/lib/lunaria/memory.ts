@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '../supabase'
 import { setProfile } from './profile'
+import { debugLog, warnLog } from './logger'
 
 const USER_ID = '00000000-0000-0000-0000-000000000001'
 const T = { coreMem: 'lunaria_core_memory' } as const
@@ -51,7 +52,7 @@ export async function saveCoreMemory(
 ): Promise<void> {
   const normalized = (content ?? '').trim()
   if (normalized.length === 0) {
-    console.log('[saveCoreMemory] skipped empty content')
+    debugLog('[saveCoreMemory] skipped empty content')
     return
   }
 
@@ -59,16 +60,16 @@ export async function saveCoreMemory(
   if (type === 'name') {
     try {
       await setProfile('name', normalized, 'setting')
-      console.log('[saveCoreMemory] redirected type=name to user_profile:', normalized)
+      debugLog('[saveCoreMemory] redirected type=name to user_profile:', normalized)
     } catch (e) {
-      console.warn('[saveCoreMemory] name redirect failed:', e)
+      warnLog('[saveCoreMemory] name redirect failed:', e)
     }
     return
   }
 
   // Profile 相当の属性言及は core_memory に流さない（ガードレール）
   if (looksLikeProfileMention(normalized)) {
-    console.log('[saveCoreMemory] skipped profile-like content:', type, normalized)
+    debugLog('[saveCoreMemory] skipped profile-like content:', type, normalized)
     return
   }
 
@@ -85,11 +86,11 @@ export async function saveCoreMemory(
     await supabaseAdmin.from(T.coreMem)
       .update({ score: 5, hit_count: 1, last_seen: new Date().toISOString() })
       .eq('id', existing.id)
-    console.log('[saveCoreMemory] updated:', type, normalized)
+    debugLog('[saveCoreMemory] updated:', type, normalized)
   } else {
     await supabaseAdmin.from(T.coreMem)
       .insert({ user_id: USER_ID, type, content: normalized, score: 5, hit_count: 1 })
-    console.log('[saveCoreMemory] inserted:', type, normalized)
+    debugLog('[saveCoreMemory] inserted:', type, normalized)
   }
 }
 
