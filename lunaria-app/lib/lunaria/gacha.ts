@@ -42,6 +42,20 @@ export interface GachaState {
   daily_bonus_available: boolean
 }
 
+function throwIfSupabaseError(label: string, error: unknown): void {
+  if (error) throw new Error(`[gacha] ${label}`, { cause: error })
+}
+
+async function fetchTicketCount(): Promise<number> {
+  const { data, error } = await supabaseAdmin
+    .from(T.gachaTickets)
+    .select('count')
+    .eq('user_id', USER_ID)
+    .maybeSingle()
+  throwIfSupabaseError('fetch tickets failed', error)
+  return data?.count ?? 0
+}
+
 // ── 確率テーブル（仕様 v5）─────────────────────────────────
 const RARITY_CUMULATIVE: { rarity: Rarity; cumulative: number }[] = [
   { rarity: 'common_a',     cumulative: 0.45 },
@@ -153,6 +167,11 @@ export async function getGachaState(): Promise<GachaState> {
     supabaseAdmin.from(T.gachaDailyBonus).select('user_id')
       .eq('user_id', USER_ID).eq('given_date', today).maybeSingle(),
   ])
+  throwIfSupabaseError('fetch ticket state failed', tickets.error)
+  throwIfSupabaseError('fetch coin state failed', coins.error)
+  throwIfSupabaseError('fetch daily quota failed', quota.error)
+  throwIfSupabaseError('fetch daily bonus state failed', dailyBonus.error)
+
   return {
     ticket_count:          tickets.data?.count ?? 0,
     coin_balance:          coins.data?.balance ?? 0,
@@ -185,12 +204,6 @@ export async function getInventory(): Promise<InventoryItem[]> {
 // ── デイリーボーナス受取 ──────────────────────────────────
 export async function claimDailyBonus(): Promise<{ granted: boolean; ticket_count: number }> {
   const today = new Date().toISOString().slice(0, 10)
-
-  const fetchTicketCount = async () => {
-    const { data: t } = await supabaseAdmin
-      .from(T.gachaTickets).select('count').eq('user_id', USER_ID).maybeSingle()
-    return t?.count ?? 0
-  }
 
   // 既に受取済みかチェック
   const { data: existing, error: existingErr } = await supabaseAdmin
@@ -239,25 +252,22 @@ export async function tryGrantTicketByScore(score: number): Promise<{ granted: b
   const today = new Date().toISOString().slice(0, 10)
 
   // 本日の獲得数
-  const { data: quota } = await supabaseAdmin
+  const { data: quota, error: quotaErr } = await supabaseAdmin
     .from(T.gachaDailyQuota)
     .select('earned_today')
     .eq('user_id', USER_ID)
     .eq('given_date', today)
     .maybeSingle()
+  throwIfSupabaseError('fetch daily quota failed', quotaErr)
   const earned = quota?.earned_today ?? 0
   if (earned >= 5) {
-    const { data: t } = await supabaseAdmin
-      .from(T.gachaTickets).select('count').eq('user_id', USER_ID).maybeSingle()
-    return { granted: false, ticket_count: t?.count ?? 0 }
+    return { granted: false, ticket_count: await fetchTicketCount() }
   }
 
   // 確率判定
   const probability = score >= 5 ? 0.30 : score >= 3 ? 0.15 : 0.05
   if (secureRandom() >= probability) {
-    const { data: t } = await supabaseAdmin
-      .from(T.gachaTickets).select('count').eq('user_id', USER_ID).maybeSingle()
-    return { granted: false, ticket_count: t?.count ?? 0 }
+    return { granted: false, ticket_count: await fetchTicketCount() }
   }
 
   // チケット +1
@@ -268,13 +278,14 @@ export async function tryGrantTicketByScore(score: number): Promise<{ granted: b
   if (rpcErr) throw rpcErr
 
   // 本日の獲得数 +1
-  await supabaseAdmin
+  const { error: updateQuotaErr } = await supabaseAdmin
     .from(T.gachaDailyQuota)
     .upsert({
       user_id: USER_ID,
       given_date: today,
       earned_today: earned + 1,
     }, { onConflict: 'user_id,given_date' })
+  throwIfSupabaseError('update daily quota failed', updateQuotaErr)
 
   return { granted: true, ticket_count: Number(count ?? 0) }
 }
