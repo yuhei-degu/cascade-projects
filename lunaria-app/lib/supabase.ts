@@ -24,4 +24,5 @@ export const T = {
   gachaHistory:     'lunaria_gacha_history',
   gachaDailyBonus:  'lunaria_gacha_daily_bonus',
   gachaDailyQuota:  'lunaria_gacha_daily_quota',
+  gachaPityState:   'lunaria_gacha_pity_state',
 } as const

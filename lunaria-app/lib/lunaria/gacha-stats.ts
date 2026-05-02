@@ -35,11 +35,22 @@ interface InventoryStats {
   by_rarity: CountMap
 }
 
+interface PityStats {
+  available: boolean
+  reason?: string
+  draws_since_urban_legend?: number
+  threshold?: number
+  lifetime_draws?: number
+  last_urban_legend_at?: string | null
+  updated_at?: string | null
+}
+
 export interface GachaPoolStatsReport {
   timestamp: string
   pool: PoolStats
   inventory: InventoryStats
   history: HistoryStats
+  pity: PityStats
 }
 
 function increment(map: CountMap, key: string | null | undefined): void {
@@ -48,7 +59,7 @@ function increment(map: CountMap, key: string | null | undefined): void {
 }
 
 export async function getGachaPoolStats(): Promise<GachaPoolStatsReport> {
-  const [poolResult, inventoryResult, historyResult] = await Promise.all([
+  const [poolResult, inventoryResult, historyResult, pityResult] = await Promise.all([
     supabaseAdmin
       .from(T.gachaPool)
       .select('id, rarity, category, is_active')
@@ -70,6 +81,11 @@ export async function getGachaPoolStats(): Promise<GachaPoolStatsReport> {
       .eq('user_id', USER_ID)
       .order('pulled_at', { ascending: false })
       .limit(1000),
+    supabaseAdmin
+      .from(T.gachaPityState)
+      .select('draws_since_urban_legend, lifetime_draws, last_urban_legend_at, updated_at')
+      .eq('user_id', USER_ID)
+      .maybeSingle(),
   ])
 
   if (poolResult.error) throw poolResult.error
@@ -141,5 +157,18 @@ export async function getGachaPoolStats(): Promise<GachaPoolStatsReport> {
         }
       }),
     },
+    pity: pityResult.error
+      ? {
+          available: false,
+          reason: pityResult.error.message || 'not available',
+        }
+      : {
+          available: true,
+          draws_since_urban_legend: pityResult.data?.draws_since_urban_legend ?? 0,
+          threshold: 100,
+          lifetime_draws: pityResult.data?.lifetime_draws ?? 0,
+          last_urban_legend_at: pityResult.data?.last_urban_legend_at ?? null,
+          updated_at: pityResult.data?.updated_at ?? null,
+        },
   }
 }

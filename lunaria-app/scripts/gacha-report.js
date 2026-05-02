@@ -101,7 +101,7 @@ async function fetchReport({ userId, limit }) {
     { auth: { persistSession: false } },
   )
 
-  const [stateResult, poolResult, inventoryResult, historyResult] = await Promise.all([
+  const [stateResult, poolResult, inventoryResult, historyResult, pityResult] = await Promise.all([
     Promise.all([
       supabase.from('lunaria_gacha_tickets').select('count').eq('user_id', userId).maybeSingle(),
       supabase.from('lunaria_gacha_coins').select('balance').eq('user_id', userId).maybeSingle(),
@@ -128,6 +128,11 @@ async function fetchReport({ userId, limit }) {
       .eq('user_id', userId)
       .order('pulled_at', { ascending: false })
       .limit(limit),
+    supabase
+      .from('lunaria_gacha_pity_state')
+      .select('draws_since_urban_legend, lifetime_draws, last_urban_legend_at, updated_at')
+      .eq('user_id', userId)
+      .maybeSingle(),
   ])
 
   const [ticketsResult, coinsResult] = stateResult
@@ -176,6 +181,16 @@ async function fetchReport({ userId, limit }) {
       ticket_count: ticketsResult.data?.count || 0,
       coin_balance: coinsResult.data?.balance || 0,
     },
+    pity: pityResult.error
+      ? { available: false, reason: pityResult.error.message || 'not available' }
+      : {
+          available: true,
+          draws_since_urban_legend: pityResult.data?.draws_since_urban_legend ?? 0,
+          threshold: 100,
+          lifetime_draws: pityResult.data?.lifetime_draws ?? 0,
+          last_urban_legend_at: pityResult.data?.last_urban_legend_at ?? null,
+          updated_at: pityResult.data?.updated_at ?? null,
+        },
     pool: {
       total: poolRows.length,
       active: activePoolCount,
@@ -241,6 +256,15 @@ function printReport(report) {
   console.log(`  Duplicates:    ${report.history.duplicate_draws} (${report.history.duplicate_rate})`)
   console.log(`  Coins earned:  ${report.history.coin_earned_total}`)
   console.log(`  Rarity:        ${formatCountMap(report.history.by_rarity)}`)
+  console.log('')
+  console.log('Moon fullness')
+  if (report.pity.available) {
+    console.log(`  Progress: ${report.pity.draws_since_urban_legend}/${report.pity.threshold}`)
+    console.log(`  Lifetime: ${report.pity.lifetime_draws}`)
+    console.log(`  Last urban_legend: ${report.pity.last_urban_legend_at || 'none'}`)
+  } else {
+    console.log(`  Not available: ${report.pity.reason}`)
+  }
   console.log('')
   console.log('Recent draws')
   for (const row of report.history.recent.slice(0, 10)) {
