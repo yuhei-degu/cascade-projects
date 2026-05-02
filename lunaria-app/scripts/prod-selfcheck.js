@@ -54,11 +54,12 @@ function warn(message, detail) {
 
 async function checkHealthEndpoint(baseUrl) {
   if (!baseUrl) {
-    warn('Health endpoint skipped', 'set LUNARIA_BASE_URL or pass a URL argument')
+    warn('HTTP endpoint checks skipped', 'set LUNARIA_BASE_URL or pass a URL argument')
     return
   }
 
-  const url = `${baseUrl.replace(/\/$/, '')}/api/health`
+  const normalizedBaseUrl = baseUrl.replace(/\/$/, '')
+  const url = `${normalizedBaseUrl}/api/health`
   try {
     const response = await fetch(url, { cache: 'no-store' })
     const text = await response.text()
@@ -82,6 +83,43 @@ async function checkHealthEndpoint(baseUrl) {
     }
   } catch (error) {
     fail('Health endpoint request failed', error.message)
+  }
+
+  const adminToken = process.env.LUNARIA_ADMIN_STATUS_TOKEN?.trim()
+  if (!adminToken) {
+    warn('Admin pool stats endpoint skipped', 'set LUNARIA_ADMIN_STATUS_TOKEN to verify it')
+    return
+  }
+
+  const statsUrl = `${normalizedBaseUrl}/api/admin/pool-stats`
+  try {
+    const response = await fetch(statsUrl, {
+      cache: 'no-store',
+      headers: {
+        authorization: `Bearer ${adminToken}`,
+      },
+    })
+    const text = await response.text()
+    let body
+    try {
+      body = JSON.parse(text)
+    } catch {
+      body = null
+    }
+
+    if (!response.ok) {
+      fail('Admin pool stats endpoint returned non-OK status', `${response.status} ${statsUrl}`)
+      if (text) console.error(text.slice(0, 500))
+      return
+    }
+
+    if (body?.pool?.active >= 25) {
+      pass('Admin pool stats endpoint', `${body.pool.active} active items (${statsUrl})`)
+    } else {
+      fail('Admin pool stats endpoint returned too few active items', String(body?.pool?.active ?? 'unknown'))
+    }
+  } catch (error) {
+    fail('Admin pool stats endpoint request failed', error.message)
   }
 }
 
