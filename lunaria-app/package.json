@@ -10,7 +10,8 @@
     "env:check": "node scripts/env-check.js",
     "prod:check": "node scripts/prod-selfcheck.js",
     "gacha:report": "node scripts/gacha-report.js",
-    "gacha:smoke": "node scripts/gacha-smoke.js"
+    "gacha:smoke": "node scripts/gacha-smoke.js",
+    "gacha:verify": "node scripts/gacha-verify.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.36.3",
