@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import { getGachaDrawCopy, pickDailyBonusCopy, pickNoTicketCopy } from '@/lib/lunaria/gacha-copy'
 
 interface GachaState {
   ticket_count: number
@@ -48,8 +49,8 @@ const CATEGORY_GLYPH: Record<string, string> = {
 }
 
 const PHASE_COPY: Record<Exclude<Phase, 'idle' | 'result'>, string> = {
-  stage1: 'ルナが箱を選んでる...',
-  stage2: 'リボンをほどいてる',
+  stage1: 'ふたを開けるよ',
+  stage2: '月明かりに、かざして…',
   reveal: 'そっと受け取って',
 }
 
@@ -77,6 +78,7 @@ export default function GachaPage() {
   const [phase, setPhase] = useState<Phase>('idle')
   const [drawResult, setDrawResult] = useState<DrawResult | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [noticeMsg, setNoticeMsg] = useState<string | null>(null)
 
   // 状態取得
   const refreshState = useCallback(async () => {
@@ -95,6 +97,8 @@ export default function GachaPage() {
     const res = await fetch('/api/gacha/daily', { method: 'POST' })
     if (res.ok) {
       await refreshState()
+      setNoticeMsg(pickDailyBonusCopy())
+      setTimeout(() => setNoticeMsg(null), 2400)
     }
   }
 
@@ -102,33 +106,32 @@ export default function GachaPage() {
   const doDraw = async () => {
     if (drawing) return
     if (!state || state.ticket_count < 1) {
-      setErrorMsg('チケットが足りないよ')
-      setTimeout(() => setErrorMsg(null), 2000)
+      setNoticeMsg(pickNoTicketCopy())
+      setTimeout(() => setNoticeMsg(null), 2400)
       return
     }
     setDrawing(true)
     setErrorMsg(null)
+    setNoticeMsg(null)
 
-    // 並行：演出開始 + API 呼び出し
-    setPhase('stage1')
-    const apiPromise = fetch('/api/gacha/draw', { method: 'POST' }).then(r => r.json())
-
-    // 演出 stage1: 1.5 秒
-    await new Promise(r => setTimeout(r, 1500))
-    setPhase('stage2')
-
-    // 演出 stage2: 1.5 秒
-    await new Promise(r => setTimeout(r, 1500))
-
-    const data: DrawResult | { error: string } = await apiPromise
+    const data: DrawResult | { error: string } = await fetch('/api/gacha/draw', { method: 'POST' }).then(r => r.json())
     if ('error' in data) {
-      setErrorMsg(data.error === 'no_ticket' ? 'チケットが足りないよ' : 'エラーだ…')
+      if (data.error === 'no_ticket') {
+        setNoticeMsg(pickNoTicketCopy())
+        setTimeout(() => setNoticeMsg(null), 2400)
+      } else {
+        setErrorMsg('エラーだ…')
+      }
       setPhase('idle')
       setDrawing(false)
       return
     }
 
     setDrawResult(data)
+    setPhase('stage1')
+    await new Promise(r => setTimeout(r, 1500))
+    setPhase('stage2')
+    await new Promise(r => setTimeout(r, 1500))
     setPhase('reveal')
     await new Promise(r => setTimeout(r, 600))
     setPhase('result')
@@ -148,6 +151,9 @@ export default function GachaPage() {
   }
 
   const meta = drawResult ? RARITY_META[drawResult.result.rarity] : RARITY_META.common_a
+  const drawCopy = drawResult
+    ? getGachaDrawCopy(drawResult.production_seed, drawResult.result.rarity)
+    : null
 
   return (
     <div style={{
@@ -212,23 +218,23 @@ export default function GachaPage() {
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <button
           onClick={doDraw}
-          disabled={drawing || (state?.ticket_count ?? 0) < 1}
+          disabled={drawing || !state}
           style={{
             width: '180px', height: '180px', borderRadius: '50%',
             background: drawing
               ? '#1a1a1a'
               : 'radial-gradient(circle at 30% 28%, rgba(127,179,213,0.42) 0%, #202b30 34%, #11100e 72%)',
             color: '#ddd5c5', border: '1px solid rgba(221,213,197,0.18)',
-            fontSize: '20px', cursor: drawing ? 'not-allowed' : 'pointer',
+            fontSize: '20px', cursor: drawing || !state ? 'not-allowed' : 'pointer',
             transition: 'transform 0.2s, box-shadow 0.2s, opacity 0.2s',
-            opacity: drawing ? 0.4 : ((state?.ticket_count ?? 0) < 1 ? 0.35 : 1),
+            opacity: drawing || !state ? 0.4 : ((state.ticket_count ?? 0) < 1 ? 0.35 : 1),
             boxShadow: drawing ? 'none' : '0 0 42px rgba(127,179,213,0.18), inset 0 0 32px rgba(255,255,255,0.04)',
           }}
           onMouseDown={e => { if (!drawing) e.currentTarget.style.transform = 'scale(0.95)' }}
           onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
           onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
         >
-          {drawing ? '…' : (state?.ticket_count ?? 0) < 1 ? 'またあとで' : '受け取る'}
+          {drawing ? '…' : !state ? '読み込み中' : state.ticket_count < 1 ? 'またあとで' : '受け取る'}
         </button>
       </div>
 
@@ -236,6 +242,11 @@ export default function GachaPage() {
         <div style={{
           textAlign: 'center', color: '#ff8888', fontSize: '13px', marginBottom: '12px',
         }}>{errorMsg}</div>
+      )}
+      {noticeMsg && (
+        <div style={{
+          textAlign: 'center', color: '#ddd5c5', fontSize: '13px', marginBottom: '12px',
+        }}>{noticeMsg}</div>
       )}
 
       <div style={{ textAlign: 'center', fontSize: '11px', color: '#666', marginBottom: '8px' }}>
@@ -258,7 +269,7 @@ export default function GachaPage() {
                 animation: 'orbPulse 1.5s ease-in-out',
               }} />
               <div style={{ color: '#7a7060', fontSize: 13, marginTop: 22, letterSpacing: '.06em' }}>
-                {PHASE_COPY.stage1}
+                {drawCopy?.stage1 ?? PHASE_COPY.stage1}
               </div>
             </div>
           )}
@@ -272,7 +283,7 @@ export default function GachaPage() {
                 ✦
               </div>
               <div style={{ color: '#7a7060', fontSize: 13, marginTop: 18, letterSpacing: '.06em' }}>
-                {PHASE_COPY.stage2}
+                {drawCopy?.stage2 ?? PHASE_COPY.stage2}
               </div>
             </div>
           )}
@@ -286,7 +297,7 @@ export default function GachaPage() {
                 {meta.label}
               </div>
               <div style={{ color: '#7a7060', fontSize: 13, letterSpacing: '.06em' }}>
-                {PHASE_COPY.reveal}
+                {drawCopy?.reveal ?? PHASE_COPY.reveal}
               </div>
             </div>
           )}
@@ -317,7 +328,7 @@ export default function GachaPage() {
               fontSize: '12px', color: meta.color, letterSpacing: '0.2em',
               marginBottom: '16px',
             }}>
-              LUNA'S SMALL GIFT / {meta.label}
+              LUNA'S SMALL GIFT / {drawCopy?.heading ?? meta.label}
             </div>
             <div style={{
               width: '120px', height: '120px', margin: '0 auto 16px',
