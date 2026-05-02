@@ -9,6 +9,7 @@ interface GachaState {
   coin_balance: number
   earned_today: number
   daily_bonus_available: boolean
+  pity: GachaPityState | null
 }
 
 interface PoolItem {
@@ -28,6 +29,13 @@ interface DrawResult {
   coin_balance: number
   production_seed: number
   reaction: string
+  pity: GachaPityState | null
+}
+
+interface GachaPityState {
+  draws_since_urban_legend: number
+  threshold: number
+  triggered: boolean
 }
 
 // レアリティごとの表示色とラベル
@@ -62,6 +70,14 @@ const RARITY_NOTE: Record<string, string> = {
   epic: 'ルナも少し声を弾ませる、めずらしい贈り物。',
   legendary: '今日は覚えておきたくなる夜かもしれない。',
   urban_legend: '見つけた人だけが知っている、静かな噂。',
+}
+
+function moonFullnessCopy(pity: GachaPityState | null): string | null {
+  if (!pity) return null
+  const remaining = Math.max(pity.threshold - pity.draws_since_urban_legend, 0)
+  if (pity.triggered) return '月が満ちた。今日は奥の箱まで手が届いた。'
+  if (remaining <= 20) return '奥の棚が、少し明るい。'
+  return '月明かりが少しずつ溜まっている。'
 }
 
 function itemGlyph(item: PoolItem): string {
@@ -142,6 +158,7 @@ export default function GachaPage() {
       ...s,
       ticket_count: data.ticket_remaining,
       coin_balance: data.coin_balance,
+      pity: data.pity ?? s.pity,
     } : s)
   }
 
@@ -189,6 +206,32 @@ export default function GachaPage() {
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: '11px', color: '#888' }}>コイン</div>
             <div style={{ fontSize: '24px', color: '#ddd5c5' }}>{state.coin_balance}</div>
+          </div>
+        </div>
+      )}
+
+      {state?.pity && (
+        <div style={{
+          background: 'rgba(127,179,213,0.045)',
+          border: '1px solid rgba(127,179,213,0.14)',
+          borderRadius: 14,
+          padding: '10px 12px',
+          marginBottom: '12px',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#8ca7b8', fontSize: 11, marginBottom: 8 }}>
+            <span>月が満ちるまで</span>
+            <span>{state.pity.draws_since_urban_legend}/{state.pity.threshold}</span>
+          </div>
+          <div style={{ height: 5, background: 'rgba(255,255,255,0.08)', borderRadius: 999, overflow: 'hidden', marginBottom: 8 }}>
+            <div style={{
+              width: `${Math.min((state.pity.draws_since_urban_legend / state.pity.threshold) * 100, 100)}%`,
+              height: '100%',
+              background: 'linear-gradient(90deg, rgba(127,179,213,0.45), rgba(221,213,197,0.8))',
+              borderRadius: 999,
+            }} />
+          </div>
+          <div style={{ color: '#7a7060', fontSize: 11, textAlign: 'center' }}>
+            {moonFullnessCopy(state.pity)}
           </div>
         </div>
       )}
@@ -365,6 +408,19 @@ export default function GachaPage() {
                 padding: '8px', marginBottom: '12px',
               }}>
                 かぶり！ コイン +{drawResult.coin_earned}
+              </div>
+            )}
+            {drawResult.pity?.triggered && (
+              <div style={{
+                fontSize: '13px',
+                color: '#ddd5c5',
+                background: 'rgba(127,179,213,0.08)',
+                border: '1px solid rgba(127,179,213,0.2)',
+                borderRadius: '8px',
+                padding: '9px',
+                marginBottom: '12px',
+              }}>
+                月が満ちた。今日は奥の箱まで手が届いた。
               </div>
             )}
             {/* ルナのリアクション（取得直後のみの受け取り演出。会話履歴には残らない） */}

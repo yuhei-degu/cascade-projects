@@ -32,6 +32,14 @@ interface StatsReport {
       } | null
     }>
   }
+  pity: {
+    available: boolean
+    reason?: string
+    draws_since_urban_legend?: number
+    threshold?: number
+    lifetime_draws?: number
+    last_urban_legend_at?: string | null
+  }
 }
 
 const RARITY_ORDER = ['common_a', 'common_b', 'rare_a', 'rare_b', 'epic', 'legendary', 'urban_legend']
@@ -207,6 +215,11 @@ export default function AdminGachaPage() {
               <StatCard label="INVENTORY" value={`${stats.inventory.total_unique_items}/${stats.pool.active}`} sub={completionRate} />
               <StatCard label="DRAWS" value={stats.history.total_draws} sub={`${duplicateRate} duplicate`} />
               <StatCard label="COINS EARNED" value={stats.history.coin_earned_total} sub="from duplicates" />
+              <StatCard
+                label="MOON FULLNESS"
+                value={stats.pity.available ? `${stats.pity.draws_since_urban_legend ?? 0}/${stats.pity.threshold ?? 100}` : 'off'}
+                sub={stats.pity.available ? `${stats.pity.lifetime_draws ?? 0} lifetime draws` : 'migration pending'}
+              />
             </section>
 
             <section style={{
@@ -222,6 +235,11 @@ export default function AdminGachaPage() {
                 <div>Category: {formatMap(stats.pool.active_by_category)}</div>
                 <div>Inventory: {formatMap(stats.inventory.by_rarity)}</div>
                 <div>History: {formatMap(stats.history.by_rarity)}</div>
+                <div>
+                  Pity: {stats.pity.available
+                    ? `last urban_legend=${stats.pity.last_urban_legend_at ? new Date(stats.pity.last_urban_legend_at).toLocaleString('ja-JP') : 'none'}`
+                    : `not available (${stats.pity.reason ?? 'migration pending'})`}
+                </div>
               </div>
             </section>
 
