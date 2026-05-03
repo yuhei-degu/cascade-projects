@@ -8,6 +8,7 @@ import { randomBytes } from 'crypto'
 import { supabaseAdmin, T } from '../supabase'
 
 const USER_ID = '00000000-0000-0000-0000-000000000001'
+const PITY_THRESHOLD = 200
 
 // ── 型定義 ───────────────────────────────────────────────────
 export type Rarity =
@@ -152,7 +153,7 @@ async function fetchPityState(): Promise<GachaPityState | null> {
 
   return {
     draws_since_urban_legend: data?.draws_since_urban_legend ?? 0,
-    threshold: 100,
+    threshold: PITY_THRESHOLD,
     triggered: false,
   }
 }
@@ -162,7 +163,7 @@ export async function drawGacha(): Promise<DrawResult> {
   const pity = await fetchPityState()
 
   // 1. レアリティ抽選
-  const rarity = pity && pity.draws_since_urban_legend >= 99
+  const rarity = pity && pity.draws_since_urban_legend >= PITY_THRESHOLD - 1
     ? 'urban_legend'
     : pickRarity()
 
@@ -224,7 +225,7 @@ async function executeDraw(item: PoolItem, rarity: Rarity, pity: GachaPityState 
     pity: pity
       ? {
           draws_since_urban_legend: pityAfter,
-          threshold: 100,
+          threshold: PITY_THRESHOLD,
           triggered: Boolean(row.pity_triggered),
         }
       : null,

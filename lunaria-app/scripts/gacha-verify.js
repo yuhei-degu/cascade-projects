@@ -5,6 +5,7 @@ const path = require('path')
 const { createClient } = require('@supabase/supabase-js')
 
 const DEFAULT_USER_ID = '00000000-0000-0000-0000-000000000001'
+const EXPECTED_PITY_THRESHOLD = 200
 const EXPECTED_V2_RARITY_COUNTS = {
   common_a: 8,
   common_b: 7,
@@ -151,7 +152,7 @@ async function checkPityState(supabase, userId) {
 
   pass(
     'Pity state row',
-    `progress=${data.draws_since_urban_legend}/100 lifetime=${data.lifetime_draws}`,
+    `progress=${data.draws_since_urban_legend}/${EXPECTED_PITY_THRESHOLD} lifetime=${data.lifetime_draws}`,
   )
 }
 
@@ -186,7 +187,7 @@ async function checkApi(baseUrl) {
     } else if (!('pity' in state)) {
       fail('/api/gacha/state pity field', 'missing pity field')
     } else {
-      pass('/api/gacha/state pity field', state.pity ? `${state.pity.draws_since_urban_legend}/100` : 'null')
+      pass('/api/gacha/state pity field', state.pity ? `${state.pity.draws_since_urban_legend}/${EXPECTED_PITY_THRESHOLD}` : 'null')
     }
 
     const poolResponse = await fetch(poolUrl, { cache: 'no-store' })
