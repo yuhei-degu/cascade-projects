@@ -186,25 +186,33 @@ Claudeレビュー待ちの間に進められるもの：
 - `GACHA_PITY_SYSTEM_DESIGN.md`
 - `PROGRESS.md`
 
-## 9. AI日記 / 記憶閲覧（後回しだが設計済み）
+## 9. AI日記 / 記憶閲覧（基礎実装済み / schema拡張は後回し）
 
-状態：設計メモ作成済み / 実装は後回し。
+状態：D1/D2 + 月別棚 + generate-on-demand は実装済み。schema拡張と長期記憶閲覧はガチャDB安定化後。
 
 成果物：
 
 - `LUNARIA_DIARY_MEMORY_DESIGN.md`
 - `CLAUDE_DIARY_MEMORY_REVIEW_TASK.md`
+- `LUNARIA_DIARY_MEMORY_REVIEW.md`
 
 方針：
 
 - まずはガチャDB安定化を優先
 - AI日記は「ログビュー」ではなく「ルナがその日をしまっておく棚」として設計する
 - 日記 / 会話ログ / 長期記憶変更を分ける
-- JST基準の日付ヘルパーを入れてからUI実装する
+- `user_day` のようなユーザー行動推測フィールドは採用しない
+- 長期記憶閲覧は provenance schema を入れてから実装する
 
-実装候補：
+実装済み：
 
 1. `/diary` read-only page
 2. `GET /api/messages?date=YYYY-MM-DD`
 3. generate-on-demand diary action
-4. memory provenance / delete / correct surface
+4. month shelf
+
+次候補：
+
+1. `017_diary_v1_schema.sql`（title / talked_about / source_message_count / generated_at）
+2. `018_core_memory_provenance.sql`
+3. memory provenance / delete / correct surface
