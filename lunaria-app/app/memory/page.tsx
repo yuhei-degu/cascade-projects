@@ -110,7 +110,11 @@ function MemoryCard({ memory }: { memory: MemoryItem }) {
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <span style={typeBadgeStyle}>{typeLabels[memory.type] ?? memory.type}</span>
           <span style={statusBadgeStyle}>{statusLabels[memory.status] ?? memory.status}</span>
-          {memory.source_date && <span style={dateBadgeStyle}>{formatDate(memory.source_date)}</span>}
+          {memory.source_date && (
+            <Link href={`/diary?date=${encodeURIComponent(memory.source_date)}`} style={dateBadgeStyle}>
+              {formatDate(memory.source_date)} の日記
+            </Link>
+          )}
         </div>
         <span style={{ color: '#c8a060', fontSize: 12, whiteSpace: 'nowrap' }}>score {memory.score ?? '-'}</span>
       </div>
@@ -437,6 +441,7 @@ const dateBadgeStyle: CSSProperties = {
   padding: '4px 8px',
   fontSize: 11,
   background: 'rgba(216,182,109,.07)',
+  textDecoration: 'none',
 }
 
 const notesStyle: CSSProperties = {

@@ -67,6 +67,11 @@ function todayJst(): string {
   }).format(new Date())
 }
 
+function initialDate(): string {
+  if (typeof window === 'undefined') return todayJst()
+  return new URLSearchParams(window.location.search).get('date') ?? todayJst()
+}
+
 function asList(value: string[] | null | undefined): string[] {
   return Array.isArray(value) ? value.filter(item => item.trim().length > 0) : []
 }
@@ -153,7 +158,7 @@ function Stat({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 export default function DiaryPage() {
-  const [date, setDate] = useState(todayJst)
+  const [date, setDate] = useState(initialDate)
   const [diary, setDiary] = useState<DiaryLog | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
