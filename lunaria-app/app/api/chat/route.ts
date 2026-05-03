@@ -389,18 +389,19 @@ export async function POST(req: NextRequest) {
                 await updateEm(extraction.emotions)
 
                 if (extraction.long_term_candidate?.type && extraction.long_term_candidate?.content) {
-                  console.log('[memory] saving:', extraction.long_term_candidate)
-                  const { saveCoreMemory } = await import('../../../lib/lunaria/memory')
-                  await saveCoreMemory(
+                  console.log('[memory-candidate] saving:', extraction.long_term_candidate)
+                  const { saveMemoryCandidate } = await import('../../../lib/lunaria/memory-candidates')
+                  const saved = await saveMemoryCandidate(
                     extraction.long_term_candidate.type,
                     extraction.long_term_candidate.content,
                     {
+                      sourceType: 'conversation',
                       sourceDate,
                       confidence: Math.min(1, Math.max(0.5, (extraction.importance_score ?? 3) / 5)),
-                      status: 'active',
+                      reason: extraction.summary,
                     },
                   )
-                  console.log('[memory] saved ok')
+                  console.log('[memory-candidate] saved:', saved)
                 } else {
                   console.log('[memory] no candidate in extraction:', extraction.summary)
                 }
