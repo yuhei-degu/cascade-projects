@@ -1,19 +1,60 @@
-﻿import OpenAI from 'openai'
 import { DiarySchema } from './types'
 import type { Diary } from './types'
 import { supabaseAdmin } from '../supabase'
 import { getJstDayRange } from './date'
 
-const gemini = new OpenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-  baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
-})
 
 const USER_ID = '00000000-0000-0000-0000-000000000001'
 const T = {
   extractions: 'lunaria_extractions',
   diary:       'lunaria_diary_logs',
 } as const
+interface GeminiGenerateContentResponse {
+  candidates?: Array<{
+    content?: {
+      parts?: Array<{ text?: string }>
+    }
+    finishReason?: string
+  }>
+}
+
+async function generateGeminiJson(prompt: string, maxOutputTokens: number): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) throw new Error('GEMINI_API_KEY is not configured')
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          maxOutputTokens,
+          responseMimeType: 'application/json',
+          temperature: 0.2,
+        },
+      }),
+    },
+  )
+
+  if (!res.ok) {
+    const body = await res.text()
+    throw new Error(`Gemini generateContent failed: ${res.status} ${body.slice(0, 240)}`)
+  }
+
+  const data = await res.json() as GeminiGenerateContentResponse
+  const text = data.candidates?.[0]?.content?.parts
+    ?.map(part => part.text ?? '')
+    .join('')
+    .trim()
+
+  if (!text) {
+    throw new Error(`Gemini returned empty content; finishReason=${data.candidates?.[0]?.finishReason ?? 'unknown'}`)
+  }
+
+  return text
+}
 
 function asStringList(value: unknown): string[] {
   return Array.isArray(value)
@@ -160,6 +201,16 @@ function asDiaryObject(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>
 }
 
+function parseGeneratedDiary(raw: string, source: DiarySource): Diary {
+  const diaryJson = asDiaryObject(parseDiaryJson(raw))
+  return DiarySchema.parse({
+    ...diaryJson,
+    importance: source.importance,
+    source_message_count: source.sourceMessageCount,
+    generated_at: new Date().toISOString(),
+  })
+}
+
 function buildFallbackDiary(source: DiarySource): Diary {
   const lines = source.sourceText
     .split(/\r?\n/)
@@ -188,6 +239,42 @@ function buildFallbackDiary(source: DiarySource): Diary {
     source_message_count: source.sourceMessageCount,
     generated_at: new Date().toISOString(),
   })
+}
+
+async function repairDiaryGeneration(source: DiarySource): Promise<Diary | null> {
+  const repairPrompt = `あなたは Lunaria のルナです。
+前回の日記生成がJSONとして壊れました。以下の材料から、短く安全なAI日記JSONだけを返してください。
+
+ルール:
+- JSON以外を書かない
+- events / talked_about / unresolved_issues / next_topics は各3件以内
+- luna_comment は40文字以内
+- ユーザーが言っていないことを足さない
+
+入力:
+${source.sourceText.slice(0, 6000)}
+
+JSON形式:
+{
+  "title": "短いタイトル",
+  "summary": "短い要約",
+  "events": ["話したこと"],
+  "talked_about": ["タグ"],
+  "emotions": {"joy":0,"anger":0,"sadness":0,"shyness":0,"loneliness":0,"anxiety":0},
+  "luna_comment": "一言",
+  "unresolved_issues": [],
+  "next_topics": [],
+  "memory_changes": [],
+  "importance": 1
+}`
+
+  try {
+    const raw = await generateGeminiJson(repairPrompt, 1200)
+    return parseGeneratedDiary(raw, source)
+  } catch (error) {
+    console.warn('[diary] repair generation failed', error)
+    return null
+  }
 }
 
 export async function generateDiary(date: string): Promise<Diary | null> {
@@ -225,28 +312,23 @@ JSON形式:
   "importance": 1
 }`
 
-  const res = await gemini.chat.completions.create({
-    model: 'gemini-2.5-flash',
-    max_tokens: 1200,
-    messages: [{ role: 'user', content: prompt }],
-  })
-
-  const raw = res.choices[0]?.message?.content ?? '{}'
+  const raw = await generateGeminiJson(prompt, 2200)
 
   try {
-    const diaryJson = asDiaryObject(parseDiaryJson(raw))
-    const parsed = DiarySchema.parse({
-      ...diaryJson,
-      importance: source.importance,
-      source_message_count: source.sourceMessageCount,
-      generated_at: new Date().toISOString(),
-    })
+    const parsed = parseGeneratedDiary(raw, source)
 
     await saveDiary(date, parsed)
 
     return parsed
   } catch (error) {
-    console.warn('[diary] parse failed; saving fallback diary', error)
+    console.warn('[diary] parse failed; retrying compact diary generation', error)
+    const repaired = await repairDiaryGeneration(source)
+    if (repaired) {
+      await saveDiary(date, repaired)
+      return repaired
+    }
+
+    console.warn('[diary] saving fallback diary')
     const fallback = buildFallbackDiary(source)
     await saveDiary(date, fallback)
     return fallback
@@ -279,15 +361,11 @@ export async function getMorningOpening(): Promise<string | null> {
 話題: ${topic}
 ルール: タメ口。20文字以内。押しつけない。JSONのみ {"message":"一言"}`
 
-  const res = await gemini.chat.completions.create({
-    model: 'gemini-2.5-flash',
-    max_tokens: 80,
-    messages: [{ role: 'user', content: prompt }],
-  })
+  const raw = await generateGeminiJson(prompt, 160)
 
   try {
-    const raw = (res.choices[0]?.message?.content ?? '{}').replace(/```json|```/g, '').trim()
-    return JSON.parse(raw).message ?? null
+    const parsed = asDiaryObject(parseDiaryJson(raw))
+    return typeof parsed.message === 'string' ? parsed.message : null
   } catch {
     return null
   }
