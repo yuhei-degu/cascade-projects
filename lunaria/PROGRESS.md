@@ -1,3 +1,76 @@
+# ルナリア 進捗記録 - 2026-05-03 追記（Phase G+++：Claudeレビュー反映 / 天井200連化）
+
+## 夕方の追加作業
+
+### Claudeレビュー反映 ✅
+
+- `GACHA_PITY_THRESHOLD_REVIEW.md` を受けて、天井閾値は 100 連ではなく 200 連を採用
+- `MOONBOX_V2_COPY_FINAL_QA.md` を取り込み。014 の文言は修正なしで適用 OK
+- `SUPABASE_GACHA_014_015_RUNBOOK_REVIEW.md` を取り込み、Runbook に RLS / rollback / RPC coexistence / backfill no-op の注意を反映
+- `NEXT_PHASE_STATUS_UPDATE_PROPOSAL.md` を取り込み、次フェーズ候補の状態を更新
+
+### 天井200連化 ✅
+
+- `016_gacha_pity_threshold.sql` を追加
+  - `draw_gacha_v2` の閾値判定を 99 → 199 に変更
+  - table / history columns / grants は 015 のまま維持
+- アプリ側の天井表示・強制判定・report / verify の閾値を 200 に統一
+
+現DBはまだ `014` / `015` / `016` 未適用。SQL Editor では必ず `014` → `015` → `016` の順に実行する。
+
+---
+# ルナリア 進捗記録 - 2026-05-03（Phase G+++：月箱 v2 / 天井 / 運用検証の整備）
+
+## 本日（5/3）の作業
+
+### 月箱コンテンツ v2：コード側完了 / DB適用待ち ✅
+
+- `MOONBOX_V2_FINAL_REVIEW.md` を作成し、v2 採用リストを確定
+- `014_gacha_content_v2.sql` を作成
+  - 既存 10 アイテムを `UPDATE`
+  - 新規 11 アイテムを `INSERT`
+  - 適用後の想定 active pool：30 → 41
+- `gacha:verify` で v2 適用後の rarity count / item name を検証できるようにした
+
+現DBはまだ `014` 未適用。`npm run gacha:verify` は `30/41` で失敗するのが正常。
+
+### 天井システム：コード側完了 / 閾値レビュー中 / DB適用待ち ✅
+
+- `GACHA_PITY_SYSTEM_DESIGN.md` を作成
+- `015_gacha_pity_system.sql` を作成
+  - `lunaria_gacha_pity_state`
+  - `lunaria_gacha_history.pity_before / pity_after / pity_triggered`
+  - `draw_gacha_v2`
+- アプリ側を段階対応
+  - `015` 適用済みなら `draw_gacha_v2` を使用
+  - `015` 未適用なら旧 `draw_gacha` へ fallback
+  - `/gacha` に「月が満ちるまで」表示
+  - `/admin/gacha` と `gacha:report` に Moon Fullness 表示
+
+閾値は Claude レビュー後に 200 連へ変更。`016_gacha_pity_threshold.sql` で `draw_gacha_v2` を置き換える。
+
+### 運用・検証ドキュメント整備 ✅
+
+- `POST_CODEX_STATUS_REVIEW.md`：Claude の棚卸しレビューを保存
+- `SUPABASE_GACHA_014_015_APPLY_RUNBOOK.md`：SQL Editor 適用手順
+- `CLAUDE_HANDOFF_TASKS_2026-05-03.md`：Claude へ渡すレビュータスク
+- `gacha:verify`：014/015 適用後の確認CLI
+
+### 現在の次アクション
+
+1. Claude の天井閾値レビューを待つ
+2. Claude の Supabase Runbook レビューを待つ
+3. 問題なければ Supabase SQL Editor で `014` → `015` → `016` を適用
+4. 適用後に以下を実行
+
+```powershell
+cd C:\Users\yuuve\CascadeProjects\lunaria-app
+npm run gacha:report
+npm run gacha:verify
+npm run gacha:smoke
+```
+
+---
 # ルナリア 進捗記録 - 2026-05-01（Phase G：ガチャDB適用・安全化・実動作確認）
 
 ## 本日（5/1）の作業

@@ -2,6 +2,7 @@ import { supabaseAdmin, T } from '../supabase'
 import type { Rarity } from './gacha'
 
 const USER_ID = '00000000-0000-0000-0000-000000000001'
+const PITY_THRESHOLD = 200
 
 type CountMap = Record<string, number>
 
@@ -165,7 +166,7 @@ export async function getGachaPoolStats(): Promise<GachaPoolStatsReport> {
       : {
           available: true,
           draws_since_urban_legend: pityResult.data?.draws_since_urban_legend ?? 0,
-          threshold: 100,
+          threshold: PITY_THRESHOLD,
           lifetime_draws: pityResult.data?.lifetime_draws ?? 0,
           last_urban_legend_at: pityResult.data?.last_urban_legend_at ?? null,
           updated_at: pityResult.data?.updated_at ?? null,
