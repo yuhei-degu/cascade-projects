@@ -21,6 +21,14 @@ interface Message {
   ts: number
 }
 
+interface DiaryMetaResponse {
+  date: string
+  generated: boolean
+  diary: DiaryLog | null
+  extraction_count: number
+  message_count: number
+}
+
 function todayJst(): string {
   return new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Tokyo',
@@ -92,23 +100,30 @@ export default function DiaryPage() {
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showMessages, setShowMessages] = useState(false)
+  const [sourceCounts, setSourceCounts] = useState({ extraction_count: 0, message_count: 0 })
 
   const loadDay = useCallback(async (targetDate: string) => {
     setLoading(true)
     setError(null)
     try {
       const [diaryRes, messagesRes] = await Promise.all([
-        fetch(`/api/diary?date=${encodeURIComponent(targetDate)}`, { cache: 'no-store' }),
+        fetch(`/api/diary?date=${encodeURIComponent(targetDate)}&meta=1`, { cache: 'no-store' }),
         fetch(`/api/messages?date=${encodeURIComponent(targetDate)}`, { cache: 'no-store' }),
       ])
       if (!diaryRes.ok || !messagesRes.ok) throw new Error('load_failed')
-      setDiary(await diaryRes.json())
+      const diaryData = await diaryRes.json() as DiaryMetaResponse
+      setDiary(diaryData.diary)
+      setSourceCounts({
+        extraction_count: diaryData.extraction_count ?? 0,
+        message_count:   diaryData.message_count ?? 0,
+      })
       const messageData = await messagesRes.json()
       setMessages(Array.isArray(messageData.messages) ? messageData.messages : [])
     } catch {
       setError('この日の記録をうまく開けませんでした。')
       setDiary(null)
       setMessages([])
+      setSourceCounts({ extraction_count: 0, message_count: 0 })
     } finally {
       setLoading(false)
     }
@@ -129,7 +144,9 @@ export default function DiaryPage() {
       })
       const data = await res.json()
       if (!res.ok || !data.ok) {
-        setError('この日は、まだ日記にできる記録が少ないみたいです。')
+        setError(data.reason === 'no_source'
+          ? 'この日は、まだ日記にできる会話がないみたいです。'
+          : '会話は見つかったけれど、今日はうまく日記に綴れませんでした。')
       }
       await loadDay(date)
     } catch {
@@ -271,7 +288,8 @@ export default function DiaryPage() {
             <aside style={{ display: 'grid', gap: 16, alignContent: 'start' }}>
               <Section title="記録の気配">
                 <div style={{ display: 'grid', gap: 10, color: '#b8ad9c', fontSize: 13 }}>
-                  <div>会話数: <span style={{ color: '#ddd5c5' }}>{messages.length}</span></div>
+                  <div>会話数: <span style={{ color: '#ddd5c5' }}>{sourceCounts.message_count}</span></div>
+                  <div>抽出メモ: <span style={{ color: '#ddd5c5' }}>{sourceCounts.extraction_count}</span></div>
                   <div>重要度: <span style={{ color: '#ddd5c5' }}>{diary?.importance ?? '-'}</span></div>
                   <div>日記: <span style={{ color: hasDiary ? '#9fcfbd' : '#8f8372' }}>{hasDiary ? 'あり' : '未生成'}</span></div>
                 </div>

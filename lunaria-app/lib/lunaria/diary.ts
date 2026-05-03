@@ -1,8 +1,8 @@
-import OpenAI from 'openai'
-import { z } from 'zod'
+﻿import OpenAI from 'openai'
 import { DiarySchema } from './types'
-import type { Diary, Extraction } from './types'
+import type { Diary } from './types'
 import { supabaseAdmin } from '../supabase'
+import { getJstDayRange } from './date'
 
 const gemini = new OpenAI({
   apiKey: process.env.GEMINI_API_KEY,
@@ -15,8 +15,13 @@ const T = {
   diary:       'lunaria_diary_logs',
 } as const
 
-// 当日の extraction を集約して日記を生成
-export async function generateDiary(date: string): Promise<Diary | null> {
+function asStringList(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+    : []
+}
+
+async function buildDiarySource(date: string): Promise<{ sourceText: string; importance: number } | null> {
   const { data: extractions } = await supabaseAdmin
     .from(T.extractions)
     .select('*')
@@ -24,45 +29,85 @@ export async function generateDiary(date: string): Promise<Diary | null> {
     .eq('session_date', date)
     .order('created_at', { ascending: true })
 
-  if (!extractions || extractions.length === 0) return null
+  if (extractions && extractions.length > 0) {
+    const sourceText = extractions
+      .map((row: any) => {
+        const issues = asStringList(row.unresolved_issues)
+        const status = Array.isArray(row.status_updates) ? JSON.stringify(row.status_updates) : ''
+        return [
+          row.summary ? `summary: ${row.summary}` : '',
+          issues.length > 0 ? `unresolved: ${issues.join(' / ')}` : '',
+          status ? `status: ${status}` : '',
+        ].filter(Boolean).join('\n')
+      })
+      .filter(Boolean)
+      .join('\n---\n')
 
-  const summaries = extractions.map((e: any) => e.summary).filter(Boolean).join('\n')
-  const allIssues = extractions.flatMap((e: any) => e.unresolved_issues ?? [])
-  const maxImportance = Math.max(...extractions.map((e: any) => e.importance_score ?? 1))
+    const importance = Math.max(...extractions.map((row: any) => row.importance_score ?? 1))
+    if (sourceText.trim()) return { sourceText, importance }
+  }
 
-  const prompt = `以下の会話要約をもとに、ルナリア（戦友・共犯者キャラ）の視点で日記を生成してください。
-JSONのみで返してください。
+  const range = getJstDayRange(date)
+  const { data: messages } = await supabaseAdmin
+    .from('lunaria_messages')
+    .select('role, content, created_at')
+    .eq('user_id', USER_ID)
+    .gte('created_at', range.startIso)
+    .lt('created_at', range.endIso)
+    .order('created_at', { ascending: true })
+    .limit(80)
 
-会話要約:
-${summaries}
+  if (!messages || messages.length === 0) return null
 
-以下のJSONで返してください:
-{
-  "summary": "今日全体の要約",
-  "events": ["出来事1", "出来事2"],
-  "emotions": {"joy":0,"anger":0,"sadness":0,"shyness":0,"loneliness":0,"anxiety":0},
-  "luna_comment": "ルナリアの一言コメント（タメ口・ユーモアあり・50文字以内）",
-  "unresolved_issues": ["未解決の話題"],
-  "next_topics": ["次回触れると良い話題"],
-  "importance": 1
+  const sourceText = messages
+    .map((message: any) => {
+      const role = message.role === 'assistant' || message.role === 'ai' ? 'Luna' : 'User'
+      return `${role}: ${message.content}`
+    })
+    .join('\n')
+
+  return sourceText.trim() ? { sourceText, importance: 2 } : null
 }
 
-luna_commentの例:
-「今日もよく頑張ったじゃん。あの件、明日どうなるか気になるね」
-「いろいろあった日だったな。少し休んでいいと思うよ」`
+export async function generateDiary(date: string): Promise<Diary | null> {
+  const source = await buildDiarySource(date)
+  if (!source) return null
+
+  const prompt = `あなたは Lunaria のルナです。以下は ${date} の会話または抽出メモです。
+この日のことを、ユーザーがあとで見返せるAI日記としてまとめてください。
+
+方針:
+- 監視ログではなく、ルナがその日をそっと棚にしまうような温度で書く
+- ユーザーが明言していない行動は断定しない
+- 事実、気分、未解決の話題、次に話せそうなことを分ける
+- luna_comment は自然なタメ口で、50文字以内
+- JSONのみ返す
+
+入力:
+${source.sourceText}
+
+JSON形式:
+{
+  "summary": "その日全体の短い要約",
+  "events": ["その日にあったこと、または話したこと"],
+  "emotions": {"joy":0,"anger":0,"sadness":0,"shyness":0,"loneliness":0,"anxiety":0},
+  "luna_comment": "ルナからの一言",
+  "unresolved_issues": ["まだ続きそうな話題"],
+  "next_topics": ["次回触れるとよさそうな話題"],
+  "importance": 1
+}`
 
   const res = await gemini.chat.completions.create({
     model: 'gemini-2.5-flash',
-    max_tokens: 500,
+    max_tokens: 700,
     messages: [{ role: 'user', content: prompt }],
   })
 
   const raw = (res.choices[0]?.message?.content ?? '{}').replace(/```json|```/g, '').trim()
 
   try {
-    const parsed = DiarySchema.parse({ ...JSON.parse(raw), importance: maxImportance })
+    const parsed = DiarySchema.parse({ ...JSON.parse(raw), importance: source.importance })
 
-    // DB保存
     await supabaseAdmin.from(T.diary).upsert({
       user_id:           USER_ID,
       diary_date:        date,
@@ -76,44 +121,37 @@ luna_commentの例:
     }, { onConflict: 'user_id,diary_date' })
 
     return parsed
-  } catch { return null }
+  } catch (error) {
+    console.warn('[diary] parse failed', error)
+    return null
+  }
 }
 
-// 翌朝の第一声：前日の unresolved_issues / next_topics から生成
 export async function getMorningOpening(): Promise<string | null> {
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
-  const date = yesterday.toISOString().split('T')[0]
+  const date = new Date(yesterday.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10)
 
   const { data } = await supabaseAdmin
     .from(T.diary)
     .select('unresolved_issues, next_topics, luna_comment, importance')
     .eq('user_id', USER_ID)
     .eq('diary_date', date)
-    .single()
+    .maybeSingle()
 
   if (!data) return null
 
-  // unresolved_issues 優先、なければ next_topics から選ぶ
-  const candidates = [
-    ...(data.unresolved_issues ?? []),
-    ...(data.next_topics ?? []),
-  ].filter(Boolean)
-
+  const unresolved = asStringList(data.unresolved_issues)
+  const nextTopics = asStringList(data.next_topics)
+  const candidates = [...unresolved, ...nextTopics]
   if (candidates.length === 0) return null
 
-  // 重要度が高い日は unresolved_issues を必ず使う
-  const useIssue = (data.importance ?? 1) >= 4 && (data.unresolved_issues ?? []).length > 0
-  const topic = useIssue
-    ? data.unresolved_issues[0]
-    : candidates[Math.floor(Math.random() * Math.min(candidates.length, 3))]
+  const useIssue = (data.importance ?? 1) >= 4 && unresolved.length > 0
+  const topic = useIssue ? unresolved[0] : candidates[Math.floor(Math.random() * Math.min(candidates.length, 3))]
 
-  const prompt = `ルナリア（明るく自然体・戦友キャラ）として、昨日の話題について朝の第一声を作ってください。
-話題：「${topic}」
-ルール：タメ口・自然・20文字以内・文末は「？」・押しつけない
-良い例：「昨日のあの件、どうなった？」「あれ、結局どうしたん？」「今日どうするか決めた？」
-悪い例：「昨日は大変だったね、今日は大丈夫？」（長すぎ・説教っぽい）
-JSONのみ：{"message":"一言"}`
+  const prompt = `あなたは Lunaria のルナです。昨日の話題を、今日の最初の一言として自然に触れてください。
+話題: ${topic}
+ルール: タメ口。20文字以内。押しつけない。JSONのみ {"message":"一言"}`
 
   const res = await gemini.chat.completions.create({
     model: 'gemini-2.5-flash',
@@ -124,5 +162,7 @@ JSONのみ：{"message":"一言"}`
   try {
     const raw = (res.choices[0]?.message?.content ?? '{}').replace(/```json|```/g, '').trim()
     return JSON.parse(raw).message ?? null
-  } catch { return null }
+  } catch {
+    return null
+  }
 }
