@@ -29,6 +29,15 @@ interface DiaryMetaResponse {
   message_count: number
 }
 
+interface MonthDay {
+  date: string
+  generated: boolean
+  message_count: number
+  extraction_count: number
+  importance: number | null
+  luna_comment: string | null
+}
+
 function todayJst(): string {
   return new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Tokyo',
@@ -101,6 +110,7 @@ export default function DiaryPage() {
   const [error, setError] = useState<string | null>(null)
   const [showMessages, setShowMessages] = useState(false)
   const [sourceCounts, setSourceCounts] = useState({ extraction_count: 0, message_count: 0 })
+  const [monthDays, setMonthDays] = useState<MonthDay[]>([])
 
   const loadDay = useCallback(async (targetDate: string) => {
     setLoading(true)
@@ -132,6 +142,14 @@ export default function DiaryPage() {
   useEffect(() => {
     loadDay(date)
   }, [date, loadDay])
+
+  useEffect(() => {
+    const month = date.slice(0, 7)
+    fetch(`/api/diary/month?month=${encodeURIComponent(month)}`, { cache: 'no-store' })
+      .then(res => res.ok ? res.json() : { days: [] })
+      .then(data => setMonthDays(Array.isArray(data.days) ? data.days : []))
+      .catch(() => setMonthDays([]))
+  }, [date])
 
   const generateDiary = async () => {
     setGenerating(true)
@@ -286,6 +304,31 @@ export default function DiaryPage() {
             </div>
 
             <aside style={{ display: 'grid', gap: 16, alignContent: 'start' }}>
+              <Section title="この月の棚">
+                {monthDays.length === 0 ? (
+                  <p style={{ color: '#6f665a', fontSize: 13, lineHeight: 1.8 }}>この月には、まだ並んだ日がありません。</p>
+                ) : (
+                  <div style={{ display: 'grid', gap: 8 }}>
+                    {monthDays.map(day => (
+                      <button
+                        key={day.date}
+                        onClick={() => setDate(day.date)}
+                        style={{
+                          ...monthDayButtonStyle,
+                          borderColor: day.date === date ? 'rgba(200,160,96,.55)' : 'rgba(255,255,255,.08)',
+                          background: day.date === date ? 'rgba(200,160,96,.12)' : 'rgba(255,255,255,.035)',
+                        }}
+                      >
+                        <span style={{ color: '#ddd5c5', fontSize: 13 }}>{day.date.slice(5)}</span>
+                        <span style={{ color: day.generated ? '#9fcfbd' : '#8f8372', fontSize: 11 }}>
+                          {day.generated ? '日記あり' : '会話あり'} / {day.message_count}件
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </Section>
+
               <Section title="記録の気配">
                 <div style={{ display: 'grid', gap: 10, color: '#b8ad9c', fontSize: 13 }}>
                   <div>会話数: <span style={{ color: '#ddd5c5' }}>{sourceCounts.message_count}</span></div>
@@ -355,4 +398,16 @@ const navButtonStyle: CSSProperties = {
   cursor: 'pointer',
   fontSize: 12,
   padding: '9px 13px',
+}
+
+const monthDayButtonStyle: CSSProperties = {
+  alignItems: 'center',
+  border: '1px solid rgba(255,255,255,.08)',
+  borderRadius: 14,
+  color: '#c8bda9',
+  cursor: 'pointer',
+  display: 'flex',
+  justifyContent: 'space-between',
+  padding: '10px 12px',
+  textAlign: 'left',
 }
