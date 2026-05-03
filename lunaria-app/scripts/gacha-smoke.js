@@ -194,6 +194,22 @@ async function checkDiaryApis(baseUrl) {
   }
 }
 
+async function checkMemoryApis(baseUrl) {
+  const url = `${baseUrl}/api/memory?limit=20`
+  try {
+    const { response, body, text } = await fetchJson(url)
+    if (!response.ok) {
+      fail('/api/memory', `HTTP ${response.status} ${text.slice(0, 160)}`)
+    } else if (!Array.isArray(body?.memories)) {
+      fail('/api/memory', 'memories is not an array')
+    } else {
+      pass('/api/memory', `${body.memories.length} memories`)
+    }
+  } catch (error) {
+    fail('/api/memory', error.message)
+  }
+}
+
 async function main() {
   const baseUrl = normalizeBaseUrl(process.argv[2] || process.env.LUNARIA_BASE_URL)
   console.log(`Lunaria gacha smoke test: ${baseUrl}`)
@@ -203,6 +219,7 @@ async function main() {
   await checkPage(baseUrl, '/gacha')
   await checkPage(baseUrl, '/gacha/inventory')
   await checkPage(baseUrl, '/diary')
+  await checkPage(baseUrl, '/memory')
   await checkPage(baseUrl, '/admin/gacha')
   await checkHealth(baseUrl)
   await checkGachaState(baseUrl)
@@ -210,6 +227,7 @@ async function main() {
   await checkInventory(baseUrl)
   await checkAdminStats(baseUrl)
   await checkDiaryApis(baseUrl)
+  await checkMemoryApis(baseUrl)
 
   if (process.exitCode) {
     console.error('\nLunaria gacha smoke test failed.')
