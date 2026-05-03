@@ -12,6 +12,28 @@ This addendum supersedes the older `SUPABASE_GACHA_014_015_APPLY_RUNBOOK.md` whe
 
 The connected Supabase database is currently still before these migrations, so `gacha:verify` is expected to fail until all three are applied.
 
+## One-file SQL Editor Bundle
+
+To reduce copy/paste mistakes, generate a single manual apply file:
+
+```powershell
+cd C:\Users\yuuve\CascadeProjects\lunaria-app
+npm run gacha:sql-pack
+```
+
+This writes:
+
+```text
+supabase/manual/014_016_gacha_apply_bundle.sql
+```
+
+Paste that generated file into Supabase SQL Editor. It contains:
+
+- `014_gacha_content_v2.sql`
+- `015_gacha_pity_system.sql`
+- `016_gacha_pity_threshold.sql`
+- post-apply verification SQL
+
 ## Why 016 Exists
 
 `015` creates the pity infrastructure and the new `draw_gacha_v2` RPC. It was originally written with a 100-draw hard pity.
@@ -55,3 +77,13 @@ drop table if exists public.lunaria_gacha_pity_state;
 
 For `014`, prefer setting newly added v2 items inactive rather than deleting rows, because inventory/history references may exist after users draw.
 
+## Post-apply Local Commands
+
+```powershell
+cd C:\Users\yuuve\CascadeProjects\lunaria-app
+npm run gacha:report
+npm run gacha:verify
+npm run gacha:smoke
+```
+
+`gacha:verify` now checks that `/api/gacha/state` reports the expected `200` threshold when HTTP verification is enabled with `LUNARIA_BASE_URL` or a CLI base URL.

@@ -186,6 +186,8 @@ async function checkApi(baseUrl) {
       fail('/api/gacha/state', `HTTP ${stateResponse.status}`)
     } else if (!('pity' in state)) {
       fail('/api/gacha/state pity field', 'missing pity field')
+    } else if (state.pity && state.pity.threshold !== EXPECTED_PITY_THRESHOLD) {
+      fail('/api/gacha/state pity threshold', `${state.pity.threshold}/${EXPECTED_PITY_THRESHOLD}`)
     } else {
       pass('/api/gacha/state pity field', state.pity ? `${state.pity.draws_since_urban_legend}/${EXPECTED_PITY_THRESHOLD}` : 'null')
     }
