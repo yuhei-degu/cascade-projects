@@ -221,6 +221,7 @@ export default function ChatPage() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <a href="/diary" style={{ fontSize: 12, color: '#7a7060', textDecoration: 'none' }}>日々</a>
+          <a href="/memory" style={{ fontSize: 12, color: '#7a7060', textDecoration: 'none' }}>記憶</a>
           <a href="/gacha" style={{ fontSize: 12, color: '#7a7060', textDecoration: 'none' }}>🎟</a>
           <button onClick={() => setShowDev(v => !v)} style={{ fontSize: 10, color: showDev ? '#7a7060' : '#2e2c28', background: 'none', border: 'none', cursor: 'pointer' }}>dev</button>
         </div>

@@ -254,7 +254,10 @@ export default function DiaryPage() {
             </p>
           </div>
 
-          <Link href="/gacha" style={moonboxLinkStyle}>月箱へ</Link>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <Link href="/memory" style={moonboxLinkStyle}>記憶へ</Link>
+            <Link href="/gacha" style={moonboxLinkStyle}>月箱へ</Link>
+          </div>
         </header>
 
         <section style={toolbarStyle}>
