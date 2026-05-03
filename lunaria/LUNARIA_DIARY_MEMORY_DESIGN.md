@@ -330,6 +330,8 @@ Needed eventually:
 
 ### Phase D1: Read-only Diary Page
 
+Status: implemented on 2026-05-03.
+
 - Add `/diary`
 - Add date picker
 - Fetch existing `GET /api/diary`
@@ -337,6 +339,8 @@ Needed eventually:
 - No schema changes
 
 ### Phase D2: Date-filtered Messages
+
+Status: implemented on 2026-05-03 for basic day transcript fetching and display.
 
 - Extend `GET /api/messages?date=YYYY-MM-DD`
 - Add JST day range helper

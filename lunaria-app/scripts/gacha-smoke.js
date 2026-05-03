@@ -19,6 +19,10 @@ function warn(message, detail) {
   console.warn(`WARN ${message}${detail ? `: ${detail}` : ''}`)
 }
 
+function jstDateString(date = new Date()) {
+  return new Date(date.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10)
+}
+
 async function fetchText(url, options) {
   const response = await fetch(url, { cache: 'no-store', ...options })
   const text = await response.text()
@@ -153,6 +157,32 @@ async function checkAdminStats(baseUrl) {
   }
 }
 
+async function checkDiaryApis(baseUrl) {
+  const date = jstDateString()
+  const diaryUrl = `${baseUrl}/api/diary?date=${date}`
+  const messagesUrl = `${baseUrl}/api/messages?date=${date}`
+
+  try {
+    const diary = await fetchJson(diaryUrl)
+    if (!diary.response.ok) {
+      fail('/api/diary?date', `HTTP ${diary.response.status} ${diary.text.slice(0, 160)}`)
+    } else {
+      pass('/api/diary?date', diary.body ? 'diary found' : 'no diary yet')
+    }
+
+    const messages = await fetchJson(messagesUrl)
+    if (!messages.response.ok) {
+      fail('/api/messages?date', `HTTP ${messages.response.status} ${messages.text.slice(0, 160)}`)
+    } else if (!Array.isArray(messages.body?.messages)) {
+      fail('/api/messages?date', 'messages is not an array')
+    } else {
+      pass('/api/messages?date', `${messages.body.messages.length} messages`)
+    }
+  } catch (error) {
+    fail('Diary API checks', error.message)
+  }
+}
+
 async function main() {
   const baseUrl = normalizeBaseUrl(process.argv[2] || process.env.LUNARIA_BASE_URL)
   console.log(`Lunaria gacha smoke test: ${baseUrl}`)
@@ -161,12 +191,14 @@ async function main() {
   await checkPage(baseUrl, '/')
   await checkPage(baseUrl, '/gacha')
   await checkPage(baseUrl, '/gacha/inventory')
+  await checkPage(baseUrl, '/diary')
   await checkPage(baseUrl, '/admin/gacha')
   await checkHealth(baseUrl)
   await checkGachaState(baseUrl)
   await checkGachaPool(baseUrl)
   await checkInventory(baseUrl)
   await checkAdminStats(baseUrl)
+  await checkDiaryApis(baseUrl)
 
   if (process.exitCode) {
     console.error('\nLunaria gacha smoke test failed.')

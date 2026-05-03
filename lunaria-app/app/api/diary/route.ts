@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { generateDiary } from '../../../lib/lunaria/diary'
 import { updateAffinity } from '../../../lib/lunaria/affinity'
 import { supabaseAdmin } from '../../../lib/supabase'
+import { getJstDateString } from '../../../lib/lunaria/date'
 
 const USER_ID = '00000000-0000-0000-0000-000000000001'
 
@@ -9,7 +10,7 @@ const USER_ID = '00000000-0000-0000-0000-000000000001'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const date: string = body.date ?? new Date().toISOString().split('T')[0]
+    const date: string = body.date ?? getJstDateString()
 
     // 1. 当日の extraction から日記を生成
     const diary = await generateDiary(date)
@@ -39,14 +40,14 @@ export async function POST(req: NextRequest) {
 // GET /api/diary?date=YYYY-MM-DD  日記取得
 export async function GET(req: NextRequest) {
   const date = req.nextUrl.searchParams.get('date')
-    ?? new Date().toISOString().split('T')[0]
+    ?? getJstDateString()
 
   const { data } = await supabaseAdmin
     .from('lunaria_diary_logs')
     .select('*')
     .eq('user_id', USER_ID)
     .eq('diary_date', date)
-    .single()
+    .maybeSingle()
 
   return NextResponse.json(data ?? null)
 }
