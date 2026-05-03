@@ -196,6 +196,7 @@ async function checkDiaryApis(baseUrl) {
 
 async function checkMemoryApis(baseUrl) {
   const url = `${baseUrl}/api/memory?limit=20`
+  const candidatesUrl = `${baseUrl}/api/memory/candidates?limit=20`
   try {
     const { response, body, text } = await fetchJson(url)
     if (!response.ok) {
@@ -204,6 +205,15 @@ async function checkMemoryApis(baseUrl) {
       fail('/api/memory', 'memories is not an array')
     } else {
       pass('/api/memory', `${body.memories.length} memories`)
+    }
+
+    const candidates = await fetchJson(candidatesUrl)
+    if (!candidates.response.ok) {
+      fail('/api/memory/candidates', `HTTP ${candidates.response.status} ${candidates.text.slice(0, 160)}`)
+    } else if (!Array.isArray(candidates.body?.candidates)) {
+      fail('/api/memory/candidates', 'candidates is not an array')
+    } else {
+      pass('/api/memory/candidates', candidates.body.table_ready ? `${candidates.body.candidates.length} candidates` : 'table not applied yet')
     }
   } catch (error) {
     fail('/api/memory', error.message)

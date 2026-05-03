@@ -160,6 +160,12 @@ async function main() {
     ['source_date', 'source_message_id', 'confidence', 'status', 'last_confirmed_at', 'created_by', 'notes'],
     'Core memory provenance columns',
   )
+  await checkSelectableColumns(
+    supabase,
+    'lunaria_memory_candidates',
+    ['candidate_type', 'content', 'source_type', 'source_date', 'confidence', 'status', 'reason', 'deleted_at'],
+    'Memory candidate columns',
+  )
   await checkHttp(baseUrl)
 
   if (process.exitCode) {
