@@ -112,6 +112,17 @@ export default function DiaryPage() {
   const [sourceCounts, setSourceCounts] = useState({ extraction_count: 0, message_count: 0 })
   const [monthDays, setMonthDays] = useState<MonthDay[]>([])
 
+  const loadMonth = useCallback(async (targetDate: string) => {
+    const month = targetDate.slice(0, 7)
+    try {
+      const res = await fetch(`/api/diary/month?month=${encodeURIComponent(month)}`, { cache: 'no-store' })
+      const data = res.ok ? await res.json() : { days: [] }
+      setMonthDays(Array.isArray(data.days) ? data.days : [])
+    } catch {
+      setMonthDays([])
+    }
+  }, [])
+
   const loadDay = useCallback(async (targetDate: string) => {
     setLoading(true)
     setError(null)
@@ -144,12 +155,8 @@ export default function DiaryPage() {
   }, [date, loadDay])
 
   useEffect(() => {
-    const month = date.slice(0, 7)
-    fetch(`/api/diary/month?month=${encodeURIComponent(month)}`, { cache: 'no-store' })
-      .then(res => res.ok ? res.json() : { days: [] })
-      .then(data => setMonthDays(Array.isArray(data.days) ? data.days : []))
-      .catch(() => setMonthDays([]))
-  }, [date])
+    loadMonth(date)
+  }, [date, loadMonth])
 
   const generateDiary = async () => {
     setGenerating(true)
@@ -167,6 +174,7 @@ export default function DiaryPage() {
           : '会話は見つかったけれど、今日はうまく日記に綴れませんでした。')
       }
       await loadDay(date)
+      await loadMonth(date)
     } catch {
       setError('日記を綴る途中で、月明かりが途切れました。')
     } finally {
