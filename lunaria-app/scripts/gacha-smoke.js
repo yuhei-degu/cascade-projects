@@ -159,8 +159,10 @@ async function checkAdminStats(baseUrl) {
 
 async function checkDiaryApis(baseUrl) {
   const date = jstDateString()
+  const month = date.slice(0, 7)
   const diaryUrl = `${baseUrl}/api/diary?date=${date}`
   const messagesUrl = `${baseUrl}/api/messages?date=${date}`
+  const monthUrl = `${baseUrl}/api/diary/month?month=${month}`
 
   try {
     const diary = await fetchJson(diaryUrl)
@@ -177,6 +179,15 @@ async function checkDiaryApis(baseUrl) {
       fail('/api/messages?date', 'messages is not an array')
     } else {
       pass('/api/messages?date', `${messages.body.messages.length} messages`)
+    }
+
+    const monthDiary = await fetchJson(monthUrl)
+    if (!monthDiary.response.ok) {
+      fail('/api/diary/month', `HTTP ${monthDiary.response.status} ${monthDiary.text.slice(0, 160)}`)
+    } else if (!Array.isArray(monthDiary.body?.days)) {
+      fail('/api/diary/month', 'days is not an array')
+    } else {
+      pass('/api/diary/month', `${monthDiary.body.days.length} days`)
     }
   } catch (error) {
     fail('Diary API checks', error.message)
