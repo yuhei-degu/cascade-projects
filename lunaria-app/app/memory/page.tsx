@@ -32,6 +32,28 @@ interface MemoryResponse {
   stats: { total: number; by_status: Record<string, number>; with_source_date: number } | null
 }
 
+interface MemoryCandidate {
+  id: string
+  candidate_type: string
+  content: string
+  source_type: string
+  source_date: string | null
+  source_message_ids: string[]
+  confidence: number | null
+  status: string
+  reason: string | null
+  created_by: string
+  created_at: string | null
+}
+
+interface MemoryCandidateResponse {
+  ok: boolean
+  table_ready: boolean
+  status: string
+  candidates: MemoryCandidate[]
+  stats: { total: number; by_status: Record<string, number> } | null
+}
+
 const statusLabels: Record<string, string> = {
   active: '育てている記憶',
   candidate: '候補',
@@ -133,12 +155,39 @@ function MemoryCard({ memory }: { memory: MemoryItem }) {
   )
 }
 
+function CandidateCard({ candidate }: { candidate: MemoryCandidate }) {
+  return (
+    <article style={candidateCardStyle}>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+        <span style={typeBadgeStyle}>{typeLabels[candidate.candidate_type] ?? candidate.candidate_type}</span>
+        <span style={candidateBadgeStyle}>確認待ち</span>
+        {candidate.source_date && (
+          <Link href={`/diary?date=${encodeURIComponent(candidate.source_date)}`} style={dateBadgeStyle}>
+            {formatDate(candidate.source_date)} の日記
+          </Link>
+        )}
+      </div>
+      <p style={memoryContentStyle}>{candidate.content}</p>
+      {candidate.reason && <p style={notesStyle}>候補理由: {candidate.reason}</p>}
+      <div style={memoryMetaGridStyle}>
+        <Stat label="確信度" value={confidenceLabel(candidate.confidence)} />
+        <Stat label="出どころ" value={candidate.source_type} />
+        <Stat label="作成元" value={candidate.created_by} />
+        <Stat label="作成時刻" value={formatTime(candidate.created_at)} />
+      </div>
+    </article>
+  )
+}
+
 export default function MemoryPage() {
   const [date, setDate] = useState('')
   const [status, setStatus] = useState('active')
   const [includeProfile, setIncludeProfile] = useState(false)
   const [memories, setMemories] = useState<MemoryItem[]>([])
   const [stats, setStats] = useState<MemoryResponse['stats']>(null)
+  const [candidateTableReady, setCandidateTableReady] = useState(false)
+  const [candidates, setCandidates] = useState<MemoryCandidate[]>([])
+  const [candidateStats, setCandidateStats] = useState<MemoryCandidateResponse['stats']>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -149,15 +198,27 @@ export default function MemoryPage() {
       const params = new URLSearchParams({ status, limit: '120' })
       if (date) params.set('date', date)
       if (includeProfile) params.set('profile', '1')
-      const res = await fetch(`/api/memory?${params.toString()}`, { cache: 'no-store' })
-      const data = await res.json() as MemoryResponse
-      if (!res.ok || !data.ok) throw new Error('load_failed')
+      const candidateParams = new URLSearchParams({ status: 'pending', limit: '40' })
+      if (date) candidateParams.set('date', date)
+      const [memoryRes, candidateRes] = await Promise.all([
+        fetch(`/api/memory?${params.toString()}`, { cache: 'no-store' }),
+        fetch(`/api/memory/candidates?${candidateParams.toString()}`, { cache: 'no-store' }),
+      ])
+      const data = await memoryRes.json() as MemoryResponse
+      const candidateData = await candidateRes.json() as MemoryCandidateResponse
+      if (!memoryRes.ok || !data.ok || !candidateRes.ok || !candidateData.ok) throw new Error('load_failed')
       setMemories(Array.isArray(data.memories) ? data.memories : [])
       setStats(data.stats)
+      setCandidateTableReady(Boolean(candidateData.table_ready))
+      setCandidates(Array.isArray(candidateData.candidates) ? candidateData.candidates : [])
+      setCandidateStats(candidateData.stats)
     } catch {
       setError('記憶の棚を開けませんでした。少し時間を置いてもう一度試してみてください。')
       setMemories([])
       setStats(null)
+      setCandidateTableReady(false)
+      setCandidates([])
+      setCandidateStats(null)
     } finally {
       setLoading(false)
     }
@@ -243,6 +304,23 @@ export default function MemoryPage() {
           </div>
 
           <aside style={{ display: 'grid', gap: 16, alignContent: 'start' }}>
+            <Section title="記憶候補">
+              {loading ? (
+                <p style={mutedTextStyle}>候補の棚を開いています...</p>
+              ) : !candidateTableReady ? (
+                <div>
+                  <p style={emptyTitleStyle}>候補棚はまだ準備中です。</p>
+                  <p style={mutedTextStyle}>Supabase に `019_memory_candidates.sql` を適用すると、会話や日記から抽出された記憶候補がここに並びます。</p>
+                </div>
+              ) : candidates.length === 0 ? (
+                <p style={mutedTextStyle}>確認待ちの記憶候補はありません。</p>
+              ) : (
+                <div style={{ display: 'grid', gap: 10 }}>
+                  {candidates.slice(0, 5).map(candidate => <CandidateCard key={candidate.id} candidate={candidate} />)}
+                </div>
+              )}
+            </Section>
+
             <Section title="棚の状態">
               <div style={{ display: 'grid', gap: 10, fontSize: 13 }}>
                 <Stat label="表示中" value={`${stats?.total ?? memories.length}件`} />
@@ -250,6 +328,7 @@ export default function MemoryPage() {
                 <Stat label="候補" value={`${stats?.by_status?.candidate ?? 0}件`} />
                 <Stat label="育成中" value={`${stats?.by_status?.active ?? 0}件`} />
                 <Stat label="確認済み" value={`${stats?.by_status?.confirmed ?? 0}件`} />
+                <Stat label="確認待ち候補" value={candidateTableReady ? `${candidateStats?.total ?? candidates.length}件` : '未適用'} />
               </div>
             </Section>
 
@@ -402,6 +481,12 @@ const memoryCardStyle: CSSProperties = {
   padding: 14,
 }
 
+const candidateCardStyle: CSSProperties = {
+  ...memoryCardStyle,
+  borderColor: 'rgba(216,182,109,.18)',
+  background: 'linear-gradient(145deg, rgba(216,182,109,.07), rgba(255,255,255,.02))',
+}
+
 const memoryContentStyle: CSSProperties = {
   color: '#eee0ca',
   fontSize: 15,
@@ -432,6 +517,15 @@ const statusBadgeStyle: CSSProperties = {
   padding: '4px 8px',
   fontSize: 11,
   background: 'rgba(159,207,189,.07)',
+}
+
+const candidateBadgeStyle: CSSProperties = {
+  color: '#d8b66d',
+  border: '1px solid rgba(216,182,109,.24)',
+  borderRadius: 999,
+  padding: '4px 8px',
+  fontSize: 11,
+  background: 'rgba(216,182,109,.08)',
 }
 
 const dateBadgeStyle: CSSProperties = {
