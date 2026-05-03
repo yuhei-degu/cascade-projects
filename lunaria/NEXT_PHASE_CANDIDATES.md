@@ -188,7 +188,7 @@ Claudeレビュー待ちの間に進められるもの：
 
 ## 9. AI日記 / 記憶閲覧（基礎実装済み / schema拡張は後回し）
 
-状態：D1/D2 + 月別棚 + generate-on-demand + diary v1 schema準備 + memory provenance準備は実装済み。DB適用と長期記憶閲覧UIはガチャDB安定化後。
+状態：D1/D2 + 月別棚 + generate-on-demand + diary v1 schema準備 + memory provenance準備は実装済み。`014-018` 適用 bundle と verifier も準備済み。DB適用と長期記憶閲覧UIはガチャDB安定化後。
 
 成果物：
 
@@ -218,6 +218,8 @@ Claudeレビュー待ちの間に進められるもの：
 3. DB未適用時のlegacy upsert fallback
 4. `018_core_memory_provenance.sql`
 5. core memory provenance save/read fallback
+6. `SUPABASE_014_018_APPLY_RUNBOOK.md`
+7. `npm run supabase:verify`
 
 次候補：
 
