@@ -1,7 +1,24 @@
 # Lunaria AI Diary and Memory Review Design
 
 Created: 2026-05-03
-Status: design note only. Not an implementation task yet.
+Status: design note + implemented surface alignment.
+
+## 2026-05-03 Review Alignment
+
+Claude reviewed this design in `LUNARIA_DIARY_MEMORY_REVIEW.md`.
+
+Decisions accepted from the review:
+
+- Do not add `user_day` or `user_day_summary` to the diary schema.
+- Do not infer what the user did outside explicit conversation content.
+- Keep "what we talked about" and "what Luna remembers long-term" separate.
+- Treat D1/D2 plus month shelf and generation fallback as implemented.
+- Delay diary schema expansion until the gacha DB is stable.
+- Do not start D4 memory browsing until memory provenance columns exist.
+
+Product guardrail:
+
+> Luna may remember the shape of a conversation, but she should not pretend she watched the user's day.
 
 ## 0. Positioning
 
@@ -37,9 +54,13 @@ Already present:
 
 - `POST /api/diary`
   - Generates a diary for a date from `lunaria_extractions`
+  - Falls back to same-day `lunaria_messages` when extractions are empty
   - Upserts into `lunaria_diary_logs`
+  - Returns generation metadata for the UI
 - `GET /api/diary?date=YYYY-MM-DD`
   - Fetches one diary row by date
+- `GET /api/diary/month?month=YYYY-MM`
+  - Fetches a lightweight month shelf of generated diary days
 - `lunaria_diary_logs`
   - `diary_date`
   - `summary`
@@ -51,18 +72,20 @@ Already present:
   - `importance`
 - `lunaria_messages`
   - Stores user/assistant messages with `created_at`
-- `GET /api/messages`
-  - Fetches latest 60 messages only
+- `GET /api/messages?date=YYYY-MM-DD`
+  - Fetches same-day transcript messages using the JST day range helper
+- `/diary`
+  - Date picker
+  - Existing diary display
+  - Generate-on-demand action
+  - Collapsible same-day transcript
+  - Monthly diary shelf
 
 Missing:
 
-- No user-facing `/diary` page
-- No date picker
-- No message API filtered by date
-- No calendar/month overview
-- No explicit JST date helper
 - No clear retention / privacy surface
-- No "generate this day now" action outside dev panel
+- No diary schema v1 expansion for title / tags / source counts
+- No memory provenance surface for "Luna remembers this because..."
 
 ## 3. What A User Should Be Able To Ask
 
@@ -102,13 +125,16 @@ Fields:
 
 Potential future additions:
 
-- `user_day_summary`
 - `conversation_summary`
 - `memory_changes`
-- `tags`
+- `talked_about`
 - `source_message_count`
 - `generated_at`
 - `edited_by_user_at`
+
+Do not add `user_day` / `user_day_summary`.
+
+If user activities are ever shown, they must be explicitly mentioned by the user and should live in `events` or a narrowly named `user_mentioned_activities` field with source references.
 
 ### 4.2 Conversation Transcript
 
@@ -160,7 +186,7 @@ Recommended diary schema, version 1:
   "date": "2026-05-03",
   "title": "月箱の準備を進めた日",
   "summary": "今日はガチャの月箱と天井まわりを整理し、次に何を安定させるかを決めていた。",
-  "user_day": ["外出前に開発を任せた", "戻ってAI日記の見返し方を相談した"],
+  "events": ["月箱v2の採用候補を整理した", "AI日記で日付指定の見返し方を相談した"],
   "talked_about": ["月箱v2", "天井200連", "AI日記", "記憶の見せ方"],
   "emotions": { "joy": 1, "anxiety": 1, "loneliness": 0 },
   "luna_comment": "今日は、未来の棚を作る話をした日だったね。今すぐ全部じゃなくていい、でも忘れないように置いておこう。",
@@ -173,7 +199,9 @@ Recommended diary schema, version 1:
       "action": "candidate"
     }
   ],
-  "importance": 4
+  "importance": 4,
+  "source_message_count": 18,
+  "generated_at": "2026-05-03T12:00:00.000Z"
 }
 ```
 
@@ -348,12 +376,39 @@ Status: implemented on 2026-05-03 for basic day transcript fetching and display.
 
 ### Phase D3: Generate-on-demand
 
+Status: partially implemented on 2026-05-03 for the existing schema.
+
 - Add "summarize this day" action
 - Improve `POST /api/diary` response
 - Use JST helper
 - Add loading/error states
+- Refresh month shelf after generation
+
+Remaining D3 work:
+
+- Add diary schema v1 fields: `title`, `talked_about`, `source_message_count`, `generated_at`
+- Update prompt / parser / UI only after the schema migration is reviewed
+- Suggested next migration number: `017_diary_v1_schema.sql` if no other migration is added first
+
+### Phase D3.5: Memory Provenance Schema
+
+Status: pending. Must happen before D4.
+
+Add provenance fields to long-term memory storage so Luna can explain why something is remembered:
+
+- `source_date`
+- `source_message_id`
+- `confidence`
+- `status`
+- `last_confirmed_at`
+
+Suggested next migration number after diary v1 schema: `018_core_memory_provenance.sql`.
+
+If another migration lands first, use the next available number and update this document.
 
 ### Phase D4: Memory Change Surface
+
+Status: blocked until D3.5 exists.
 
 - Add source links for long-term memories
 - Show memory candidates / saved memories by date
@@ -363,16 +418,16 @@ Status: implemented on 2026-05-03 for basic day transcript fetching and display.
 
 - Should the diary be written in Luna's voice, neutral voice, or a mix?
 - Should exact transcript be visible by default or behind a button?
-- How much should "what the user did" infer from conversation vs only state explicitly stated facts?
+- How should explicitly mentioned user activities be shown without implying surveillance?
 - Should users edit diary entries?
 - Should long-term memory require confirmation before becoming active?
 - How long should raw messages be retained?
 
 ## 13. Recommendation
 
-Keep this feature behind gacha stabilization in priority, but preserve the direction now.
+Keep schema-heavy diary/memory work behind gacha stabilization in priority, but continue light UX polish and documentation alignment.
 
-The first implementation should be deliberately modest:
+The first implementation is now deliberately modest and already in place:
 
 - `/diary`
 - date picker
@@ -380,5 +435,7 @@ The first implementation should be deliberately modest:
 - empty state
 - no new DB migration
 
-Then add transcript and memory provenance after the basic surface feels right.
+Next, add diary schema v1 fields only after the pending gacha DB migrations are applied and verified.
+
+Then add memory provenance before any memory browsing UI.
 
