@@ -12,7 +12,8 @@
     "gacha:report": "node scripts/gacha-report.js",
     "gacha:smoke": "node scripts/gacha-smoke.js",
     "gacha:verify": "node scripts/gacha-verify.js",
-    "gacha:sql-pack": "node scripts/gacha-sql-pack.js"
+    "gacha:sql-pack": "node scripts/gacha-sql-pack.js",
+    "supabase:verify": "node scripts/supabase-verify.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.36.3",
