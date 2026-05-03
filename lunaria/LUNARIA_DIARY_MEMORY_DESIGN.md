@@ -13,7 +13,7 @@ Decisions accepted from the review:
 - Do not infer what the user did outside explicit conversation content.
 - Keep "what we talked about" and "what Luna remembers long-term" separate.
 - Treat D1/D2 plus month shelf and generation fallback as implemented.
-- Delay diary schema expansion until the gacha DB is stable.
+- Diary schema expansion was prepared as `017_diary_v1_schema.sql`; apply after the gacha DB is stable.
 - Do not start D4 memory browsing until memory provenance columns exist.
 
 Product guardrail:
@@ -84,7 +84,7 @@ Already present:
 Missing:
 
 - No clear retention / privacy surface
-- No diary schema v1 expansion for title / tags / source counts
+- Diary schema v1 migration exists but may still be unapplied in Supabase
 - No memory provenance surface for "Luna remembers this because..."
 
 ## 3. What A User Should Be Able To Ask
@@ -376,7 +376,7 @@ Status: implemented on 2026-05-03 for basic day transcript fetching and display.
 
 ### Phase D3: Generate-on-demand
 
-Status: partially implemented on 2026-05-03 for the existing schema.
+Status: implemented on 2026-05-03 with backwards-compatible DB fallback.
 
 - Add "summarize this day" action
 - Improve `POST /api/diary` response
@@ -384,11 +384,18 @@ Status: partially implemented on 2026-05-03 for the existing schema.
 - Add loading/error states
 - Refresh month shelf after generation
 
-Remaining D3 work:
+Implemented D3 work:
 
 - Add diary schema v1 fields: `title`, `talked_about`, `source_message_count`, `generated_at`
-- Update prompt / parser / UI only after the schema migration is reviewed
-- Suggested next migration number: `017_diary_v1_schema.sql` if no other migration is added first
+- Add `memory_changes` as a small candidate list
+- Update prompt / parser / UI for the new fields
+- Add `017_diary_v1_schema.sql`
+- Keep legacy diary upsert fallback so the app still works before Supabase applies `017`
+
+Remaining D3 work:
+
+- Apply `017` in Supabase after `014` / `015` / `016`
+- Regenerate a diary and confirm v1 fields persist
 
 ### Phase D3.5: Memory Provenance Schema
 

@@ -21,7 +21,71 @@ function asStringList(value: unknown): string[] {
     : []
 }
 
-async function buildDiarySource(date: string): Promise<{ sourceText: string; importance: number } | null> {
+interface DiarySource {
+  sourceText: string
+  importance: number
+  sourceMessageCount: number
+}
+
+function isMissingDiaryV1Column(error: any): boolean {
+  const message = String(error?.message ?? '')
+  return error?.code === 'PGRST204' || /title|talked_about|memory_changes|source_message_count|generated_at/i.test(message)
+}
+
+async function saveDiary(date: string, diary: Diary): Promise<void> {
+  const v1Payload = {
+    user_id:              USER_ID,
+    diary_date:           date,
+    title:                diary.title,
+    summary:              diary.summary,
+    events:               diary.events,
+    talked_about:         diary.talked_about,
+    emotions:             diary.emotions,
+    luna_comment:         diary.luna_comment,
+    unresolved_issues:    diary.unresolved_issues,
+    next_topics:          diary.next_topics,
+    memory_changes:       diary.memory_changes,
+    importance:           diary.importance,
+    source_message_count: diary.source_message_count,
+    generated_at:         diary.generated_at,
+  }
+
+  const { error } = await supabaseAdmin
+    .from(T.diary)
+    .upsert(v1Payload, { onConflict: 'user_id,diary_date' })
+
+  if (!error) return
+  if (!isMissingDiaryV1Column(error)) throw error
+
+  console.warn('[diary] v1 columns unavailable; retrying legacy diary upsert')
+  const { error: legacyError } = await supabaseAdmin.from(T.diary).upsert({
+    user_id:           USER_ID,
+    diary_date:        date,
+    summary:           diary.summary,
+    events:            diary.events,
+    emotions:          diary.emotions,
+    luna_comment:      diary.luna_comment,
+    unresolved_issues: diary.unresolved_issues,
+    next_topics:       diary.next_topics,
+    importance:        diary.importance,
+  }, { onConflict: 'user_id,diary_date' })
+
+  if (legacyError) throw legacyError
+}
+
+async function fetchSourceMessageCount(date: string): Promise<number> {
+  const range = getJstDayRange(date)
+  const { count } = await supabaseAdmin
+    .from('lunaria_messages')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', USER_ID)
+    .gte('created_at', range.startIso)
+    .lt('created_at', range.endIso)
+
+  return count ?? 0
+}
+
+async function buildDiarySource(date: string): Promise<DiarySource | null> {
   const { data: extractions } = await supabaseAdmin
     .from(T.extractions)
     .select('*')
@@ -44,7 +108,13 @@ async function buildDiarySource(date: string): Promise<{ sourceText: string; imp
       .join('\n---\n')
 
     const importance = Math.max(...extractions.map((row: any) => row.importance_score ?? 1))
-    if (sourceText.trim()) return { sourceText, importance }
+    if (sourceText.trim()) {
+      return {
+        sourceText,
+        importance,
+        sourceMessageCount: await fetchSourceMessageCount(date),
+      }
+    }
   }
 
   const range = getJstDayRange(date)
@@ -66,7 +136,7 @@ async function buildDiarySource(date: string): Promise<{ sourceText: string; imp
     })
     .join('\n')
 
-  return sourceText.trim() ? { sourceText, importance: 2 } : null
+  return sourceText.trim() ? { sourceText, importance: 2, sourceMessageCount: messages.length } : null
 }
 
 export async function generateDiary(date: string): Promise<Diary | null> {
@@ -80,6 +150,10 @@ export async function generateDiary(date: string): Promise<Diary | null> {
 - 監視ログではなく、ルナがその日をそっと棚にしまうような温度で書く
 - ユーザーが明言していない行動は断定しない
 - 事実、気分、未解決の話題、次に話せそうなことを分ける
+- title は12文字前後。詩的すぎず、あとで探せる具体性を残す
+- talked_about は短いタグを5個以内
+- events は「話したこと・確認したこと」だけ。ユーザーの行動を想像しない
+- memory_changes は長期記憶候補だけ。迷う場合は空配列
 - luna_comment は自然なタメ口で、50文字以内
 - JSONのみ返す
 
@@ -88,12 +162,15 @@ ${source.sourceText}
 
 JSON形式:
 {
+  "title": "その日の短いタイトル",
   "summary": "その日全体の短い要約",
   "events": ["その日にあったこと、または話したこと"],
+  "talked_about": ["短いタグ"],
   "emotions": {"joy":0,"anger":0,"sadness":0,"shyness":0,"loneliness":0,"anxiety":0},
   "luna_comment": "ルナからの一言",
   "unresolved_issues": ["まだ続きそうな話題"],
   "next_topics": ["次回触れるとよさそうな話題"],
+  "memory_changes": [{"type":"preference","content":"明示された長期記憶候補","action":"candidate","source_message_count":1}],
   "importance": 1
 }`
 
@@ -106,19 +183,14 @@ JSON形式:
   const raw = (res.choices[0]?.message?.content ?? '{}').replace(/```json|```/g, '').trim()
 
   try {
-    const parsed = DiarySchema.parse({ ...JSON.parse(raw), importance: source.importance })
+    const parsed = DiarySchema.parse({
+      ...JSON.parse(raw),
+      importance: source.importance,
+      source_message_count: source.sourceMessageCount,
+      generated_at: new Date().toISOString(),
+    })
 
-    await supabaseAdmin.from(T.diary).upsert({
-      user_id:           USER_ID,
-      diary_date:        date,
-      summary:           parsed.summary,
-      events:            parsed.events,
-      emotions:          parsed.emotions,
-      luna_comment:      parsed.luna_comment,
-      unresolved_issues: parsed.unresolved_issues,
-      next_topics:       parsed.next_topics,
-      importance:        parsed.importance,
-    }, { onConflict: 'user_id,diary_date' })
+    await saveDiary(date, parsed)
 
     return parsed
   } catch (error) {
