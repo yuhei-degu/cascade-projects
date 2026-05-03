@@ -46,13 +46,23 @@ export type Affinity = z.infer<typeof AffinitySchema>
 
 // ── 日記 ─────────────────────────────────────────────────────
 export const DiarySchema = z.object({
+  title:             z.string().default(''),
   summary:           z.string(),
   events:            z.array(z.string()),
+  talked_about:      z.array(z.string()).default([]),
   emotions:          EmotionSchema,
   luna_comment:      z.string(),
   unresolved_issues: z.array(z.string()),
   next_topics:       z.array(z.string()),
+  memory_changes:    z.array(z.object({
+    type:                 z.string().default('other'),
+    content:              z.string(),
+    action:               z.enum(['candidate', 'saved', 'confirmed']).default('candidate'),
+    source_message_count: z.number().int().min(0).default(0),
+  })).default([]),
   importance:        z.number().min(1).max(5),
+  source_message_count: z.number().int().min(0).default(0),
+  generated_at:      z.string().nullable().default(null),
 })
 export type Diary = z.infer<typeof DiarySchema>
 

@@ -6,13 +6,18 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 interface DiaryLog {
   diary_date: string
+  title: string | null
   summary: string | null
   events: string[] | null
+  talked_about: string[] | null
   emotions: Record<string, number> | null
   luna_comment: string | null
   unresolved_issues: string[] | null
   next_topics: string[] | null
+  memory_changes: Array<{ type?: string; content?: string; action?: string; source_message_count?: number }> | null
   importance: number | null
+  source_message_count: number | null
+  generated_at: string | null
 }
 
 interface Message {
@@ -49,6 +54,14 @@ function todayJst(): string {
 
 function asList(value: string[] | null | undefined): string[] {
   return Array.isArray(value) ? value.filter(Boolean) : []
+}
+
+function asMemoryChanges(value: DiaryLog['memory_changes'] | undefined): Array<{ content: string; action?: string }> {
+  return Array.isArray(value)
+    ? value
+        .filter((item): item is { content: string; action?: string } => typeof item?.content === 'string' && item.content.trim().length > 0)
+        .slice(0, 3)
+    : []
 }
 
 function shiftDate(date: string, days: number): string {
@@ -186,6 +199,8 @@ export default function DiaryPage() {
     return Object.entries(diary?.emotions ?? {}).filter(([, value]) => Number(value) > 0)
   }, [diary])
 
+  const talkedAbout = asList(diary?.talked_about)
+  const memoryChanges = asMemoryChanges(diary?.memory_changes)
   const hasDiary = Boolean(diary)
 
   return (
@@ -279,6 +294,11 @@ export default function DiaryPage() {
               <Section title={hasDiary ? `${date} の日記` : `${date} の棚`}>
                 {hasDiary ? (
                   <div>
+                    {diary?.title && (
+                      <h2 style={{ color: '#f1dfbd', fontSize: 24, lineHeight: 1.35, marginBottom: 12 }}>
+                        {diary.title}
+                      </h2>
+                    )}
                     <p style={{ color: '#eee0ca', fontSize: 20, lineHeight: 1.75, marginBottom: 16 }}>
                       {diary?.luna_comment || '今日は、言葉の輪郭だけが静かに残っているみたい。'}
                     </p>
@@ -302,6 +322,25 @@ export default function DiaryPage() {
                 <ListBlock items={asList(diary?.events)} empty="まだ出来事は並んでいません。" />
               </Section>
 
+              {talkedAbout.length > 0 && (
+                <Section title="話したこと">
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {talkedAbout.map(topic => (
+                      <span key={topic} style={{
+                        border: '1px solid rgba(127,179,213,.22)',
+                        borderRadius: 999,
+                        color: '#b9d8e8',
+                        fontSize: 12,
+                        padding: '6px 10px',
+                        background: 'rgba(127,179,213,.07)',
+                      }}>
+                        {topic}
+                      </span>
+                    ))}
+                  </div>
+                </Section>
+              )}
+
               <Section title="まだ続きそうな話">
                 <ListBlock items={asList(diary?.unresolved_issues)} empty="未解決の話題はありません。" />
               </Section>
@@ -309,6 +348,27 @@ export default function DiaryPage() {
               <Section title="次に話せそうなこと">
                 <ListBlock items={asList(diary?.next_topics)} empty="次の話題はまだ見つかっていません。" />
               </Section>
+
+              {memoryChanges.length > 0 && (
+                <Section title="ルナが覚えそうなこと">
+                  <div style={{ display: 'grid', gap: 8 }}>
+                    {memoryChanges.map((item, index) => (
+                      <div key={`${item.content}-${index}`} style={{
+                        border: '1px solid rgba(200,160,96,.14)',
+                        borderRadius: 14,
+                        color: '#d8cebd',
+                        fontSize: 13,
+                        lineHeight: 1.75,
+                        padding: '10px 12px',
+                        background: 'rgba(200,160,96,.045)',
+                      }}>
+                        {item.content}
+                        {item.action && <span style={{ color: '#766d60' }}> / {item.action}</span>}
+                      </div>
+                    ))}
+                  </div>
+                </Section>
+              )}
             </div>
 
             <aside style={{ display: 'grid', gap: 16, alignContent: 'start' }}>
@@ -342,6 +402,8 @@ export default function DiaryPage() {
                   <div>会話数: <span style={{ color: '#ddd5c5' }}>{sourceCounts.message_count}</span></div>
                   <div>抽出メモ: <span style={{ color: '#ddd5c5' }}>{sourceCounts.extraction_count}</span></div>
                   <div>重要度: <span style={{ color: '#ddd5c5' }}>{diary?.importance ?? '-'}</span></div>
+                  <div>参照会話: <span style={{ color: '#ddd5c5' }}>{diary?.source_message_count ?? '-'}</span></div>
+                  <div>生成時刻: <span style={{ color: '#ddd5c5' }}>{diary?.generated_at ? formatTime(Date.parse(diary.generated_at)) : '-'}</span></div>
                   <div>日記: <span style={{ color: hasDiary ? '#9fcfbd' : '#8f8372' }}>{hasDiary ? 'あり' : '未生成'}</span></div>
                 </div>
               </Section>
