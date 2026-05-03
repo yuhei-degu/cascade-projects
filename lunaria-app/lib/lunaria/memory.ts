@@ -5,6 +5,19 @@ import { debugLog, warnLog } from './logger'
 const USER_ID = '00000000-0000-0000-0000-000000000001'
 const T = { coreMem: 'lunaria_core_memory' } as const
 
+export type CoreMemoryStatus = 'candidate' | 'active' | 'confirmed' | 'archived' | 'deleted'
+export type CoreMemoryCreatedBy = 'llm' | 'user_explicit' | 'profile_sync' | 'migration'
+
+export interface SaveCoreMemoryOptions {
+  sourceDate?: string | null
+  sourceMessageId?: string | null
+  confidence?: number | null
+  status?: CoreMemoryStatus
+  lastConfirmedAt?: string | null
+  createdBy?: CoreMemoryCreatedBy
+  notes?: string | null
+}
+
 // ── Profile と core_memory の役割分離ガード ────────────────────
 // プロフィール相当の属性言及は core_memory に流さない。
 // （gender / occupation / age などは user_profile 側が真実権限）
@@ -19,6 +32,28 @@ function looksLikeProfileMention(content: string): boolean {
   const t = (content ?? '').trim()
   if (t.length === 0) return false
   return PROFILE_MENTION_PATTERNS.some(p => p.test(t))
+}
+
+function isMissingProvenanceColumn(error: any): boolean {
+  const message = String(error?.message ?? '')
+  return error?.code === 'PGRST204' || /source_date|source_message_id|confidence|status|last_confirmed_at|created_by|notes/i.test(message)
+}
+
+function normalizeConfidence(confidence: number | null | undefined): number | null {
+  if (typeof confidence !== 'number' || !Number.isFinite(confidence)) return null
+  return Math.min(1, Math.max(0, Number(confidence.toFixed(2))))
+}
+
+function buildProvenancePatch(options: SaveCoreMemoryOptions): Record<string, unknown> {
+  const patch: Record<string, unknown> = {}
+  if (options.sourceDate !== undefined) patch.source_date = options.sourceDate
+  if (options.sourceMessageId !== undefined) patch.source_message_id = options.sourceMessageId
+  if (options.confidence !== undefined) patch.confidence = normalizeConfidence(options.confidence)
+  if (options.status !== undefined) patch.status = options.status
+  if (options.lastConfirmedAt !== undefined) patch.last_confirmed_at = options.lastConfirmedAt
+  if (options.createdBy !== undefined) patch.created_by = options.createdBy
+  if (options.notes !== undefined) patch.notes = options.notes
+  return patch
 }
 
 // 名前を直接検出（Gemini抽出に依存しない）
@@ -49,6 +84,7 @@ export function detectNameFromMessage(message: string): string | null {
 export async function saveCoreMemory(
   type: string,
   content: string,
+  options: SaveCoreMemoryOptions = {},
 ): Promise<void> {
   const normalized = (content ?? '').trim()
   if (normalized.length === 0) {
@@ -83,13 +119,40 @@ export async function saveCoreMemory(
     .maybeSingle()
 
   if (existing) {
-    await supabaseAdmin.from(T.coreMem)
-      .update({ score: 5, hit_count: 1, last_seen: new Date().toISOString() })
+    const updatePayload = {
+      score: 5,
+      hit_count: 1,
+      last_seen: new Date().toISOString(),
+      ...buildProvenancePatch(options),
+    }
+    const { error } = await supabaseAdmin.from(T.coreMem)
+      .update(updatePayload)
       .eq('id', existing.id)
+
+    if (error) {
+      if (!isMissingProvenanceColumn(error)) throw error
+      await supabaseAdmin.from(T.coreMem)
+        .update({ score: 5, hit_count: 1, last_seen: new Date().toISOString() })
+        .eq('id', existing.id)
+    }
     debugLog('[saveCoreMemory] updated:', type, normalized)
   } else {
-    await supabaseAdmin.from(T.coreMem)
-      .insert({ user_id: USER_ID, type, content: normalized, score: 5, hit_count: 1 })
+    const insertPayload = {
+      user_id: USER_ID,
+      type,
+      content: normalized,
+      score: 5,
+      hit_count: 1,
+      ...buildProvenancePatch({ status: 'active', createdBy: 'llm', ...options }),
+    }
+    const { error } = await supabaseAdmin.from(T.coreMem)
+      .insert(insertPayload)
+
+    if (error) {
+      if (!isMissingProvenanceColumn(error)) throw error
+      await supabaseAdmin.from(T.coreMem)
+        .insert({ user_id: USER_ID, type, content: normalized, score: 5, hit_count: 1 })
+    }
     debugLog('[saveCoreMemory] inserted:', type, normalized)
   }
 }
@@ -102,17 +165,41 @@ export type PickedMemory = {
   score: number | null
   last_seen: string | null
   memory_category: string | null
+  source_date: string | null
+  source_message_id: string | null
+  confidence: number | null
+  status: CoreMemoryStatus | null
+  last_confirmed_at: string | null
+  created_by: CoreMemoryCreatedBy | null
+  notes: string | null
 }
 
 export async function pickMemories(limit: number = 1): Promise<PickedMemory[]> {
-  const { data, error } = await supabaseAdmin
+  const query = supabaseAdmin
     .from(T.coreMem)
-    .select('id, type, content, score, last_seen, memory_category')
+    .select('id, type, content, score, last_seen, memory_category, source_date, source_message_id, confidence, status, last_confirmed_at, created_by, notes')
     .eq('user_id', USER_ID)
     .or('memory_category.is.null,memory_category.neq.profile')
+    .in('status', ['active', 'confirmed'])
     .order('score', { ascending: false })
     .order('last_seen', { ascending: true })
     .limit(limit)
+
+  let { data, error }: { data: any[] | null; error: any } = await query
+
+  if (error && isMissingProvenanceColumn(error)) {
+    const legacy = await supabaseAdmin
+      .from(T.coreMem)
+      .select('id, type, content, score, last_seen, memory_category')
+      .eq('user_id', USER_ID)
+      .or('memory_category.is.null,memory_category.neq.profile')
+      .order('score', { ascending: false })
+      .order('last_seen', { ascending: true })
+      .limit(limit)
+
+    data = legacy.data
+    error = legacy.error
+  }
 
   if (error) {
     console.error('[memory] pickMemories failed', error)
@@ -146,14 +233,31 @@ export async function getUserName(): Promise<string | null> {
 
 export async function getCoreMemoryContext(): Promise<string> {
   // memory_category='profile' は除外（Profile 層で注入済み／二重注入防止）
-  const { data } = await supabaseAdmin
+  const query = supabaseAdmin
     .from(T.coreMem)
-    .select('type, content, memory_key, memory_category')
+    .select('type, content, memory_key, memory_category, status')
     .eq('user_id', USER_ID)
     .or('memory_category.is.null,memory_category.neq.profile')
+    .in('status', ['active', 'confirmed'])
     .order('score', { ascending: false })
     .limit(5)
 
+  let { data, error }: { data: any[] | null; error: any } = await query
+
+  if (error && isMissingProvenanceColumn(error)) {
+    const legacy = await supabaseAdmin
+      .from(T.coreMem)
+      .select('type, content, memory_key, memory_category')
+      .eq('user_id', USER_ID)
+      .or('memory_category.is.null,memory_category.neq.profile')
+      .order('score', { ascending: false })
+      .limit(5)
+
+    data = legacy.data
+    error = legacy.error
+  }
+
+  if (error) return ''
   if (!data || data.length === 0) return ''
 
   // name は Profile 層に移ったため、ここでは特別扱いしない

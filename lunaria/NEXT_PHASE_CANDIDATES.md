@@ -188,7 +188,7 @@ Claudeレビュー待ちの間に進められるもの：
 
 ## 9. AI日記 / 記憶閲覧（基礎実装済み / schema拡張は後回し）
 
-状態：D1/D2 + 月別棚 + generate-on-demand + diary v1 schema準備は実装済み。DB適用と長期記憶閲覧はガチャDB安定化後。
+状態：D1/D2 + 月別棚 + generate-on-demand + diary v1 schema準備 + memory provenance準備は実装済み。DB適用と長期記憶閲覧UIはガチャDB安定化後。
 
 成果物：
 
@@ -216,9 +216,10 @@ Claudeレビュー待ちの間に進められるもの：
 1. `017_diary_v1_schema.sql`（title / talked_about / source_message_count / generated_at）
 2. diary v1 prompt / parser / UI
 3. DB未適用時のlegacy upsert fallback
+4. `018_core_memory_provenance.sql`
+5. core memory provenance save/read fallback
 
 次候補：
 
-1. `017` を Supabase に適用して diary regenerate 確認
-2. `018_core_memory_provenance.sql`
-3. memory provenance / delete / correct surface
+1. `017` / `018` を Supabase に適用して diary regenerate + memory save 確認
+2. memory provenance / delete / correct surface

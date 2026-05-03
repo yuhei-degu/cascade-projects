@@ -399,7 +399,7 @@ Remaining D3 work:
 
 ### Phase D3.5: Memory Provenance Schema
 
-Status: pending. Must happen before D4.
+Status: implemented on 2026-05-03 with backwards-compatible DB fallback. Must be applied before D4 UI.
 
 Add provenance fields to long-term memory storage so Luna can explain why something is remembered:
 
@@ -408,14 +408,20 @@ Add provenance fields to long-term memory storage so Luna can explain why someth
 - `confidence`
 - `status`
 - `last_confirmed_at`
+- `created_by`
+- `notes`
 
-Suggested next migration number after diary v1 schema: `018_core_memory_provenance.sql`.
+Implemented as `018_core_memory_provenance.sql`.
 
-If another migration lands first, use the next available number and update this document.
+Runtime behavior:
+
+- `saveCoreMemory` writes provenance when `018` exists
+- legacy insert/update fallback keeps chat working before `018` is applied
+- prompt memory reads only inject `active` / `confirmed` memories once the `status` column exists
 
 ### Phase D4: Memory Change Surface
 
-Status: blocked until D3.5 exists.
+Status: blocked until `018` is applied in Supabase and verified.
 
 - Add source links for long-term memories
 - Show memory candidates / saved memories by date

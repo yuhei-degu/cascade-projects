@@ -18,6 +18,7 @@ import type { ProfileField } from '../../../lib/lunaria/profile'
 import { supabaseAdmin } from '../../../lib/supabase'
 import { buildNormalPrompt, buildSeriousPrompt } from '../../../lib/lunaria/prompt-builder'
 import { tryGrantTicketByScore } from '../../../lib/lunaria/gacha'
+import { getJstDateString } from '../../../lib/lunaria/date'
 
 const gemini = new OpenAI({
   apiKey: process.env.GEMINI_API_KEY,
@@ -130,9 +131,10 @@ export async function POST(req: NextRequest) {
 
     // 名前を即時検出して保存（Gemini抽出を待たない）
     const detectedName = detectNameFromMessage(userMessage)
+    const sourceDate = getJstDateString()
     if (detectedName) {
       console.log('[memory] name detected:', detectedName)
-      saveCoreMemory('name', detectedName).catch(e => console.warn('[memory]', e))
+      saveCoreMemory('name', detectedName, { sourceDate, confidence: 1, status: 'confirmed', lastConfirmedAt: new Date().toISOString() }).catch(e => console.warn('[memory]', e))
     }
 
     // 1. 睡眠トリガー（日付変更で感情減衰）
@@ -392,6 +394,11 @@ export async function POST(req: NextRequest) {
                   await saveCoreMemory(
                     extraction.long_term_candidate.type,
                     extraction.long_term_candidate.content,
+                    {
+                      sourceDate,
+                      confidence: Math.min(1, Math.max(0.5, (extraction.importance_score ?? 3) / 5)),
+                      status: 'active',
+                    },
                   )
                   console.log('[memory] saved ok')
                 } else {
