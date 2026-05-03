@@ -21,6 +21,11 @@ function asStringList(value: unknown): string[] {
     : []
 }
 
+function truncateText(value: string, maxLength: number): string {
+  const normalized = value.replace(/\s+/g, ' ').trim()
+  return normalized.length > maxLength ? `${normalized.slice(0, maxLength)}...` : normalized
+}
+
 interface DiarySource {
   sourceText: string
   importance: number
@@ -139,6 +144,52 @@ async function buildDiarySource(date: string): Promise<DiarySource | null> {
   return sourceText.trim() ? { sourceText, importance: 2, sourceMessageCount: messages.length } : null
 }
 
+function parseDiaryJson(raw: string): unknown {
+  const cleaned = raw.replace(/```json|```/g, '').trim()
+  const start = cleaned.indexOf('{')
+  const end = cleaned.lastIndexOf('}')
+  const json = start >= 0 && end > start ? cleaned.slice(start, end + 1) : cleaned
+  return JSON.parse(json)
+}
+
+function asDiaryObject(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('Diary response was not a JSON object')
+  }
+
+  return value as Record<string, unknown>
+}
+
+function buildFallbackDiary(source: DiarySource): Diary {
+  const lines = source.sourceText
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(Boolean)
+
+  const events = lines
+    .filter(line => /^summary:|^unresolved:|^status:|^User:|^Luna:/.test(line))
+    .slice(0, 4)
+    .map(line => truncateText(line.replace(/^(summary|unresolved|status|User|Luna):\s*/, ''), 56))
+    .filter(line => line && line !== '[]')
+
+  const summarySource = lines.find(line => line.startsWith('summary:')) ?? lines[0] ?? 'この日の会話を、あとで見返せるように残しました。'
+
+  return DiarySchema.parse({
+    title: '今日の記録',
+    summary: truncateText(summarySource.replace(/^summary:\s*/, ''), 160),
+    events: events.length > 0 ? events : ['この日の会話を記録しました。'],
+    talked_about: [],
+    emotions: { joy: 0, anger: 0, sadness: 0, shyness: 0, loneliness: 0, anxiety: 0 },
+    luna_comment: 'うまく綴れなかったけど、形だけ残しておくね。',
+    unresolved_issues: [],
+    next_topics: [],
+    memory_changes: [],
+    importance: source.importance,
+    source_message_count: source.sourceMessageCount,
+    generated_at: new Date().toISOString(),
+  })
+}
+
 export async function generateDiary(date: string): Promise<Diary | null> {
   const source = await buildDiarySource(date)
   if (!source) return null
@@ -176,15 +227,16 @@ JSON形式:
 
   const res = await gemini.chat.completions.create({
     model: 'gemini-2.5-flash',
-    max_tokens: 700,
+    max_tokens: 1200,
     messages: [{ role: 'user', content: prompt }],
   })
 
-  const raw = (res.choices[0]?.message?.content ?? '{}').replace(/```json|```/g, '').trim()
+  const raw = res.choices[0]?.message?.content ?? '{}'
 
   try {
+    const diaryJson = asDiaryObject(parseDiaryJson(raw))
     const parsed = DiarySchema.parse({
-      ...JSON.parse(raw),
+      ...diaryJson,
       importance: source.importance,
       source_message_count: source.sourceMessageCount,
       generated_at: new Date().toISOString(),
@@ -194,8 +246,10 @@ JSON形式:
 
     return parsed
   } catch (error) {
-    console.warn('[diary] parse failed', error)
-    return null
+    console.warn('[diary] parse failed; saving fallback diary', error)
+    const fallback = buildFallbackDiary(source)
+    await saveDiary(date, fallback)
+    return fallback
   }
 }
 
