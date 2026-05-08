@@ -36,6 +36,9 @@ Recent merged work:
 - Documentation backlog was triaged:
   - `lunaria/DOC_TRIAGE_2026-05-09.md` records accepted/deferred docs
   - `lunaria/LUNARIA_REACTION_MVP_SPEC.md` extracts the useful visual/expression/motion notes into a reaction-first MVP spec
+- Reaction foundation was added:
+  - `lunaria-app/lib/lunaria/reactions.ts` defines the MVP reaction IDs, context defaults, and portrait fallback path order
+  - No UI, API, or DB behavior was changed yet
 
 Functional areas already present:
 
@@ -65,7 +68,6 @@ Functional areas already present:
 ## Not Started / Deferred
 
 - Full Live2D or 3D implementation.
-- `reaction` foundation in code (`lib/lunaria/reactions.ts`) as a stable visual layer.
 - `character_state` migration and UI integration.
 - `user_communication_profiles` design and implementation.
 - `life_events` implementation.
@@ -91,7 +93,7 @@ Recommended next order:
 
 1. Confirm Supabase migration state, especially `014` through `019`.
 2. Verify memory candidate review actions against a real candidate row.
-3. Add `reaction` foundation as a small, non-invasive visual-state layer.
+3. Add a `LunariaPortrait` placeholder that can consume reaction IDs without requiring final art assets.
 4. Continue memory governance UX: archive/restore/edit for core memories.
 5. Update `REVIEW_LOG.md` and `DECISIONS.md` after each review/decision cycle.
 
