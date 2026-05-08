@@ -52,7 +52,7 @@ export function LunariaPortrait({
       }}
       aria-label={`${label}: ${reaction ?? DEFAULT_REACTION}`}
     >
-      {imageSrc ? (
+      {imageSrc && fallbackIndex < fallbacks.length ? (
         <img
           src={imageSrc}
           alt={label}
@@ -64,9 +64,6 @@ export function LunariaPortrait({
           }}
         />
       ) : (
-        <PortraitPlaceholder reaction={reaction ?? DEFAULT_REACTION} />
-      )}
-      {fallbackIndex >= fallbacks.length && (
         <PortraitPlaceholder reaction={reaction ?? DEFAULT_REACTION} />
       )}
       {showDebugLabel && (

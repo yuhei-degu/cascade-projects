@@ -2,7 +2,9 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import { LunariaPortrait } from '@/components/lunaria/LunariaPortrait'
 import { getGachaDrawCopy, pickDailyBonusCopy, pickNoTicketCopy } from '@/lib/lunaria/gacha-copy'
+import { getReactionForContext } from '@/lib/lunaria/reactions'
 
 interface GachaState {
   ticket_count: number
@@ -171,6 +173,11 @@ export default function GachaPage() {
   const drawCopy = drawResult
     ? getGachaDrawCopy(drawResult.production_seed, drawResult.result.rarity)
     : null
+  const resultPortraitReaction = drawResult?.result.rarity === 'epic'
+    || drawResult?.result.rarity === 'legendary'
+    || drawResult?.result.rarity === 'urban_legend'
+    ? getReactionForContext('gacha_high_rarity')
+    : getReactionForContext('gacha_result')
 
   return (
     <div style={{
@@ -373,6 +380,12 @@ export default function GachaPage() {
             }}>
               LUNA'S SMALL GIFT / {drawCopy?.heading ?? meta.label}
             </div>
+            <LunariaPortrait
+              reaction={resultPortraitReaction}
+              size={132}
+              label="Luna presenting the moon box result"
+              style={{ margin: '0 auto 16px' }}
+            />
             <div style={{
               width: '120px', height: '120px', margin: '0 auto 16px',
               background: `radial-gradient(circle at 50% 35%, ${meta.glow}, rgba(255,255,255,0.04) 62%)`,

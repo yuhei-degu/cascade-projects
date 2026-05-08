@@ -42,6 +42,10 @@ Recent merged work:
 - Portrait placeholder was added:
   - `lunaria-app/components/lunaria/LunariaPortrait.tsx` can consume reaction/outfit IDs and show a CSS fallback when image assets are missing
   - It is not wired into any page yet, so existing UI behavior remains unchanged
+- AI_DEV_OS trial started in Lunaria:
+  - Trial records were added under `lunaria/`
+  - The first low-risk trial task wired `LunariaPortrait` into the `/gacha` result modal
+  - `npm run build` and `npx tsc --noEmit --pretty false` passed
 
 Functional areas already present:
 
@@ -96,8 +100,8 @@ Recommended next order:
 
 1. Confirm Supabase migration state, especially `014` through `019`.
 2. Verify memory candidate review actions against a real candidate row.
-3. Wire `LunariaPortrait` into one low-risk surface, likely the `/gacha` result modal.
-4. Continue memory governance UX: archive/restore/edit for core memories.
+3. Continue memory governance UX: archive/restore/edit for core memories.
+4. Confirm Supabase migration state, especially `014` through `019`.
 5. Update `REVIEW_LOG.md` and `DECISIONS.md` after each review/decision cycle.
 
 ## Assumptions

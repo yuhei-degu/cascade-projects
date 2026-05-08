@@ -17,6 +17,13 @@
 !/HANDOFF.md
 !/lunaria/
 !/lunaria-app/
+!/ai-dev-os/
+ai-dev-os/*
+!/ai-dev-os/AI_DEV_OS/
+ai-dev-os/AI_DEV_OS/*
+!/ai-dev-os/AI_DEV_OS/LOGS/
+ai-dev-os/AI_DEV_OS/LOGS/*
+!/ai-dev-os/AI_DEV_OS/LOGS/*.md
 
 # === 内部の除外ルール ===
 
