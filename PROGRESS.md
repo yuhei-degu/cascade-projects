@@ -29,6 +29,10 @@ Recent merged work:
   - `/memory` buttons for `覚えてて`, `あとで見る`, `棚から外す`
 - Build check passed after memory candidate action work:
   - `npm run build`
+- `/gacha` localhost 500 was investigated and resolved:
+  - Cause was stale/corrupt `.next` dev cache: `Cannot find module './828.js'`
+  - Fixed by stopping the Next dev server, deleting `lunaria-app/.next`, rebuilding, and restarting dev
+  - `npm run gacha:smoke` now passes
 
 Functional areas already present:
 
@@ -48,8 +52,8 @@ Functional areas already present:
 
 - Gacha / Moon Box:
   - Core implementation is present.
-  - Latest smoke showed `/gacha` returning HTTP 500 on localhost while other memory routes passed.
-  - Needs isolated investigation before more gacha feature work.
+  - Latest smoke passes after clearing stale `.next` dev cache.
+  - If `Cannot find module './*.js'` appears again, stop dev, remove `.next`, rebuild, and restart.
 
 - Documentation integration:
   - Several Claude/Codex docs are present under `lunaria/` and `lunaria-app/docs/`.
@@ -82,13 +86,12 @@ Functional areas already present:
 
 Recommended next order:
 
-1. Investigate `/gacha` HTTP 500 on localhost.
-2. Review and classify remaining uncommitted documentation changes.
-3. Confirm Supabase migration state, especially `014` through `019`.
-4. Verify memory candidate review actions against a real candidate row.
-5. Add `reaction` foundation as a small, non-invasive visual-state layer.
-6. Continue memory governance UX: archive/restore/edit for core memories.
-7. Update `REVIEW_LOG.md` and `DECISIONS.md` after each review/decision cycle.
+1. Review and classify remaining uncommitted documentation changes.
+2. Confirm Supabase migration state, especially `014` through `019`.
+3. Verify memory candidate review actions against a real candidate row.
+4. Add `reaction` foundation as a small, non-invasive visual-state layer.
+5. Continue memory governance UX: archive/restore/edit for core memories.
+6. Update `REVIEW_LOG.md` and `DECISIONS.md` after each review/decision cycle.
 
 ## Assumptions
 

@@ -2,6 +2,54 @@
 
 ## 2026-05-09
 
+### `/gacha` Localhost 500 Investigation
+
+### レビュー日
+
+2026-05-09
+
+### 対象
+
+- `http://localhost:3000/gacha`
+- `lunaria-app/.next`
+- `npm run gacha:smoke`
+
+### 指摘
+
+- `/gacha` が HTTP 500 を返していた。
+- Dev log に `Cannot find module './828.js'` が出ており、Next.js dev cache の stale/corrupt chunk が原因だった。
+- Gacha API / DB / business logic の失敗ではなかった。
+
+### 重要度
+
+- Medium
+
+### 対応状況
+
+- Fixed
+
+### 対応内容
+
+- Next dev server の対象 node process のみ停止。
+- `lunaria-app/.next` を削除。
+- `npm run build` を再実行して成功。
+- Next dev server を再起動。
+- `/gacha` が HTTP 200 に復帰。
+- `npm run gacha:smoke` が全項目 PASS。
+
+### 再発時の対応
+
+```powershell
+cd C:\Users\yuuve\CascadeProjects\lunaria-app
+# dev serverを止める
+Remove-Item .next -Recurse -Force
+npm run build
+npm run dev
+npm run gacha:smoke
+```
+
+---
+
 ### レビュー日
 
 2026-05-09
