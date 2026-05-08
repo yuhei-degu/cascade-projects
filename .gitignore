@@ -7,6 +7,14 @@
 # 追跡対象を明示
 !/.gitignore
 !/README.md
+!/SPEC.md
+!/PROGRESS.md
+!/DECISIONS.md
+!/TASKS.md
+!/SECURITY.md
+!/REVIEW_LOG.md
+!/RELEASE_CHECKLIST.md
+!/HANDOFF.md
 !/lunaria/
 !/lunaria-app/
 
