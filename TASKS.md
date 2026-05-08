@@ -15,12 +15,12 @@ Status: initial AI_DEV_OS task board for active Lunaria development
 | Priority | Task | Owner AI | Status | Dependencies | Done When |
 |---|---|---|---|---|---|
 | P0 | Investigate `/gacha` HTTP 500 on localhost | Implement Agent | DONE | Local dev server/logs | Cause identified as stale `.next` dev cache; `.next` rebuilt; `npm run gacha:smoke` passes |
-| P0 | Review remaining uncommitted docs and classify them | Review Agent | TODO | Current git status | Each doc is marked keep/update/drop/defer; no unrelated changes are mixed into implementation commits |
+| P0 | Review remaining uncommitted docs and classify them | Review Agent | DONE | Current git status | `lunaria/DOC_TRIAGE_2026-05-09.md` classifies accepted docs and defers `lunaria-app/docs/` |
 | P1 | Confirm Supabase migration state `014` through `019` | Ops Agent | TODO | Supabase SQL Editor access | `supabase:verify`, `gacha:verify`, and relevant smoke checks match expected DB state |
 | P1 | Verify memory candidate review actions with real data | Implement Agent | TODO | Migration `019` applied | Candidate can be approved to confirmed core memory, archived, and rejected without errors |
 | P1 | Add memory governance restore path for archived candidates/core memories | Implement Agent | TODO | Current memory APIs | User can restore accidentally archived items from UI |
 | P1 | Add review log for memory candidate behavior | Review Agent | TODO | Memory candidate verification | `REVIEW_LOG.md` includes findings, risks, and next actions |
-| P2 | Add `lib/lunaria/reactions.ts` foundation | Tech Lead + Implement Agent | TODO | Strategy synthesis / visual docs | Reaction IDs and fallback order are centralized without changing chat behavior |
+| P2 | Add `lib/lunaria/reactions.ts` foundation | Tech Lead + Implement Agent | TODO | `lunaria/LUNARIA_REACTION_MVP_SPEC.md` | Reaction IDs and fallback order are centralized without changing chat behavior |
 | P2 | Design minimal `character_state` schema | Tech Lead Agent | TODO | Reaction foundation decision | Design doc exists; migration is not created until reviewed |
 | P2 | Draft `user_communication_profiles` design | Tech Lead + Security Agent | TODO | Memory/profile docs | Design separates style preferences from core memory and avoids sensitive over-inference |
 | P2 | Improve `/memory` UX copy after real use | UX Agent | TODO | Candidate review verification | Copy makes user control clear and avoids surveillance feeling |
