@@ -54,6 +54,8 @@ interface MemoryCandidateResponse {
   stats: { total: number; by_status: Record<string, number> } | null
 }
 
+type CandidateAction = 'approve' | 'reject' | 'archive' | 'pending'
+
 const statusLabels: Record<string, string> = {
   active: '育てている記憶',
   candidate: '候補',
@@ -155,7 +157,15 @@ function MemoryCard({ memory }: { memory: MemoryItem }) {
   )
 }
 
-function CandidateCard({ candidate }: { candidate: MemoryCandidate }) {
+function CandidateCard({
+  candidate,
+  busy,
+  onAction,
+}: {
+  candidate: MemoryCandidate
+  busy: boolean
+  onAction: (id: string, action: CandidateAction) => void
+}) {
   return (
     <article style={candidateCardStyle}>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
@@ -175,6 +185,17 @@ function CandidateCard({ candidate }: { candidate: MemoryCandidate }) {
         <Stat label="作成元" value={candidate.created_by} />
         <Stat label="作成時刻" value={formatTime(candidate.created_at)} />
       </div>
+      <div style={candidateActionRowStyle}>
+        <button type="button" onClick={() => onAction(candidate.id, 'approve')} disabled={busy} style={primaryActionButtonStyle}>
+          {busy ? '整理中...' : '覚えてて'}
+        </button>
+        <button type="button" onClick={() => onAction(candidate.id, 'archive')} disabled={busy} style={secondaryActionButtonStyle}>
+          あとで見る
+        </button>
+        <button type="button" onClick={() => onAction(candidate.id, 'reject')} disabled={busy} style={quietActionButtonStyle}>
+          棚から外す
+        </button>
+      </div>
     </article>
   )
 }
@@ -190,6 +211,7 @@ export default function MemoryPage() {
   const [candidateStats, setCandidateStats] = useState<MemoryCandidateResponse['stats']>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [candidateBusyId, setCandidateBusyId] = useState<string | null>(null)
 
   const loadMemories = useCallback(async () => {
     setLoading(true)
@@ -226,6 +248,36 @@ export default function MemoryPage() {
 
   useEffect(() => {
     loadMemories()
+  }, [loadMemories])
+
+  const reviewCandidate = useCallback(async (id: string, action: CandidateAction) => {
+    setCandidateBusyId(id)
+    setError(null)
+    try {
+      const res = await fetch('/api/memory/candidates', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, action }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data?.ok) throw new Error(data?.error ?? 'review_failed')
+      setCandidates(current => current.filter(candidate => candidate.id !== id))
+      setCandidateStats(current => current
+        ? {
+            ...current,
+            total: Math.max(0, current.total - 1),
+            by_status: {
+              ...current.by_status,
+              pending: Math.max(0, (current.by_status.pending ?? 1) - 1),
+            },
+          }
+        : current)
+      if (action === 'approve') await loadMemories()
+    } catch {
+      setError('記憶候補を整理できませんでした。少し時間を置いて、もう一度試してください。')
+    } finally {
+      setCandidateBusyId(null)
+    }
   }, [loadMemories])
 
   const grouped = useMemo(() => {
@@ -316,7 +368,14 @@ export default function MemoryPage() {
                 <p style={mutedTextStyle}>確認待ちの記憶候補はありません。</p>
               ) : (
                 <div style={{ display: 'grid', gap: 10 }}>
-                  {candidates.slice(0, 5).map(candidate => <CandidateCard key={candidate.id} candidate={candidate} />)}
+                  {candidates.slice(0, 5).map(candidate => (
+                    <CandidateCard
+                      key={candidate.id}
+                      candidate={candidate}
+                      busy={candidateBusyId === candidate.id}
+                      onAction={reviewCandidate}
+                    />
+                  ))}
                 </div>
               )}
             </Section>
@@ -545,6 +604,44 @@ const notesStyle: CSSProperties = {
   lineHeight: 1.7,
   marginTop: 12,
   paddingTop: 10,
+}
+
+const candidateActionRowStyle: CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: 8,
+  marginTop: 14,
+  paddingTop: 12,
+  borderTop: '1px solid rgba(255,255,255,.07)',
+}
+
+const actionButtonBaseStyle: CSSProperties = {
+  borderRadius: 999,
+  cursor: 'pointer',
+  fontSize: 12,
+  padding: '8px 11px',
+}
+
+const primaryActionButtonStyle: CSSProperties = {
+  ...actionButtonBaseStyle,
+  background: 'linear-gradient(135deg, rgba(216,182,109,.95), rgba(190,139,74,.95))',
+  border: '1px solid rgba(255,236,179,.28)',
+  color: '#15120f',
+  fontWeight: 700,
+}
+
+const secondaryActionButtonStyle: CSSProperties = {
+  ...actionButtonBaseStyle,
+  background: 'rgba(159,207,189,.08)',
+  border: '1px solid rgba(159,207,189,.22)',
+  color: '#9fcfbd',
+}
+
+const quietActionButtonStyle: CSSProperties = {
+  ...actionButtonBaseStyle,
+  background: 'rgba(255,255,255,.04)',
+  border: '1px solid rgba(255,255,255,.1)',
+  color: '#a79b8b',
 }
 
 const statStyle: CSSProperties = {
