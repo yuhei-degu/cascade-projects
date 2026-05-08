@@ -14,7 +14,7 @@ Status: initial AI_DEV_OS task board for active Lunaria development
 
 | Priority | Task | Owner AI | Status | Dependencies | Done When |
 |---|---|---|---|---|---|
-| P0 | Investigate `/gacha` HTTP 500 on localhost | Implement Agent | TODO | Local dev server/logs | Cause identified, fix or issue note added, smoke passes or known unrelated blocker documented |
+| P0 | Investigate `/gacha` HTTP 500 on localhost | Implement Agent | DONE | Local dev server/logs | Cause identified as stale `.next` dev cache; `.next` rebuilt; `npm run gacha:smoke` passes |
 | P0 | Review remaining uncommitted docs and classify them | Review Agent | TODO | Current git status | Each doc is marked keep/update/drop/defer; no unrelated changes are mixed into implementation commits |
 | P1 | Confirm Supabase migration state `014` through `019` | Ops Agent | TODO | Supabase SQL Editor access | `supabase:verify`, `gacha:verify`, and relevant smoke checks match expected DB state |
 | P1 | Verify memory candidate review actions with real data | Implement Agent | TODO | Migration `019` applied | Candidate can be approved to confirmed core memory, archived, and rejected without errors |

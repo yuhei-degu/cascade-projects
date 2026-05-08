@@ -48,6 +48,7 @@ This handoff describes the active Lunaria project, not every project folder in t
 - `SPEC.md`, `PROGRESS.md`, `TASKS.md`, and `HANDOFF.md` were initialized from existing code/docs.
 - No application code was intentionally changed as part of this AI_DEV_OS application.
 - No DB migration was intentionally changed as part of this AI_DEV_OS application.
+- `/gacha` HTTP 500 was investigated and resolved. It was caused by a stale/corrupt `.next` dev cache, not by gacha business logic.
 
 ## Existing Important Context
 
@@ -87,11 +88,10 @@ Do not revert or overwrite these without explicit user approval.
 
 ## Next Recommended Work
 
-1. Investigate `/gacha` HTTP 500 on localhost.
-2. Classify remaining uncommitted docs.
-3. Confirm Supabase migration application state for `014` through `019`.
-4. Verify `/memory` candidate review actions with real candidate rows.
-5. Add a small reaction foundation only after the current app is green.
+1. Classify remaining uncommitted docs.
+2. Confirm Supabase migration application state for `014` through `019`.
+3. Verify `/memory` candidate review actions with real candidate rows.
+4. Add a small reaction foundation only after the current app is green.
 
 ## Verification Commands
 
@@ -108,8 +108,8 @@ npm run gacha:report
 Notes:
 
 - `npm run build` passed after memory candidate action work.
-- `npm run gacha:smoke` recently passed most checks but reported `/gacha` HTTP 500 on localhost.
-- If `.next` stale chunk errors appear, stop dev server, delete `.next`, rebuild, and restart dev server.
+- `npm run gacha:smoke` passes after clearing stale `.next`.
+- If `.next` stale chunk errors appear (`Cannot find module './*.js'`), stop dev server, delete `.next`, rebuild, and restart dev server.
 
 ## Assumptions
 
