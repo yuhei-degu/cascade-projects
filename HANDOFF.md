@@ -51,7 +51,9 @@ This handoff describes the active Lunaria project, not every project folder in t
 - `/gacha` HTTP 500 was investigated and resolved. It was caused by a stale/corrupt `.next` dev cache, not by gacha business logic.
 - Remaining doc backlog was triaged. `lunaria-app/docs/` is deferred source material; `lunaria/LUNARIA_REACTION_MVP_SPEC.md` is the current reaction MVP source of truth.
 - `lunaria-app/lib/lunaria/reactions.ts` now provides reaction IDs, context mapping, and fallback path helpers without changing runtime UI/API behavior.
-- `lunaria-app/components/lunaria/LunariaPortrait.tsx` now provides a safe placeholder portrait component, but no page uses it yet.
+- `lunaria-app/components/lunaria/LunariaPortrait.tsx` now provides a safe placeholder portrait component.
+- `/gacha` result modal now uses `LunariaPortrait` as the first AI_DEV_OS low-risk trial implementation.
+- AI_DEV_OS trial records live under `lunaria/AI_DEV_OS_TRIAL_PLAN.md`, `lunaria/TASK_EVALUATION.md`, `lunaria/AI_ROUTING.md`, `lunaria/METRICS/`, and `lunaria/REPORTS/`.
 
 ## Existing Important Context
 
@@ -93,8 +95,8 @@ Do not revert or overwrite these without explicit user approval.
 
 1. Confirm Supabase migration application state for `014` through `019`.
 2. Verify `/memory` candidate review actions with real candidate rows.
-3. Wire `LunariaPortrait` into one low-risk surface, likely the `/gacha` result modal.
-4. Continue memory governance restore/edit UX.
+3. Continue memory governance restore/edit UX.
+4. Confirm Supabase migration application state for `014` through `019`.
 
 ## Verification Commands
 
