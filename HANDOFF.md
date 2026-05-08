@@ -50,6 +50,7 @@ This handoff describes the active Lunaria project, not every project folder in t
 - No DB migration was intentionally changed as part of this AI_DEV_OS application.
 - `/gacha` HTTP 500 was investigated and resolved. It was caused by a stale/corrupt `.next` dev cache, not by gacha business logic.
 - Remaining doc backlog was triaged. `lunaria-app/docs/` is deferred source material; `lunaria/LUNARIA_REACTION_MVP_SPEC.md` is the current reaction MVP source of truth.
+- `lunaria-app/lib/lunaria/reactions.ts` now provides reaction IDs, context mapping, and fallback path helpers without changing runtime UI/API behavior.
 
 ## Existing Important Context
 
@@ -91,7 +92,7 @@ Do not revert or overwrite these without explicit user approval.
 
 1. Confirm Supabase migration application state for `014` through `019`.
 2. Verify `/memory` candidate review actions with real candidate rows.
-3. Add a small reaction foundation only after the current app is green.
+3. Add a `LunariaPortrait` placeholder that can consume reaction IDs without requiring final art assets.
 4. Continue memory governance restore/edit UX.
 
 ## Verification Commands
