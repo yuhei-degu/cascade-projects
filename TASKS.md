@@ -21,9 +21,11 @@ Status: initial AI_DEV_OS task board for active Lunaria development
 | P1 | Add memory governance restore path for archived candidates/core memories | Implement Agent | TODO | Current memory APIs | User can restore accidentally archived items from UI |
 | P1 | Add review log for memory candidate behavior | Review Agent | TODO | Memory candidate verification | `REVIEW_LOG.md` includes findings, risks, and next actions |
 | P2 | Add `lib/lunaria/reactions.ts` foundation | Tech Lead + Implement Agent | DONE | `lunaria/LUNARIA_REACTION_MVP_SPEC.md` | Reaction IDs, context mapping, and fallback order are centralized without changing chat behavior; build passes |
+| P2 | Add `LunariaPortrait` placeholder component | Implement Agent | DONE | Reaction foundation | Component can consume reaction/outfit IDs and falls back to a CSS placeholder when portrait assets are missing; build passes |
 | P2 | Design minimal `character_state` schema | Tech Lead Agent | TODO | Reaction foundation decision | Design doc exists; migration is not created until reviewed |
 | P2 | Draft `user_communication_profiles` design | Tech Lead + Security Agent | TODO | Memory/profile docs | Design separates style preferences from core memory and avoids sensitive over-inference |
 | P2 | Improve `/memory` UX copy after real use | UX Agent | TODO | Candidate review verification | Copy makes user control clear and avoids surveillance feeling |
+| P2 | Wire `LunariaPortrait` into one low-risk surface | Implement + UX Agent | TODO | Placeholder component | One page uses the portrait component without requiring final art assets or changing chat response format |
 | P2 | Update root `DECISIONS.md` with current AI_DEV_OS adoption decision | PM Agent | TODO | This initialization | Decision entry explains why AI_DEV_OS was applied and its scope |
 | P3 | End-world game MVP scope doc | PM/UX Agent | DEFERRED | Core diary/memory/character stable | Scope is cut to a future weekly text MVP; no implementation started |
 | P3 | Live2D / 3D asset pipeline | Tech Lead Agent | DEFERRED | Reaction layer stable | Pipeline proposal exists with cost/risk notes |
