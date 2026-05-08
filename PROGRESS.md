@@ -39,6 +39,9 @@ Recent merged work:
 - Reaction foundation was added:
   - `lunaria-app/lib/lunaria/reactions.ts` defines the MVP reaction IDs, context defaults, and portrait fallback path order
   - No UI, API, or DB behavior was changed yet
+- Portrait placeholder was added:
+  - `lunaria-app/components/lunaria/LunariaPortrait.tsx` can consume reaction/outfit IDs and show a CSS fallback when image assets are missing
+  - It is not wired into any page yet, so existing UI behavior remains unchanged
 
 Functional areas already present:
 
@@ -93,7 +96,7 @@ Recommended next order:
 
 1. Confirm Supabase migration state, especially `014` through `019`.
 2. Verify memory candidate review actions against a real candidate row.
-3. Add a `LunariaPortrait` placeholder that can consume reaction IDs without requiring final art assets.
+3. Wire `LunariaPortrait` into one low-risk surface, likely the `/gacha` result modal.
 4. Continue memory governance UX: archive/restore/edit for core memories.
 5. Update `REVIEW_LOG.md` and `DECISIONS.md` after each review/decision cycle.
 
