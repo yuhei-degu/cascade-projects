@@ -49,6 +49,7 @@ This handoff describes the active Lunaria project, not every project folder in t
 - No application code was intentionally changed as part of this AI_DEV_OS application.
 - No DB migration was intentionally changed as part of this AI_DEV_OS application.
 - `/gacha` HTTP 500 was investigated and resolved. It was caused by a stale/corrupt `.next` dev cache, not by gacha business logic.
+- Remaining doc backlog was triaged. `lunaria-app/docs/` is deferred source material; `lunaria/LUNARIA_REACTION_MVP_SPEC.md` is the current reaction MVP source of truth.
 
 ## Existing Important Context
 
@@ -88,10 +89,10 @@ Do not revert or overwrite these without explicit user approval.
 
 ## Next Recommended Work
 
-1. Classify remaining uncommitted docs.
-2. Confirm Supabase migration application state for `014` through `019`.
-3. Verify `/memory` candidate review actions with real candidate rows.
-4. Add a small reaction foundation only after the current app is green.
+1. Confirm Supabase migration application state for `014` through `019`.
+2. Verify `/memory` candidate review actions with real candidate rows.
+3. Add a small reaction foundation only after the current app is green.
+4. Continue memory governance restore/edit UX.
 
 ## Verification Commands
 

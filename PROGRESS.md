@@ -33,6 +33,9 @@ Recent merged work:
   - Cause was stale/corrupt `.next` dev cache: `Cannot find module './828.js'`
   - Fixed by stopping the Next dev server, deleting `lunaria-app/.next`, rebuilding, and restarting dev
   - `npm run gacha:smoke` now passes
+- Documentation backlog was triaged:
+  - `lunaria/DOC_TRIAGE_2026-05-09.md` records accepted/deferred docs
+  - `lunaria/LUNARIA_REACTION_MVP_SPEC.md` extracts the useful visual/expression/motion notes into a reaction-first MVP spec
 
 Functional areas already present:
 
@@ -56,8 +59,8 @@ Functional areas already present:
   - If `Cannot find module './*.js'` appears again, stop dev, remove `.next`, rebuild, and restart.
 
 - Documentation integration:
-  - Several Claude/Codex docs are present under `lunaria/` and `lunaria-app/docs/`.
-  - Some uncommitted documentation changes remain and should be reviewed before committing.
+  - Current root AI_DEV_OS docs are the source of truth for active tasks.
+  - `lunaria-app/docs/` remains uncommitted as deferred source material and should not be treated as current status.
 
 ## Not Started / Deferred
 
@@ -86,12 +89,11 @@ Functional areas already present:
 
 Recommended next order:
 
-1. Review and classify remaining uncommitted documentation changes.
-2. Confirm Supabase migration state, especially `014` through `019`.
-3. Verify memory candidate review actions against a real candidate row.
-4. Add `reaction` foundation as a small, non-invasive visual-state layer.
-5. Continue memory governance UX: archive/restore/edit for core memories.
-6. Update `REVIEW_LOG.md` and `DECISIONS.md` after each review/decision cycle.
+1. Confirm Supabase migration state, especially `014` through `019`.
+2. Verify memory candidate review actions against a real candidate row.
+3. Add `reaction` foundation as a small, non-invasive visual-state layer.
+4. Continue memory governance UX: archive/restore/edit for core memories.
+5. Update `REVIEW_LOG.md` and `DECISIONS.md` after each review/decision cycle.
 
 ## Assumptions
 
