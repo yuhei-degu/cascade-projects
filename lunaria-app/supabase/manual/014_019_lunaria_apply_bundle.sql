@@ -702,7 +702,8 @@ create table if not exists public.lunaria_memory_candidates (
 
 alter table public.lunaria_memory_candidates enable row level security;
 
-create policy if not exists "lunaria_own_memory_candidates"
+drop policy if exists "lunaria_own_memory_candidates" on public.lunaria_memory_candidates;
+create policy "lunaria_own_memory_candidates"
   on public.lunaria_memory_candidates
   for all
   using (auth.uid() = user_id)
