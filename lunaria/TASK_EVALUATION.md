@@ -72,3 +72,9 @@ Lunaria の現在タスクを、難易度・リスク・必要 AI レベル・�
 | ID | Task | Difficulty | Risk | Suggested AI | Review | Security | Human Approval | Task Size | Status | Reason |
 |---|---|---:|---:|---|---|---|---|---|---|---|
 | LUN-CLAUDE-001 | Intake Claude visual/items docs and mock UI | Medium | Medium | Codex 5.5 | Yes | No | No | Medium | Done | Reviewed `lunaria-app/docs/`, `/items`, `/character`, and mock portrait component; DB/auth/env/prod untouched; build/typecheck pass |
+
+## 2026-05-09 Additional Task Evaluation
+
+| ID | Task | Difficulty | Risk | Suggested AI | Review | Security | Human Approval | Task Size | Status | Reason |
+|---|---|---:|---:|---|---|---|---|---|---|---|
+| LUN-DB-020-021 | Create user_items and character_states migration candidates | Medium | High | Codex 5.5 | Yes | Yes | Yes before apply | Medium | Review | Additive SQL candidates only; no Supabase apply; depends on `014`-`019` state confirmation |

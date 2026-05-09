@@ -130,3 +130,23 @@ Next:
 - Keep `/items` and `/character` clearly mock-only until `character_states` and `user_items` are implemented.
 - Treat `lunaria-app/docs/DB_*.md` as design input, not applied migrations.
 - Consolidate duplicate portrait components after the character-state path is fixed.
+
+## 2026-05-09 Character/User Items Migration Candidates
+
+Created migration candidate files only. They have not been applied to Supabase.
+
+Files:
+- `lunaria-app/supabase/migrations/020_user_items.sql`
+- `lunaria-app/supabase/migrations/021_character_states.sql`
+
+Design choices:
+- `lunaria_user_items.pool_id` references the existing `lunaria_gacha_pool(id)` because `lunaria_items` is still design-only.
+- `lunaria_character_states.character_profile_id` is plain text with default `lunaria` because `character_profiles` is still design-only.
+- Both tables enable RLS and use per-action owner policies.
+- Existing gacha inventory/history are preserved; `020` backfills a projection into `lunaria_user_items`.
+- `021` seeds default character state rows for existing users without inferring equipment.
+
+Risk gate:
+- Do not apply these migrations to production until reviewed and until the actual Supabase state for `014` through `019` is confirmed.
+
+Verification note: full `npx tsc --noEmit --pretty false` initially hit stale `tsconfig.tsbuildinfo` paths after Next build. Removing the generated `tsconfig.tsbuildinfo` fixed it; full typecheck then passed. This touched only ignored generated cache.

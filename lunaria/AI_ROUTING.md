@@ -108,3 +108,9 @@ AI に渡すときは以下を含める。
 | Task ID | Task | Primary | Reviewer | Human Approval | Status |
 |---|---|---|---|---|---|
 | LUN-CLAUDE-001 | Claude visual/items docs and mock UI intake | Codex 5.5 | Codex self-review | No | Done |
+
+## 2026-05-09 DB Candidate Routing
+
+| Task ID | Task | Primary | Reviewer | Human Approval | Status |
+|---|---|---|---|---|---|
+| LUN-DB-020-021 | Create/review user_items and character_states migration candidates | Codex 5.5 | Security Agent / Claude Code when available | Yes before apply | Review |

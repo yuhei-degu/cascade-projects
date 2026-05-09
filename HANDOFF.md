@@ -172,3 +172,20 @@ Residual cautions:
 
 - There are now two portrait components: `components/lunaria/LunariaPortrait.tsx` for the earlier reaction foundation, and `components/character/LunariaPortrait.tsx` for Claude's mock character preview. Consolidate later, not during intake.
 - `/items` and `/character` must remain clearly marked as mock until `character_states` and `user_items` are implemented.
+
+## 2026-05-09 Migration Candidate Addendum
+
+New candidate migrations exist but are not applied:
+
+- `lunaria-app/supabase/migrations/020_user_items.sql`
+- `lunaria-app/supabase/migrations/021_character_states.sql`
+
+Use them as review material for the next DB step. They intentionally adapt Claude's design docs to the current real schema by referencing `lunaria_gacha_pool` instead of a not-yet-existing `lunaria_items` table.
+
+Stop before applying if:
+
+- Supabase `014` through `019` are not confirmed applied.
+- Any production DB target is involved.
+- RLS policy behavior has not been reviewed.
+
+Verification note: if `npx tsc --noEmit --pretty false` reports missing `.next/types` files after a successful `next build`, remove ignored `lunaria-app/tsconfig.tsbuildinfo` and rerun. This is a local TypeScript incremental cache issue, not a source change.

@@ -39,3 +39,23 @@ The new `/items` and `/character` pages are useful for product direction, visual
 ### Review Conditions
 
 Revisit after `character_states` and `user_items` migrations are designed, reviewed, and applied in the intended environment.
+
+## 2026-05-09
+
+### Decision
+
+Create `020_user_items.sql` and `021_character_states.sql` as migration candidates, but do not apply them yet.
+
+### Reason
+
+Claude's DB design referenced future tables such as `lunaria_items` and `character_profiles`, while the current implemented schema uses `lunaria_gacha_pool`, `lunaria_gacha_inventory`, and `lunaria_gacha_history`. Candidate migrations let us review the shape safely before touching Supabase.
+
+### Alternatives
+
+- Wait until a separate item catalog exists.
+- Create `lunaria_items` and `character_profiles` immediately.
+- Skip migration candidates and only keep design docs.
+
+### Review Conditions
+
+Review again after Supabase `014` through `019` state is confirmed and before any SQL Editor application.

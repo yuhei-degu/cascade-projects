@@ -115,3 +115,38 @@ npm run gacha:smoke
 
 - There are two portrait placeholder components in different component folders. This is acceptable for intake, but should be consolidated before deeper character-state integration.
 - `/items` and `/character` can be mistaken for production-backed pages unless future work keeps the mock notice visible until DB integration is complete.
+
+## 2026-05-09
+
+### Character/User Items Migration Candidate Review
+
+### Review Date
+
+2026-05-09
+
+### Target
+
+- `lunaria-app/supabase/migrations/020_user_items.sql`
+- `lunaria-app/supabase/migrations/021_character_states.sql`
+- `lunaria-app/lib/supabase.ts`
+
+### Findings
+
+- Candidate migrations are additive and preserve existing gacha inventory/history tables.
+- RLS is enabled on both new tables with separate select/insert/update/delete owner policies.
+- `020` backfills from `lunaria_gacha_inventory` and computes duplicate counts from `lunaria_gacha_history` without deleting existing rows.
+- `021` seeds default character state rows without inferring current equipment.
+
+### Severity
+
+- Medium
+
+### Status
+
+- Review Required Before Apply
+
+### Residual Risks
+
+- The migrations depend on `014` through `019` being applied first.
+- Array columns such as `equipped_accessory_pool_ids` cannot enforce foreign keys per element. Application or RPC validation will be needed before equipment editing is exposed.
+- RLS policies are prepared, but the current Next.js code often uses `service_role`; runtime access patterns should be reviewed before client-side DB access is added.
