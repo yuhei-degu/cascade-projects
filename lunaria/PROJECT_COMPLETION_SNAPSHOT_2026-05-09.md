@@ -28,7 +28,7 @@ These percentages are planning estimates, not exact engineering metrics. They ar
 | Diary | 64% | 36% | Functional and clearer | Must-A/B/C UI polish is done. Edit/delete/regenerate hardening and memory source handling remain. |
 | Memory governance | 63% | 37% | Foundation present | Candidate review/restore UI and core memory confirm/archive/restore/edit actions exist. Needs real-data verification and policy polish. |
 | Gacha / Moonbox | 68% | 32% | Mostly functional locally | Gacha draw, inventory, admin, pity candidate design, reports exist. Needs migration-state verification and item integration. |
-| Character items/state | 38% | 62% | Staged | Mock UI, docs, migration candidates, read APIs, fallback pages exist. Needs Supabase apply, verification, equip writes. |
+| Character items/state | 40% | 60% | Staged | Mock UI, docs, migration candidates, read APIs, clearer fallback/source UI exist. Needs Supabase apply, verification, equip writes. |
 | Visual expression / portrait | 43% | 57% | Prototype | Placeholder components, shared visual-state types, cleaned portrait mock, chat metadata handoff, and Luna mood display exist. Needs richer assets and final reaction polish. |
 | User profile / personality tuning | 18% | 82% | Design-heavy | Product direction exists. Needs schema, UI, prompt injection rules, privacy review. |
 | life_events / external integrations | 8% | 92% | Deferred | Architecture direction exists. No implementation yet. |

@@ -183,9 +183,17 @@ export default function ItemsPage() {
             <Metric label="Completion" value={`${completion}%`} />
             <Metric label="Source" value={data.source} />
           </div>
-          <p style={{ color: data.db_ready ? '#8fd19e' : '#d7b56d', margin: '18px 0 0', fontSize: 13 }}>
-            {loading ? 'Loading item source...' : data.note}
-          </p>
+          <SourceBanner
+            ready={data.db_ready}
+            loading={loading}
+            title={data.db_ready ? 'DB item shelf is active' : 'Fallback item shelf is active'}
+            note={loading ? 'Loading item source...' : data.note}
+            detail={
+              data.db_ready
+                ? 'This page is reading the durable user item layer.'
+                : 'Safe preview mode. It uses gacha inventory or local mock data until migration 020 is applied.'
+            }
+          />
         </section>
 
         <section style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginBottom: 18 }}>
@@ -208,7 +216,10 @@ export default function ItemsPage() {
         </section>
 
         {filteredItems.length === 0 ? (
-          <section style={emptyStyle}>No items match this filter yet.</section>
+          <section style={emptyStyle}>
+            <strong>No items match this filter yet.</strong>
+            <p style={{ color: TEXT_DIM, margin: '8px 0 0' }}>Try switching category or enabling unowned items.</p>
+          </section>
         ) : (
           <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
             {filteredItems.map(item => (
@@ -242,6 +253,24 @@ function Metric({ label, value }: { label: string; value: string }) {
     <div style={{ minWidth: 126, border: '1px solid rgba(214, 178, 108, 0.22)', borderRadius: 16, padding: '12px 14px', background: 'rgba(255,255,255,0.03)' }}>
       <div style={{ color: TEXT_DIM, fontSize: 12 }}>{label}</div>
       <div style={{ color: TEXT_MAIN, fontSize: 18, fontWeight: 700 }}>{value}</div>
+    </div>
+  )
+}
+
+function SourceBanner({ ready, loading, title, note, detail }: { ready: boolean; loading: boolean; title: string; note: string; detail: string }) {
+  return (
+    <div style={{
+      marginTop: 18,
+      border: `1px solid ${ready ? 'rgba(143,209,158,0.28)' : 'rgba(215,181,109,0.3)'}`,
+      borderRadius: 18,
+      padding: '12px 14px',
+      background: ready ? 'rgba(143,209,158,0.08)' : 'rgba(215,181,109,0.08)',
+    }}>
+      <div style={{ color: ready ? '#8fd19e' : '#d7b56d', fontSize: 13, fontWeight: 700 }}>
+        {loading ? 'Checking item source...' : title}
+      </div>
+      <div style={{ color: TEXT_SUB, fontSize: 13, lineHeight: 1.7, marginTop: 4 }}>{note}</div>
+      <div style={{ color: TEXT_DIM, fontSize: 12, lineHeight: 1.6, marginTop: 4 }}>{detail}</div>
     </div>
   )
 }

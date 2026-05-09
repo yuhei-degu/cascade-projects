@@ -118,9 +118,17 @@ export default function CharacterPage() {
               A DB-aware preview for outfits, expression unlocks, motion unlocks, and affinity. It uses the
               character_states table when migration 021 is ready, and stays safe with a mock fallback before then.
             </p>
-            <p style={{ color: state.db_ready ? '#8fd19e' : '#d7b56d', margin: '18px 0 0', fontSize: 13 }}>
-              {loading ? 'Loading character state...' : state.note}
-            </p>
+            <SourceBanner
+              ready={state.db_ready}
+              loading={loading}
+              title={state.db_ready ? 'DB character state is active' : 'Mock character state is active'}
+              note={loading ? 'Loading character state...' : state.note}
+              detail={
+                state.db_ready
+                  ? 'This preview reflects the durable character state layer.'
+                  : 'Safe preview mode. Expression and motion controls are local-only until migration 021 is applied.'
+              }
+            />
           </div>
         </section>
 
@@ -172,6 +180,24 @@ function InfoCard({ label, value, detail }: { label: string; value: string; deta
   )
 }
 
+function SourceBanner({ ready, loading, title, note, detail }: { ready: boolean; loading: boolean; title: string; note: string; detail: string }) {
+  return (
+    <div style={{
+      marginTop: 18,
+      border: `1px solid ${ready ? 'rgba(143,209,158,0.28)' : 'rgba(215,181,109,0.3)'}`,
+      borderRadius: 18,
+      padding: '12px 14px',
+      background: ready ? 'rgba(143,209,158,0.08)' : 'rgba(215,181,109,0.08)',
+    }}>
+      <div style={{ color: ready ? '#8fd19e' : '#d7b56d', fontSize: 13, fontWeight: 700 }}>
+        {loading ? 'Checking character source...' : title}
+      </div>
+      <div style={{ color: TEXT_SUB, fontSize: 13, lineHeight: 1.7, marginTop: 4 }}>{note}</div>
+      <div style={{ color: TEXT_DIM, fontSize: 12, lineHeight: 1.6, marginTop: 4 }}>{detail}</div>
+    </div>
+  )
+}
+
 function ControlGroup({ title, items, active, onSelect }: { title: string; items: string[]; active: string; onSelect: (value: string) => void }) {
   return (
     <div>
@@ -203,7 +229,7 @@ const navLinkStyle = {
 
 const heroGridStyle = {
   display: 'grid',
-  gridTemplateColumns: 'minmax(280px, 0.78fr) minmax(300px, 1fr)',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))',
   gap: 18,
 }
 

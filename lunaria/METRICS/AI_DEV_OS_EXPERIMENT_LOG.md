@@ -56,6 +56,8 @@ Purpose: Measure whether AI_DEV_OS improves Lunaria development speed, safety, a
 
 | LUN-ASSIST-002 | 2026-05-09 | Codex 5.5 | Codex self-review | ui | Medium | Medium | No | 0m | ~25m | 3 | Yes | Yes | N/A | 0 | 0 | 0 | Done |  | Chat shows Luna mood portrait from AssistantReply metadata or route fallback; DB/env/prod untouched |
 
+| LUN-CHAR-UI-002 | 2026-05-09 | Codex 5.5 | Codex self-review | ui | Low | Low | No | 0m | ~20m | 3 | Yes | Yes | N/A | 0 | 0 | 0 | Done |  | `/items` and `/character` source/fallback UX clarified; mobile character grid improved; DB/API/env untouched |
+
 ## Trial Notes
 
 - Task scope is clearer when each work item has risk, owner, and stop conditions.
