@@ -55,6 +55,7 @@ interface MemoryCandidateResponse {
 }
 
 type CandidateAction = 'approve' | 'reject' | 'archive' | 'pending'
+type MemoryAction = 'archive' | 'restore' | 'confirm' | 'edit'
 
 const statusLabels: Record<string, string> = {
   active: 'Active memory',
@@ -127,7 +128,18 @@ function Stat({ label, value }: { label: string; value: ReactNode }) {
   )
 }
 
-function MemoryCard({ memory }: { memory: MemoryItem }) {
+function MemoryCard({
+  memory,
+  busy,
+  onAction,
+}: {
+  memory: MemoryItem
+  busy: boolean
+  onAction: (memory: MemoryItem, action: MemoryAction) => void
+}) {
+  const isArchived = memory.status === 'archived'
+  const isDeleted = memory.status === 'deleted'
+
   return (
     <article style={memoryCardStyle}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start', marginBottom: 10 }}>
@@ -153,6 +165,29 @@ function MemoryCard({ memory }: { memory: MemoryItem }) {
       </div>
 
       {memory.notes && <p style={notesStyle}>{memory.notes}</p>}
+
+      {!isDeleted && (
+        <div style={candidateActionRowStyle}>
+          {!isArchived && memory.status !== 'confirmed' && (
+            <button type="button" onClick={() => onAction(memory, 'confirm')} disabled={busy} style={primaryActionButtonStyle}>
+              {busy ? 'Saving...' : 'Confirm memory'}
+            </button>
+          )}
+          {!isArchived && (
+            <button type="button" onClick={() => onAction(memory, 'archive')} disabled={busy} style={secondaryActionButtonStyle}>
+              {busy ? 'Saving...' : 'Archive'}
+            </button>
+          )}
+          {isArchived && (
+            <button type="button" onClick={() => onAction(memory, 'restore')} disabled={busy} style={secondaryActionButtonStyle}>
+              {busy ? 'Restoring...' : 'Restore'}
+            </button>
+          )}
+          <button type="button" onClick={() => onAction(memory, 'edit')} disabled={busy} style={quietActionButtonStyle}>
+            Edit text
+          </button>
+        </div>
+      )}
     </article>
   )
 }
@@ -226,6 +261,7 @@ export default function MemoryPage() {
   const [candidateStats, setCandidateStats] = useState<MemoryCandidateResponse['stats']>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [memoryBusyId, setMemoryBusyId] = useState<string | null>(null)
   const [candidateBusyId, setCandidateBusyId] = useState<string | null>(null)
 
   const loadMemories = useCallback(async () => {
@@ -281,6 +317,40 @@ export default function MemoryPage() {
       setError('The memory candidate could not be updated. Please wait a moment and try again.')
     } finally {
       setCandidateBusyId(null)
+    }
+  }, [loadMemories])
+
+  const updateMemory = useCallback(async (memory: MemoryItem, action: MemoryAction) => {
+    setMemoryBusyId(memory.id)
+    setError(null)
+
+    let content: string | undefined
+    if (action === 'edit') {
+      const nextContent = window.prompt('Edit memory text', memory.content)
+      if (nextContent === null) {
+        setMemoryBusyId(null)
+        return
+      }
+      content = nextContent.trim()
+      if (!content || content === memory.content.trim()) {
+        setMemoryBusyId(null)
+        return
+      }
+    }
+
+    try {
+      const res = await fetch('/api/memory', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: memory.id, action, content }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data?.ok) throw new Error(data?.error ?? 'memory_update_failed')
+      await loadMemories()
+    } catch {
+      setError('The memory could not be updated. Please wait a moment and try again.')
+    } finally {
+      setMemoryBusyId(null)
     }
   }, [loadMemories])
 
@@ -358,7 +428,14 @@ export default function MemoryPage() {
                   {grouped.map(([groupDate, items]) => (
                     <div key={groupDate} style={{ display: 'grid', gap: 10 }}>
                       <h3 style={groupTitleStyle}>{groupDate === 'No date' ? groupDate : formatDate(groupDate)}</h3>
-                      {items.map(memory => <MemoryCard key={memory.id} memory={memory} />)}
+                      {items.map(memory => (
+                        <MemoryCard
+                          key={memory.id}
+                          memory={memory}
+                          busy={memoryBusyId === memory.id}
+                          onAction={updateMemory}
+                        />
+                      ))}
                     </div>
                   ))}
                 </div>

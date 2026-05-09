@@ -13,8 +13,8 @@ Estimated state:
 
 | Target | Estimated Done | Estimated Remaining | Meaning |
 |---|---:|---:|---|
-| Local MVP / Private Alpha | 68% | 32% | Usable locally, core loops exist, diary/memory UI is clearer, candidate restore UI exists, but DB verification and core-memory edit remain |
-| Public Beta | 41% | 59% | Needs auth/profile hardening, production deployment flow, stronger UX, and migration confidence |
+| Local MVP / Private Alpha | 70% | 30% | Usable locally, core loops exist, diary/memory UI is clearer, candidate restore UI and core memory actions exist, but real DB verification remains |
+| Public Beta | 42% | 58% | Needs auth/profile hardening, production deployment flow, stronger UX, and migration confidence |
 | Full Life-log OS Vision | 18% | 82% | Long-term vision includes Live2D, life_events, integrations, profiles, external apps, monetization |
 
 These percentages are planning estimates, not exact engineering metrics. They are weighted by product risk, not just file count.
@@ -26,7 +26,7 @@ These percentages are planning estimates, not exact engineering metrics. They ar
 | AI_DEV_OS operation | 70% | 30% | Active | Templates, task board, metrics, handoff, lessons learned exist. Needs ongoing cleanup and routine use. |
 | Chat core | 70% | 30% | Functional | Chat route and prompt foundation exist. AssistantReply schema integration remains. |
 | Diary | 64% | 36% | Functional and clearer | Must-A/B/C UI polish is done. Edit/delete/regenerate hardening and memory source handling remain. |
-| Memory governance | 56% | 44% | Foundation present | Candidate review/restore UI exists and copy is clearer. Needs real-data verification and core-memory restore/edit implementation. |
+| Memory governance | 63% | 37% | Foundation present | Candidate review/restore UI and core memory confirm/archive/restore/edit actions exist. Needs real-data verification and policy polish. |
 | Gacha / Moonbox | 68% | 32% | Mostly functional locally | Gacha draw, inventory, admin, pity candidate design, reports exist. Needs migration-state verification and item integration. |
 | Character items/state | 38% | 62% | Staged | Mock UI, docs, migration candidates, read APIs, fallback pages exist. Needs Supabase apply, verification, equip writes. |
 | Visual expression / portrait | 38% | 62% | Prototype | Placeholder components, shared visual-state types, and cleaned character portrait mock exist. Needs final reaction-to-view wiring and assets. |
@@ -85,10 +85,10 @@ Required remaining work:
 | Memory candidate flow works with real DB | Partial | Confirm migrations and test approve/archive/reject |
 | Gacha works locally | Mostly done | Confirm DB state and admin/report checks |
 | Items/character pages do not break | Done | Apply DB migrations later and verify source switches |
-| User-visible safety/control | Partial | Restore/edit memory UX and copy |
+| User-visible safety/control | Partial | Core memory archive/restore/confirm/edit exists; verify with real data and refine copy |
 | Handoff docs reflect reality | Improving | Continue AI_DEV_OS metrics and progress updates |
 
-Estimated Private Alpha remaining: about 32%.
+Estimated Private Alpha remaining: about 30%.
 
 ## Public Beta Exit Criteria
 

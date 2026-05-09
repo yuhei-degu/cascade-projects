@@ -34,11 +34,11 @@ This file classifies active Lunaria tasks by difficulty, risk, required AI level
 | LUN-STATUS-001 | Add project completion snapshot and percent remaining view | Low | Low | Codex 5.5 | No | No | No | Small | Done | Planning/documentation only; improves prioritization and agent routing |
 | LUN-OPS-001 | Confirm Supabase migration `014`-`019` applied state | Medium | High | Human + Ops Agent | Yes | Yes | Yes | Medium | Todo | Requires actual Supabase state, not just Git files |
 | LUN-MEM-001 | Verify `/memory` candidate review actions with real data | Medium | Medium | Codex 5.5 | Yes | No | Conditional | Medium | Todo | Needs DB state ready and candidate rows to test approve/archive/reject |
-| LUN-MEM-002 | Design memory restore/edit UX | Medium | Medium | Claude Code + Codex 5.5 | Yes | Yes | Yes | Medium | Todo | Memory correction affects user trust and should be designed before implementation |
-| LUN-MEM-003 | Implement memory restore/edit UX | High | Medium | Codex 5.5 | Yes | Yes | Yes | Large | Todo | Requires API/UI/write behavior and careful review |
-| LUN-DIA-001 | Extract diary UI Must-A/B/C acceptance checklist | Low | Low | Claude Code | No | No | No | Small | Todo | Good non-code task before Codex implementation |
-| LUN-DIA-002 | Implement diary UI Must-A/B/C fixes | Medium | Medium | Codex 5.5 | Yes | No | No | Medium | Todo | Should be limited to reviewed acceptance criteria |
-| LUN-ASSIST-001 | Plan AssistantReply schema integration into chat path | Medium | Medium | Claude/Gemini + Codex 5.5 | Yes | No | Conditional | Medium | Todo | Important for visual/voice future; avoid breaking current chat response path |
+| LUN-MEM-002 | Design memory restore/edit UX | Medium | Medium | Claude Code + Codex 5.5 | Yes | Yes | Yes | Medium | Done | Design doc exists; reversible actions prioritized and destructive deletion avoided |
+| LUN-MEM-003 | Implement memory restore/edit UX | High | Medium | Codex 5.5 | Yes | Yes | Conditional | Large | Done | Core memory confirm/archive/restore/edit implemented through guarded API/UI; no hard delete |
+| LUN-DIA-001 | Extract diary UI Must-A/B/C acceptance checklist | Low | Low | Claude Code | No | No | No | Small | Done | Acceptance checklist created |
+| LUN-DIA-002 | Implement diary UI Must-A/B/C fixes | Medium | Medium | Codex 5.5 | Yes | No | No | Medium | Done | Limited UI changes shipped with build/typecheck passing |
+| LUN-ASSIST-001 | Plan AssistantReply schema integration into chat path | Medium | Medium | Claude/Gemini + Codex 5.5 | Yes | No | Conditional | Medium | Done | Parser/types and integration plan exist; current chat output contract unchanged |
 | LUN-CHAR-002 | Apply and verify `020/021` in Supabase | Medium | High | Human + Codex 5.5 | Yes | Yes | Yes | Medium | Blocked | Requires human DB action and migration state confirmation |
 | LUN-CHAR-003 | Add equip/apply item writes for character state | High | High | Codex 5.5 | Yes | Yes | Yes | Large | Deferred | Should wait until `020/021` are applied and verified |
 | LUN-PROF-001 | Design `user_communication_profiles` | High | High | Claude Code + Security Agent | Yes | Yes | Yes | Medium | Todo | Separates profile/style preferences from memory; privacy-sensitive |
@@ -53,16 +53,16 @@ This file classifies active Lunaria tasks by difficulty, risk, required AI level
 | Supabase migration confirmation | Git migrations may not match actual DB | Confirm `014`-`019` state in Supabase |
 | Applying `020/021` | DB schema change | Use runbook only after review and migration state confirmation |
 | Production deployment | Vercel/free-plan constraint and production risk | Defer unless explicitly prioritized |
-| Memory data deletion/restore rules | User trust and data safety | Approve policy before irreversible behavior |
+| Memory data deletion rules | User trust and data safety | Destructive deletion remains blocked; only archive/restore/edit are implemented |
 
 ## Next Low/Medium-Risk Codex Candidates
 
 | Candidate | Why Next | Stop Conditions |
 |---|---|---|
-| Diary UI acceptance checklist and fixes | High user value, no schema change needed | Stop if DB/write behavior changes are required |
-| Memory restore/edit design doc | Needed before implementing user-control writes | Stop before implementation if policy is unclear |
-| AssistantReply integration plan | Enables visual state without breaking chat | Stop before changing chat output contract |
-| Portrait component consolidation plan | Reduces duplicate UI paths | Stop before broad refactor |
+| Verify memory governance on real local DB rows | Confirms candidate + core memory control loop | Stop if Supabase schema is missing or production DB is involved |
+| AssistantReply chat integration behind fallback | Enables visual state without breaking chat | Stop before changing persisted message format |
+| Character item equip design | Needed before `/items` can affect `/character` | Stop before DB writes until `020/021` are applied |
+| Portrait component consolidation follow-up | Reduces duplicate UI paths | Stop before broad refactor |
 
 ## Assumptions
 

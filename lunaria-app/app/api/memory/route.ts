@@ -3,6 +3,10 @@ import { supabaseAdmin } from '../../../lib/supabase'
 
 const USER_ID = '00000000-0000-0000-0000-000000000001'
 const ACTIVE_STATUSES = ['candidate', 'active', 'confirmed']
+const MEMORY_SELECT =
+  'id, type, content, score, hit_count, last_seen, created_at, updated_at, memory_key, memory_category, source_date, source_message_id, confidence, status, last_confirmed_at, created_by, notes'
+
+type MemoryAction = 'archive' | 'restore' | 'confirm' | 'edit'
 
 function isMissingProvenanceColumn(error: any): boolean {
   const message = String(error?.message ?? '')
@@ -18,6 +22,21 @@ function normalizeStatus(value: string | null): string {
   return value === 'all' || value === 'candidate' || value === 'active' || value === 'confirmed' || value === 'archived'
     ? value
     : 'active'
+}
+
+function normalizeAction(value: unknown): MemoryAction | null {
+  return value === 'archive' || value === 'restore' || value === 'confirm' || value === 'edit' ? value : null
+}
+
+function normalizeContent(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  const content = value.trim()
+  return content.length > 0 && content.length <= 600 ? content : null
+}
+
+function appendNote(existing: unknown, note: string): string {
+  const current = typeof existing === 'string' ? existing.trim() : ''
+  return [current, note].filter(Boolean).join('\n')
 }
 
 function toMemory(row: any) {
@@ -50,7 +69,7 @@ export async function GET(req: NextRequest) {
 
   let query = supabaseAdmin
     .from('lunaria_core_memory')
-    .select('id, type, content, score, hit_count, last_seen, created_at, updated_at, memory_key, memory_category, source_date, source_message_id, confidence, status, last_confirmed_at, created_by, notes')
+    .select(MEMORY_SELECT)
     .eq('user_id', USER_ID)
     .order('source_date', { ascending: false, nullsFirst: false })
     .order('last_seen', { ascending: false })
@@ -93,4 +112,93 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json({ ok: true, date: date ?? null, status, include_profile: includeProfile, memories, stats })
+}
+
+export async function PATCH(req: NextRequest) {
+  let body: any
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ ok: false, error: 'invalid_json' }, { status: 400 })
+  }
+
+  const id = typeof body?.id === 'string' ? body.id.trim() : ''
+  const action = normalizeAction(body?.action)
+  if (!id || !action) {
+    return NextResponse.json({ ok: false, error: 'invalid_memory_action' }, { status: 400 })
+  }
+
+  const { data: memory, error: findError } = await supabaseAdmin
+    .from('lunaria_core_memory')
+    .select(MEMORY_SELECT)
+    .eq('id', id)
+    .eq('user_id', USER_ID)
+    .maybeSingle()
+
+  if (findError && isMissingProvenanceColumn(findError)) {
+    return NextResponse.json({ ok: false, error: 'memory_governance_columns_missing' }, { status: 409 })
+  }
+
+  if (findError) {
+    console.error('[memory] find failed', findError)
+    return NextResponse.json({ ok: false, error: 'memory_find_failed' }, { status: 500 })
+  }
+
+  if (!memory) {
+    return NextResponse.json({ ok: false, error: 'memory_not_found' }, { status: 404 })
+  }
+
+  if (memory.status === 'deleted') {
+    return NextResponse.json({ ok: false, error: 'deleted_memory_is_locked' }, { status: 409 })
+  }
+
+  const now = new Date().toISOString()
+  const patch: Record<string, unknown> = {
+    updated_at: now,
+  }
+
+  if (action === 'archive') {
+    patch.status = 'archived'
+    patch.notes = appendNote(memory.notes, `Archived by user at ${now}.`)
+  }
+
+  if (action === 'restore') {
+    patch.status = 'active'
+    patch.notes = appendNote(memory.notes, `Restored by user at ${now}.`)
+  }
+
+  if (action === 'confirm') {
+    patch.status = 'confirmed'
+    patch.last_confirmed_at = now
+    patch.created_by = 'user_explicit'
+    patch.notes = appendNote(memory.notes, `Confirmed by user at ${now}.`)
+  }
+
+  if (action === 'edit') {
+    const content = normalizeContent(body?.content)
+    if (!content) {
+      return NextResponse.json({ ok: false, error: 'invalid_memory_content' }, { status: 400 })
+    }
+    patch.content = content
+    patch.notes = appendNote(memory.notes, `Edited by user at ${now}. Previous: ${String(memory.content ?? '').slice(0, 120)}`)
+  }
+
+  const { data: updated, error: updateError } = await supabaseAdmin
+    .from('lunaria_core_memory')
+    .update(patch)
+    .eq('id', id)
+    .eq('user_id', USER_ID)
+    .select(MEMORY_SELECT)
+    .maybeSingle()
+
+  if (updateError && isMissingProvenanceColumn(updateError)) {
+    return NextResponse.json({ ok: false, error: 'memory_governance_columns_missing' }, { status: 409 })
+  }
+
+  if (updateError) {
+    console.error('[memory] update failed', updateError)
+    return NextResponse.json({ ok: false, error: 'memory_update_failed' }, { status: 500 })
+  }
+
+  return NextResponse.json({ ok: true, memory: toMemory(updated) })
 }
