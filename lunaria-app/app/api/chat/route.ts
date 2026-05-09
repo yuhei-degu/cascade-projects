@@ -19,6 +19,8 @@ import { supabaseAdmin } from '../../../lib/supabase'
 import { buildNormalPrompt, buildSeriousPrompt } from '../../../lib/lunaria/prompt-builder'
 import { tryGrantTicketByScore } from '../../../lib/lunaria/gacha'
 import { getJstDateString } from '../../../lib/lunaria/date'
+import { parseAssistantReply, stringifyAssistantMessage } from '../../../lib/lunaria/assistant-reply'
+import type { AssistantReply } from '../../../lib/lunaria/assistant-reply'
 
 const gemini = new OpenAI({
   apiKey: process.env.GEMINI_API_KEY,
@@ -37,6 +39,7 @@ const MAX_MESSAGE_CHARS = 2000
 const MAX_HISTORY_ITEMS = 20
 
 type ChatHistoryItem = { role: 'user' | 'assistant'; content: string }
+type AssistantMeta = Omit<AssistantReply, 'message'>
 
 function asFiniteNumber(value: unknown, fallback = 0): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback
@@ -83,6 +86,11 @@ function normalizeCoverage(value: unknown): DailyCoverageState {
     tomorrow:       candidate.tomorrow === true,
     small_positive: candidate.small_positive === true,
   }
+}
+
+function toAssistantMeta(reply: AssistantReply): AssistantMeta | null {
+  const { message: _message, ...meta } = reply
+  return Object.keys(meta).length > 0 ? meta : null
 }
 
 // 文末で切り詰め：100文字超 OR 文末記号で終わっていない場合に最後の文末位置で切る
@@ -270,10 +278,13 @@ export async function POST(req: NextRequest) {
         }
 
         let reply = ''
+        let assistantMeta: AssistantMeta | null = null
         try {
           if (precomputedReply !== null) {
             // テンプレ系：単一 chunk で送出（streaming プロトコルだが内容は一発）
-            reply = precomputedReply
+            const structuredReply = parseAssistantReply(precomputedReply)
+            reply = stringifyAssistantMessage(structuredReply)
+            assistantMeta = toAssistantMeta(structuredReply)
             send({ type: 'chunk', text: reply })
           } else {
             // LLM ストリーミング（gemini-2.5-flash → quota 超過時 gemini-1.5-pro へフォールバック）
@@ -323,7 +334,9 @@ export async function POST(req: NextRequest) {
                 throw primaryErr
               }
             }
-            reply = truncateAtSentence(raw, 400)
+            const structuredReply = parseAssistantReply(raw)
+            assistantMeta = toAssistantMeta(structuredReply)
+            reply = truncateAtSentence(stringifyAssistantMessage(structuredReply), 400)
             // 切り詰めが入った時だけクライアント側に最終形を上書きさせる
             if (reply !== raw) send({ type: 'replace', text: reply })
           }
@@ -452,6 +465,7 @@ export async function POST(req: NextRequest) {
               userName:              userName ?? '',
               ticketGranted,
               ticketTotal,
+              assistantMeta,
             },
           })
         } catch (e) {

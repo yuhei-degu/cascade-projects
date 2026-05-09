@@ -52,6 +52,8 @@ Purpose: Measure whether AI_DEV_OS improves Lunaria development speed, safety, a
 
 | LUN-MEM-003 | 2026-05-09 | Codex 5.5 | Codex self-review | api+ui | High | Medium | Conditional | 0m | ~45m | 4 | Yes | Yes | N/A | 0 | 0 | 0 | Done |  | Core memory confirm/archive/restore/edit added through guarded API/UI; no hard delete, no schema/env/prod changes |
 
+| LUN-ASSIST-001 | 2026-05-09 | Codex 5.5 | Codex self-review | api | Medium | Medium | No | 0m | ~30m | 4 | Yes | Yes | N/A | 0 | 0 | 0 | Done |  | Chat final output parses AssistantReply and emits optional `assistantMeta`; text reply contract preserved |
+
 ## Trial Notes
 
 - Task scope is clearer when each work item has risk, owner, and stop conditions.

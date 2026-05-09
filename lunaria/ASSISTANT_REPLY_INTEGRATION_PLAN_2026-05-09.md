@@ -2,7 +2,7 @@
 
 Date: 2026-05-09
 Owner: Codex 5.5
-Status: Plan ready, implementation not started
+Status: Stage 0-2 implemented with fallback
 Scope: Add structured assistant metadata without breaking current chat
 
 ## Goal
@@ -14,7 +14,9 @@ Move from plain assistant text toward a structured reply that can drive expressi
 - Chat currently works as text-first UI.
 - `lunaria-app/docs/ASSISTANT_REPLY_SCHEMA.md` proposes a structured object.
 - `lib/lunaria/reactions.ts` already defines reaction IDs and context defaults.
-- `/gacha` and visual placeholder surfaces can consume reaction-like state, but chat is not yet wired to it.
+- `/gacha` and visual placeholder surfaces can consume reaction-like state.
+- `/api/chat` now parses final assistant output with the AssistantReply parser and returns optional `assistantMeta` in the final `done` event.
+- The user-visible `reply` remains plain text and the current client can ignore unknown metadata.
 
 ## Target Shape
 
@@ -39,6 +41,7 @@ type AssistantReply = {
 - Export schema/type/parser.
 - Parser returns `{ message: rawText }` if JSON parse fails.
 - No chat behavior change.
+- Status: Done.
 
 ### Stage 1: Server-side parse, text response unchanged
 
@@ -46,12 +49,14 @@ type AssistantReply = {
 - Continue returning the same text shape to the current client.
 - Log parse failures in development only.
 - Do not create memory candidates from flags yet.
+- Status: Done, without changing prompts to require JSON.
 
 ### Stage 2: Add optional metadata to response
 
-- Extend response with optional `assistant_meta`.
+- Extend response with optional `assistantMeta`.
 - Existing clients ignore unknown fields.
 - UI can map metadata to a portrait reaction later.
+- Status: Done.
 
 ### Stage 3: Portrait reaction mapping
 
@@ -82,7 +87,7 @@ Streaming path:
 2. Switch chat to non-streaming structured output later.
 3. Stream text chunks and send a final metadata event.
 
-Recommended for MVP: option 1 or Stage 0/1 only. Do not destabilize chat for visual metadata.
+Chosen for MVP: keep streaming text-first, parse the final raw output, and send optional final metadata. Do not require structured model output yet.
 
 ## Verification
 
@@ -93,4 +98,4 @@ Recommended for MVP: option 1 or Stage 0/1 only. Do not destabilize chat for vis
 
 ## Recommended Next Implementation
 
-Implement Stage 0 only: add parser/type with no runtime chat changes. This is low risk and makes future work easier.
+Next implementation: map `assistantMeta.expression` and `assistantMeta.motion` to a safe portrait reaction in the chat UI. Keep message storage text-only.
