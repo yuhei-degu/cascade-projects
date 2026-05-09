@@ -59,3 +59,22 @@ Claude's DB design referenced future tables such as `lunaria_items` and `charact
 ### Review Conditions
 
 Review again after Supabase `014` through `019` state is confirmed and before any SQL Editor application.
+
+## 2026-05-09
+
+### Decision
+
+Add dedicated SQL bundle and verification scripts for `020/021` before any DB apply.
+
+### Reason
+
+Manual Supabase SQL Editor work is safer when the exact apply order, post-apply checks, and security review are bundled with the migration candidates.
+
+### Alternatives
+
+- Rely on individual migration files only.
+- Apply migrations first and write verification later.
+
+### Review Conditions
+
+Keep `character:verify` read-only. Do not add mutation behavior to verification scripts.

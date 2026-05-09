@@ -78,3 +78,9 @@ Lunaria の現在タスクを、難易度・リスク・必要 AI レベル・�
 | ID | Task | Difficulty | Risk | Suggested AI | Review | Security | Human Approval | Task Size | Status | Reason |
 |---|---|---:|---:|---|---|---|---|---|---|---|
 | LUN-DB-020-021 | Create user_items and character_states migration candidates | Medium | High | Codex 5.5 | Yes | Yes | Yes before apply | Medium | Review | Additive SQL candidates only; no Supabase apply; depends on `014`-`019` state confirmation |
+
+## 2026-05-09 Additional Task Evaluation
+
+| ID | Task | Difficulty | Risk | Suggested AI | Review | Security | Human Approval | Task Size | Status | Reason |
+|---|---|---:|---:|---|---|---|---|---|---|---|
+| LUN-DB-RUNBOOK-020-021 | Add runbook and verification support for 020/021 | Low | Medium | Codex 5.5 | Yes | Yes | No | Small | Done | No DB touched; adds operator docs, SQL bundle generation, and read-only post-apply verifier |

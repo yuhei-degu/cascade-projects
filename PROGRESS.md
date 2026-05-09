@@ -150,3 +150,24 @@ Risk gate:
 - Do not apply these migrations to production until reviewed and until the actual Supabase state for `014` through `019` is confirmed.
 
 Verification note: full `npx tsc --noEmit --pretty false` initially hit stale `tsconfig.tsbuildinfo` paths after Next build. Removing the generated `tsconfig.tsbuildinfo` fixed it; full typecheck then passed. This touched only ignored generated cache.
+
+## 2026-05-09 020/021 Runbook + Verification Support
+
+Added support material for the character/items migration candidates:
+
+- `lunaria/SUPABASE_020_021_CHARACTER_ITEMS_RUNBOOK.md`
+- `lunaria/SUPABASE_020_021_SECURITY_REVIEW.md`
+- `lunaria-app/scripts/character-sql-pack.js`
+- `lunaria-app/scripts/character-verify.js`
+- `lunaria-app/supabase/manual/020_021_character_items_apply_bundle.sql`
+
+New commands:
+
+- `npm run character:sql-pack`
+- `npm run character:verify`
+
+Status:
+
+- SQL bundle generation works.
+- `character:verify` is intended for after Supabase `020/021` are applied.
+- No Supabase DB was touched.

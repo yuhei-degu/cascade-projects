@@ -150,3 +150,33 @@ npm run gacha:smoke
 - The migrations depend on `014` through `019` being applied first.
 - Array columns such as `equipped_accessory_pool_ids` cannot enforce foreign keys per element. Application or RPC validation will be needed before equipment editing is exposed.
 - RLS policies are prepared, but the current Next.js code often uses `service_role`; runtime access patterns should be reviewed before client-side DB access is added.
+
+## 2026-05-09
+
+### Character/User Items Runbook Review
+
+### Review Date
+
+2026-05-09
+
+### Target
+
+- `lunaria/SUPABASE_020_021_CHARACTER_ITEMS_RUNBOOK.md`
+- `lunaria/SUPABASE_020_021_SECURITY_REVIEW.md`
+- `lunaria-app/scripts/character-sql-pack.js`
+- `lunaria-app/scripts/character-verify.js`
+
+### Findings
+
+- SQL pack script generates `supabase/manual/020_021_character_items_apply_bundle.sql` successfully.
+- Verify script is read-only and checks table/column presence plus a default character state row.
+- Runbook explicitly gates production/unknown target apply.
+- Security review records RLS, dependency, and array-FK limitations.
+
+### Severity
+
+- Low
+
+### Status
+
+- Accepted as pre-apply support material

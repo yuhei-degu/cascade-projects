@@ -189,3 +189,20 @@ Stop before applying if:
 - RLS policy behavior has not been reviewed.
 
 Verification note: if `npx tsc --noEmit --pretty false` reports missing `.next/types` files after a successful `next build`, remove ignored `lunaria-app/tsconfig.tsbuildinfo` and rerun. This is a local TypeScript incremental cache issue, not a source change.
+
+## 2026-05-09 020/021 Operator Notes
+
+Before applying `020/021`, read:
+
+- `lunaria/SUPABASE_020_021_CHARACTER_ITEMS_RUNBOOK.md`
+- `lunaria/SUPABASE_020_021_SECURITY_REVIEW.md`
+
+Commands:
+
+```powershell
+cd C:\Users\yuuve\CascadeProjects\lunaria-app
+npm run character:sql-pack
+npm run character:verify
+```
+
+`character:verify` should be run only after the migrations are applied to the intended Supabase project.
