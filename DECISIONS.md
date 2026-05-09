@@ -1,27 +1,8 @@
-# DECISIONS
+﻿# DECISIONS
 
-重要な判断を時系列で残します。
+Important project decisions are recorded here in chronological order. This file is part of the AI_DEV_OS handoff layer for the active Lunaria project.
 
-## 2026-05-09
-
-### 決定内容
-
-例: MVP ではチーム機能を含めず、個人利用に限定する。
-
-### 理由
-
-例: 認可、UI、課金が複雑になるため、初期リリースでは価値検証を優先する。
-
-### 代替案
-
-- チーム機能を最初から入れる
-- 招待機能だけ入れる
-
-### 後で見直す条件
-
-例: 有料ユーザーからチーム利用の要望が 5 件以上出たら再検討する。
-
-## 2026-05-09
+## 2026-05-09 - Adopt Claude visual/items output as source material
 
 ### Decision
 
@@ -40,7 +21,7 @@ The new `/items` and `/character` pages are useful for product direction, visual
 
 Revisit after `character_states` and `user_items` migrations are designed, reviewed, and applied in the intended environment.
 
-## 2026-05-09
+## 2026-05-09 - Create `020/021` migration candidates only
 
 ### Decision
 
@@ -60,7 +41,7 @@ Claude's DB design referenced future tables such as `lunaria_items` and `charact
 
 Review again after Supabase `014` through `019` state is confirmed and before any SQL Editor application.
 
-## 2026-05-09
+## 2026-05-09 - Add `020/021` SQL bundle and verification support
 
 ### Decision
 
@@ -79,7 +60,7 @@ Manual Supabase SQL Editor work is safer when the exact apply order, post-apply 
 
 Keep `character:verify` read-only. Do not add mutation behavior to verification scripts.
 
-## 2026-05-09
+## 2026-05-09 - Make `/items` and `/character` DB-aware with fallback
 
 ### Decision
 
@@ -97,3 +78,48 @@ This lets the UI and API integration be tested incrementally while keeping the h
 ### Review Conditions
 
 After `020/021` are applied, verify the pages report `source: user_items` and `source: character_states` respectively.
+
+## 2026-05-09 - Adopt AI_DEV_OS for Lunaria active development
+
+### Decision
+
+Adopt AI_DEV_OS for Lunaria active development coordination.
+
+### Reason
+
+Lunaria is now large enough that parallel Codex/Claude work needs visible task routing, handoff files, review logs, metrics, and explicit stop conditions. Markdown-based async coordination is safer than relying on hidden chat context.
+
+### Scope
+
+- Applies to current Lunaria development: `lunaria/` and `lunaria-app/`.
+- Does not automatically govern every project in the monorepo.
+- Medium-risk work may proceed in Solo Developer Fast Mode when it avoids production DB, deploy, Stripe, secrets, irreversible migrations, and user data deletion.
+
+### Alternatives
+
+- Continue ad-hoc chat-based coordination.
+- Use AI_DEV_OS only for new projects.
+
+### Review Conditions
+
+If the process creates too much documentation overhead, reduce required updates to `TASKS.md`, `PROGRESS.md`, `HANDOFF.md`, and metrics only.
+
+## 2026-05-09 - Track project completion by target maturity
+
+### Decision
+
+Track Lunaria completion in three separate targets: Local MVP / Private Alpha, Public Beta, and Full Life-log OS Vision.
+
+### Reason
+
+A single percent complete number is misleading because Lunaria is both a near-term AI diary app and a long-term AI companion life-log OS. Separating targets makes the remaining work feel less endless and helps choose the right next task.
+
+### Current Estimate
+
+- Local MVP / Private Alpha: 62% done, 38% remaining.
+- Public Beta: 38% done, 62% remaining.
+- Full Life-log OS Vision: 18% done, 82% remaining.
+
+### Review Conditions
+
+Update the snapshot when major gates change, especially after Supabase migration verification, memory restore/edit implementation, diary polish, and production-readiness decisions.

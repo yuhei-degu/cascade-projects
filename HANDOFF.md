@@ -224,3 +224,15 @@ The pages now show their data source:
 This means `/items` and `/character` can be reviewed now without forcing a DB apply.
 
 Verification note: `npm run build` and full `tsc` must be run sequentially for this Next.js app because `.next/types` is regenerated during build. Parallel execution can produce false `TS6053` missing generated type errors.
+
+## 2026-05-09 Completion Snapshot Notes
+
+Read `lunaria/PROJECT_COMPLETION_SNAPSHOT_2026-05-09.md` before choosing broad next work.
+
+Current planning estimates:
+
+- Local MVP / Private Alpha: 62% done, 38% remaining.
+- Public Beta: 38% done, 62% remaining.
+- Full Life-log OS vision: 18% done, 82% remaining.
+
+Recommended next autonomous Codex path: diary UI acceptance checklist and low/medium-risk fixes, or memory restore/edit design. Stop before production DB, irreversible migrations, Stripe, deploy, or user data deletion.

@@ -1,92 +1,71 @@
-# Lunaria Task Evaluation
+﻿# Lunaria Task Evaluation
 
-作成日: 2026-05-09
+Date: 2026-05-09
+Owner: Codex 5.5
+Mode: AI_DEV_OS / Solo Developer Fast Mode
 
-## 目的
+## Purpose
 
-Lunaria の現在タスクを、難易度・リスク・必要 AI レベル・人間確認要否で分類する。
+This file classifies active Lunaria tasks by difficulty, risk, required AI level, review need, security need, and human approval need.
 
-## 評価軸
+## Scale
 
-| 項目 | 値 |
+| Field | Values |
 |---|---|
 | Difficulty | Low / Medium / High / Critical |
 | Risk | Low / Medium / High / Critical |
-| Suggested AI | Codex / Claude Code / Gemini / Cursor / Copilot / Human |
+| Suggested AI | Codex 5.5 / Claude Code / Gemini / Cursor / Human |
 | Review Required | Yes / No |
 | Security Review Required | Yes / No |
-| Human Approval Required | Yes / No |
+| Human Approval Required | Yes / Conditional / No |
 | Task Size | Small / Medium / Large |
 | Status | Todo / Doing / Review / Blocked / Done / Deferred |
 
-## 現在タスク評価
+## Active Evaluation
 
-| ID | タスク | Difficulty | Risk | Suggested AI | Review | Security | Human Approval | Task Size | Status | 理由 |
+| ID | Task | Difficulty | Risk | Suggested AI | Review | Security | Human Approval | Size | Status | Reason |
 |---|---|---:|---:|---|---|---|---|---|---|---|
-| LUN-AI-001 | AI_DEV_OS 試験導入用記録ファイル作成 | Low | Low | Codex | No | No | No | Small | Done | ドキュメント新規追加のみ。既存実装に影響しない |
-| LUN-OPS-001 | Supabase migration `014`-`019` 適用状態確認 | Medium | High | Human + Ops Agent | Yes | Yes | Yes | Medium | Todo | 実 DB 状態に依存し、SQL Editor / Supabase 確認が必要 |
-| LUN-MEM-001 | `/memory` candidate review actions を実データで確認 | Medium | Medium | Codex | Yes | No | Conditional | Medium | Todo | DB 状態が整っていればローカル検証可能。データ内容は注意 |
-| LUN-MEM-002 | memory restore/edit UX 設計 | Medium | Medium | Claude Code + Codex | Yes | Yes | Yes | Medium | Todo | 記憶削除・訂正は信頼性に直結する |
-| LUN-MEM-003 | memory restore/edit UX 実装 | High | Medium | Codex | Yes | Yes | Yes | Large | Todo | API / UI / DB status の整合が必要 |
-| LUN-REA-001 | `LunariaPortrait` を `/gacha` 結果モーダルに接続 | Low | Low | Codex | Yes | No | No | Small | Done | DB に触らない低リスク UI 接続。試験導入の最初の実装として完了 |
-| LUN-CHAR-001 | minimal `character_state` schema 設計 | High | High | Claude Code | Yes | Yes | Yes | Medium | Todo | DB 設計と将来拡張に関わる。実装前に設計レビュー必須 |
-| LUN-PROF-001 | `user_communication_profiles` 設計 | High | High | Claude Code + Security Agent | Yes | Yes | Yes | Medium | Todo | プロフィール・記憶・推定情報の分離が重要 |
-| LUN-EVT-001 | `life_events` 設計 | High | High | Claude Code + Gemini | Yes | Yes | Yes | Large | Deferred | 将来中核だが、今の MVP 完成を遅らせやすい |
-| LUN-PAY-001 | Stripe / 課金導入 | Critical | Critical | Human + Security + Release | Yes | Yes | Yes | Large | Deferred | 決済・本番事故リスクが高く、現時点では後回し |
-| LUN-LIVE-001 | Live2D / 3D asset pipeline | Critical | High | Human + Tech Lead | Yes | No | Yes | Large | Deferred | 表現力は高いが制作・運用コストが大きい |
+| LUN-AI-001 | Create AI_DEV_OS trial files | Low | Low | Codex 5.5 | No | No | No | Small | Done | Documentation-only setup for operating the project with AI agents |
+| LUN-REA-001 | Wire `LunariaPortrait` into `/gacha` result modal | Low | Low | Codex 5.5 | Yes | No | No | Small | Done | Low-risk UI integration; no DB/auth/env/prod changes |
+| LUN-CLAUDE-001 | Intake Claude visual/items docs and mock UI | Medium | Medium | Codex 5.5 | Yes | No | No | Medium | Done | Reviewed docs/mock UI and accepted them into repo with build/typecheck passing |
+| LUN-DB-020-021 | Create user_items and character_states migration candidates | Medium | High | Codex 5.5 | Yes | Yes | Yes before apply | Medium | Review | SQL candidates exist only; no Supabase apply; depends on `014`-`019` confirmation |
+| LUN-DB-RUNBOOK-020-021 | Add runbook and verification support for `020/021` | Low | Medium | Codex 5.5 | Yes | Yes | No | Small | Done | Adds operator docs, SQL bundle generation, and read-only post-apply verifier |
+| LUN-CHAR-API-001 | Add DB-aware read APIs for `/items` and `/character` with fallback | Medium | Medium | Codex 5.5 | Yes | No | No | Medium | Done | Read-only API/UI integration; no DB apply; fallback keeps current app usable |
+| LUN-STATUS-001 | Add project completion snapshot and percent remaining view | Low | Low | Codex 5.5 | No | No | No | Small | Done | Planning/documentation only; improves prioritization and agent routing |
+| LUN-OPS-001 | Confirm Supabase migration `014`-`019` applied state | Medium | High | Human + Ops Agent | Yes | Yes | Yes | Medium | Todo | Requires actual Supabase state, not just Git files |
+| LUN-MEM-001 | Verify `/memory` candidate review actions with real data | Medium | Medium | Codex 5.5 | Yes | No | Conditional | Medium | Todo | Needs DB state ready and candidate rows to test approve/archive/reject |
+| LUN-MEM-002 | Design memory restore/edit UX | Medium | Medium | Claude Code + Codex 5.5 | Yes | Yes | Yes | Medium | Todo | Memory correction affects user trust and should be designed before implementation |
+| LUN-MEM-003 | Implement memory restore/edit UX | High | Medium | Codex 5.5 | Yes | Yes | Yes | Large | Todo | Requires API/UI/write behavior and careful review |
+| LUN-DIA-001 | Extract diary UI Must-A/B/C acceptance checklist | Low | Low | Claude Code | No | No | No | Small | Todo | Good non-code task before Codex implementation |
+| LUN-DIA-002 | Implement diary UI Must-A/B/C fixes | Medium | Medium | Codex 5.5 | Yes | No | No | Medium | Todo | Should be limited to reviewed acceptance criteria |
+| LUN-ASSIST-001 | Plan AssistantReply schema integration into chat path | Medium | Medium | Claude/Gemini + Codex 5.5 | Yes | No | Conditional | Medium | Todo | Important for visual/voice future; avoid breaking current chat response path |
+| LUN-CHAR-002 | Apply and verify `020/021` in Supabase | Medium | High | Human + Codex 5.5 | Yes | Yes | Yes | Medium | Blocked | Requires human DB action and migration state confirmation |
+| LUN-CHAR-003 | Add equip/apply item writes for character state | High | High | Codex 5.5 | Yes | Yes | Yes | Large | Deferred | Should wait until `020/021` are applied and verified |
+| LUN-PROF-001 | Design `user_communication_profiles` | High | High | Claude Code + Security Agent | Yes | Yes | Yes | Medium | Todo | Separates profile/style preferences from memory; privacy-sensitive |
+| LUN-EVT-001 | Design and implement `life_events` | High | High | Claude Code + Gemini + Codex 5.5 | Yes | Yes | Yes | Large | Deferred | Core long-term architecture, but not needed before private alpha |
+| LUN-PAY-001 | Stripe/payment readiness | Critical | Critical | Human + Security + Release | Yes | Yes | Yes | Large | Deferred | Financial and production risk; not current priority |
+| LUN-LIVE-001 | Live2D / 3D asset pipeline | Critical | High | Human + Tech Lead | Yes | No | Yes | Large | Deferred | Requires asset creation and technical pipeline decisions |
 
-## 次に試す小タスク候補
+## Current Blocked / Human Needed
 
-第一候補:
-
-- 完了: `LUN-REA-001` は `/gacha` 結果モーダルに接続済み
-
-採用理由:
-
-- 既存 DB / 認証 / env に触らない。
-- 失敗しても戻しやすい。
-- reaction foundation の価値を小さく検証できる。
-- AI_DEV_OS の「評価 → 実装 → レビュー → 記録」フローを試すのにちょうどよい。
-
-## Blocked / Human Needed
-
-| タスク | 理由 | 人間に必要な確認 |
+| Task | Reason | Human Action |
 |---|---|---|
-| Supabase migration 確認 | Git の migration と実 DB 状態が一致するとは限らない | SQL Editor / Supabase 側で `014`-`019` の適用状態確認 |
-| character_state schema | 将来の衣装・表情・ガチャ連携に影響 | 最小範囲と後方互換方針 |
-| user_communication_profiles | 推定情報・プロフィール・記憶の境界が重要 | ユーザーに見せる/見せない情報の方針 |
+| Supabase migration confirmation | Git migrations may not match actual DB | Confirm `014`-`019` state in Supabase |
+| Applying `020/021` | DB schema change | Use runbook only after review and migration state confirmation |
+| Production deployment | Vercel/free-plan constraint and production risk | Defer unless explicitly prioritized |
+| Memory data deletion/restore rules | User trust and data safety | Approve policy before irreversible behavior |
+
+## Next Low/Medium-Risk Codex Candidates
+
+| Candidate | Why Next | Stop Conditions |
+|---|---|---|
+| Diary UI acceptance checklist and fixes | High user value, no schema change needed | Stop if DB/write behavior changes are required |
+| Memory restore/edit design doc | Needed before implementing user-control writes | Stop before implementation if policy is unclear |
+| AssistantReply integration plan | Enables visual state without breaking chat | Stop before changing chat output contract |
+| Portrait component consolidation plan | Reduces duplicate UI paths | Stop before broad refactor |
 
 ## Assumptions
 
-- 現在の正本タスクはルート `TASKS.md`。
-- このファイルは Lunaria で AI_DEV_OS を試すための詳細評価表。
-- 実装開始前に、対象タスクの完了条件と検証コマンドを明確にする。
-
-## Questions
-
-- 次の低リスク実装実験を `/memory` UX 改善にするか、先に Supabase 適用状態確認へ戻すか。
-- DB 状態確認は人間作業として別枠にするか。
-
-## 2026-05-09 Additional Task Evaluation
-
-| ID | Task | Difficulty | Risk | Suggested AI | Review | Security | Human Approval | Task Size | Status | Reason |
-|---|---|---:|---:|---|---|---|---|---|---|---|
-| LUN-CLAUDE-001 | Intake Claude visual/items docs and mock UI | Medium | Medium | Codex 5.5 | Yes | No | No | Medium | Done | Reviewed `lunaria-app/docs/`, `/items`, `/character`, and mock portrait component; DB/auth/env/prod untouched; build/typecheck pass |
-
-## 2026-05-09 Additional Task Evaluation
-
-| ID | Task | Difficulty | Risk | Suggested AI | Review | Security | Human Approval | Task Size | Status | Reason |
-|---|---|---:|---:|---|---|---|---|---|---|---|
-| LUN-DB-020-021 | Create user_items and character_states migration candidates | Medium | High | Codex 5.5 | Yes | Yes | Yes before apply | Medium | Review | Additive SQL candidates only; no Supabase apply; depends on `014`-`019` state confirmation |
-
-## 2026-05-09 Additional Task Evaluation
-
-| ID | Task | Difficulty | Risk | Suggested AI | Review | Security | Human Approval | Task Size | Status | Reason |
-|---|---|---:|---:|---|---|---|---|---|---|---|
-| LUN-DB-RUNBOOK-020-021 | Add runbook and verification support for 020/021 | Low | Medium | Codex 5.5 | Yes | Yes | No | Small | Done | No DB touched; adds operator docs, SQL bundle generation, and read-only post-apply verifier |
-
-## 2026-05-09 Additional Task Evaluation
-
-| ID | Task | Difficulty | Risk | Suggested AI | Review | Security | Human Approval | Task Size | Status | Reason |
-|---|---|---:|---:|---|---|---|---|---|---|---|
-| LUN-CHAR-API-001 | Add DB-aware read APIs for `/items` and `/character` with fallback | Medium | Medium | Codex 5.5 | Yes | No | No | Medium | Done | Read-only API/UI integration; no DB apply; fallback keeps current app usable |
+- Medium risk tasks may proceed under Solo Developer Fast Mode if they do not touch production DB, deploy, Stripe, secrets, irreversible migrations, or user data deletion.
+- Human remains final decision maker.
+- Claude/Codex should coordinate through Markdown files rather than hidden chat context.

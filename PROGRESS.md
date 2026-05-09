@@ -194,3 +194,37 @@ Behavior:
 Verification:
 - `npm run build`: passed.
 - `npx tsc --noEmit --pretty false`: passed.
+
+## 2026-05-09 Project Completion Snapshot
+
+Added `lunaria/PROJECT_COMPLETION_SNAPSHOT_2026-05-09.md` to make remaining work visible by area.
+
+Current estimates:
+
+- Local MVP / Private Alpha: 62% done, 38% remaining.
+- Public Beta: 38% done, 62% remaining.
+- Full Life-log OS vision: 18% done, 82% remaining.
+
+Main near-term bottlenecks:
+
+- Supabase migration state confirmation for `014`-`019`.
+- Real-data verification of memory candidate review actions.
+- Diary UI/behavior polish.
+- Memory restore/edit design before implementation.
+- Applying and verifying `020/021` only after human DB confirmation.
+
+## 2026-05-09 Diary UI Acceptance Checklist
+
+Added `lunaria/DIARY_UI_ACCEPTANCE_CHECKLIST_2026-05-09.md` as the implementation-ready checklist for diary UI Must-A/B/C.
+
+Scope:
+
+- Documentation only.
+- No code changes.
+- No DB changes.
+
+Next safe implementation target:
+
+- Collapse `memory_changes` by default.
+- Move internal diary stats behind a details/dev layer.
+- Move source conversation lower in the flow and keep it collapsed by default.
