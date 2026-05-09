@@ -18,7 +18,7 @@ Status: AI_DEV_OS task board for active Lunaria development
 | P0 | Review remaining uncommitted docs and classify them | Review Agent | DONE | Current git status | `lunaria/DOC_TRIAGE_2026-05-09.md` classifies accepted docs and defers `lunaria-app/docs/` |
 | P1 | Confirm Supabase migration state `014` through `019` | Human + Ops Agent | TODO | Supabase SQL Editor access | `supabase:verify`, `gacha:verify`, and relevant smoke checks match expected DB state |
 | P1 | Verify memory candidate review actions with real data | Implement Agent | TODO | Migration `019` applied | Candidate can be approved to confirmed core memory, archived, and rejected without errors |
-| P1 | Add memory governance restore path for archived candidates/core memories | Implement Agent | TODO | Current memory APIs | User can restore accidentally archived items from UI |
+| P1 | Add memory governance restore path for archived candidates/core memories | Implement Agent | DESIGN READY | Current memory APIs | `lunaria/MEMORY_RESTORE_EDIT_DESIGN_2026-05-09.md` defines candidate/core-memory restore and edit phases |
 | P1 | Add review log for memory candidate behavior | Review Agent | TODO | Memory candidate verification | `REVIEW_LOG.md` includes findings, risks, and next actions |
 | P1 | Review migration candidates `020` / `021` before Supabase apply | Security + Review Agent | TODO | `020_user_items.sql`, `021_character_states.sql` | RLS, backfill, dependency order, and rollback notes are approved before SQL Editor use |
 | P2 | Add `lib/lunaria/reactions.ts` foundation | Tech Lead + Implement Agent | DONE | `lunaria/LUNARIA_REACTION_MVP_SPEC.md` | Reaction IDs, context mapping, and fallback order are centralized without changing chat behavior; build passes |
@@ -31,11 +31,14 @@ Status: AI_DEV_OS task board for active Lunaria development
 | P2 | Update root `DECISIONS.md` with current AI_DEV_OS adoption decision | PM Agent | DONE | This initialization | Decision entry explains why AI_DEV_OS was applied and its scope |
 | P2 | Add whole-project completion snapshot and percent remaining view | Codex 5.5 | DONE | Current task board and progress docs | `lunaria/PROJECT_COMPLETION_SNAPSHOT_2026-05-09.md` explains remaining work by area |
 | P2 | Draft `user_communication_profiles` design | Tech Lead + Security Agent | TODO | Memory/profile docs | Design separates style preferences from core memory and avoids sensitive over-inference |
-| P2 | Improve `/memory` UX copy after real use | UX Agent | TODO | Candidate review verification | Copy makes user control clear and avoids surveillance feeling |
+| P2 | Improve `/memory` UX copy after real use | UX Agent | DONE | Candidate review verification | `/memory` copy is readable ASCII and clarifies diary vs memory vs candidates |
+| P2 | Stabilize `/memory` copy and readable states | Codex 5.5 | DONE | Current memory page | Page text is readable and existing candidate actions remain unchanged |
 | P2 | Extract diary UI Must-A/B/C acceptance checklist | Claude Code or Codex | DONE | `lunaria/DIARY_UI_REVIEW_2026-05-04.md` | `lunaria/DIARY_UI_ACCEPTANCE_CHECKLIST_2026-05-09.md` defines exact acceptance criteria before implementation |
 | P2 | Implement diary UI Must-A/B/C fixes | Codex 5.5 | DONE | Diary checklist | `/diary` hides memory candidates/source conversation by default and moves raw stats into technical details; build/typecheck pass |
-| P2 | Plan AssistantReply schema integration | Claude/Gemini + Codex | TODO | `lunaria-app/docs/ASSISTANT_REPLY_SCHEMA.md` | Plan explains how to add structured reply tags without breaking chat |
-| P2 | Consolidate duplicate portrait component strategy | Tech Lead Agent | TODO | Existing two portrait components | Decision doc explains whether to merge or keep separate before refactor |
+| P2 | Plan AssistantReply schema integration | Claude/Gemini + Codex | DONE | `lunaria-app/docs/ASSISTANT_REPLY_SCHEMA.md` | `lunaria/ASSISTANT_REPLY_INTEGRATION_PLAN_2026-05-09.md` defines staged parser-first rollout |
+| P2 | Add AssistantReply parser foundation | Codex 5.5 | DONE | AssistantReply integration plan | `lib/lunaria/assistant-reply.ts` parses structured replies with raw-text fallback and does not change chat behavior |
+| P2 | Consolidate duplicate portrait component strategy | Tech Lead Agent | DONE | Existing two portrait components | `lunaria/PORTRAIT_COMPONENT_CONSOLIDATION_PLAN_2026-05-09.md` recommends short-term separation and staged consolidation |
+| P2 | Add shared visual-state types | Codex 5.5 | DONE | Portrait consolidation plan | `lib/lunaria/visual-state.ts` defines expression/motion unions for future component consolidation |
 | P3 | End-world game MVP scope doc | PM/UX Agent | DEFERRED | Core diary/memory/character stable | Scope is cut to a future weekly text MVP; no implementation started |
 | P3 | Live2D / 3D asset pipeline | Tech Lead Agent | DEFERRED | Reaction layer stable | Pipeline proposal exists with cost/risk notes |
 | P3 | Stripe/payment readiness | Security + Release Agent | DEFERRED | Product monetization decision | Stripe checklist and env separation are ready before any payment code |

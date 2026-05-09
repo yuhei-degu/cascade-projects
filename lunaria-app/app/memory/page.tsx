@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 interface MemoryItem {
@@ -57,20 +57,20 @@ interface MemoryCandidateResponse {
 type CandidateAction = 'approve' | 'reject' | 'archive' | 'pending'
 
 const statusLabels: Record<string, string> = {
-  active: '育てている記憶',
-  candidate: '候補',
-  confirmed: '確認済み',
-  archived: '保留棚',
-  deleted: '削除済み',
+  active: 'Active memory',
+  candidate: 'Candidate',
+  confirmed: 'Confirmed',
+  archived: 'Archived',
+  deleted: 'Deleted',
 }
 
 const typeLabels: Record<string, string> = {
-  value: '大事にしていること',
-  pattern: '傾向',
-  goal: '目標',
-  trigger: 'きっかけ',
-  mid: '中期メモ',
-  other: 'メモ',
+  value: 'Value',
+  pattern: 'Pattern',
+  goal: 'Goal',
+  trigger: 'Trigger',
+  mid: 'Mid-term note',
+  other: 'Memo',
 }
 
 function todayJst(): string {
@@ -83,9 +83,9 @@ function todayJst(): string {
 }
 
 function formatDate(value: string | null): string {
-  if (!value) return '日付なし'
+  if (!value) return 'No date'
   const date = new Date(`${value}T12:00:00+09:00`)
-  return new Intl.DateTimeFormat('ja-JP', {
+  return new Intl.DateTimeFormat('en-US', {
     timeZone: 'Asia/Tokyo',
     month: 'long',
     day: 'numeric',
@@ -95,7 +95,7 @@ function formatDate(value: string | null): string {
 
 function formatTime(value: string | null): string {
   if (!value) return '-'
-  return new Intl.DateTimeFormat('ja-JP', {
+  return new Intl.DateTimeFormat('en-US', {
     timeZone: 'Asia/Tokyo',
     month: '2-digit',
     day: '2-digit',
@@ -105,11 +105,11 @@ function formatTime(value: string | null): string {
 }
 
 function confidenceLabel(value: number | null): string {
-  if (typeof value !== 'number') return '未設定'
+  if (typeof value !== 'number') return 'Unset'
   return `${Math.round(value * 100)}%`
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section style={sectionStyle}>
       <h2 style={sectionTitleStyle}>{title}</h2>
@@ -118,7 +118,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   )
 }
 
-function Stat({ label, value }: { label: string; value: React.ReactNode }) {
+function Stat({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div style={statStyle}>
       <span style={{ color: '#8f8372' }}>{label}</span>
@@ -136,7 +136,7 @@ function MemoryCard({ memory }: { memory: MemoryItem }) {
           <span style={statusBadgeStyle}>{statusLabels[memory.status] ?? memory.status}</span>
           {memory.source_date && (
             <Link href={`/diary?date=${encodeURIComponent(memory.source_date)}`} style={dateBadgeStyle}>
-              {formatDate(memory.source_date)} の日記
+              {formatDate(memory.source_date)} diary
             </Link>
           )}
         </div>
@@ -146,10 +146,10 @@ function MemoryCard({ memory }: { memory: MemoryItem }) {
       <p style={memoryContentStyle}>{memory.content}</p>
 
       <div style={memoryMetaGridStyle}>
-        <Stat label="確信度" value={confidenceLabel(memory.confidence)} />
-        <Stat label="見かけた回数" value={memory.hit_count ?? '-'} />
-        <Stat label="最終参照" value={formatTime(memory.last_seen)} />
-        <Stat label="作成元" value={memory.created_by} />
+        <Stat label="Confidence" value={confidenceLabel(memory.confidence)} />
+        <Stat label="Seen" value={memory.hit_count ?? '-'} />
+        <Stat label="Last seen" value={formatTime(memory.last_seen)} />
+        <Stat label="Created by" value={memory.created_by} />
       </div>
 
       {memory.notes && <p style={notesStyle}>{memory.notes}</p>}
@@ -170,30 +170,30 @@ function CandidateCard({
     <article style={candidateCardStyle}>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
         <span style={typeBadgeStyle}>{typeLabels[candidate.candidate_type] ?? candidate.candidate_type}</span>
-        <span style={candidateBadgeStyle}>確認待ち</span>
+        <span style={candidateBadgeStyle}>Needs review</span>
         {candidate.source_date && (
           <Link href={`/diary?date=${encodeURIComponent(candidate.source_date)}`} style={dateBadgeStyle}>
-            {formatDate(candidate.source_date)} の日記
+            {formatDate(candidate.source_date)} diary
           </Link>
         )}
       </div>
       <p style={memoryContentStyle}>{candidate.content}</p>
-      {candidate.reason && <p style={notesStyle}>候補理由: {candidate.reason}</p>}
+      {candidate.reason && <p style={notesStyle}>Why Luna noticed it: {candidate.reason}</p>}
       <div style={memoryMetaGridStyle}>
-        <Stat label="確信度" value={confidenceLabel(candidate.confidence)} />
-        <Stat label="出どころ" value={candidate.source_type} />
-        <Stat label="作成元" value={candidate.created_by} />
-        <Stat label="作成時刻" value={formatTime(candidate.created_at)} />
+        <Stat label="Confidence" value={confidenceLabel(candidate.confidence)} />
+        <Stat label="Source" value={candidate.source_type} />
+        <Stat label="Created by" value={candidate.created_by} />
+        <Stat label="Created" value={formatTime(candidate.created_at)} />
       </div>
       <div style={candidateActionRowStyle}>
         <button type="button" onClick={() => onAction(candidate.id, 'approve')} disabled={busy} style={primaryActionButtonStyle}>
-          {busy ? '整理中...' : '覚えてて'}
+          {busy ? 'Saving...' : 'Remember this'}
         </button>
         <button type="button" onClick={() => onAction(candidate.id, 'archive')} disabled={busy} style={secondaryActionButtonStyle}>
-          あとで見る
+          Review later
         </button>
         <button type="button" onClick={() => onAction(candidate.id, 'reject')} disabled={busy} style={quietActionButtonStyle}>
-          棚から外す
+          Remove from shelf
         </button>
       </div>
     </article>
@@ -235,7 +235,7 @@ export default function MemoryPage() {
       setCandidates(Array.isArray(candidateData.candidates) ? candidateData.candidates : [])
       setCandidateStats(candidateData.stats)
     } catch {
-      setError('記憶の棚を開けませんでした。少し時間を置いてもう一度試してみてください。')
+      setError('The memory shelf could not be opened. Please wait a moment and try again.')
       setMemories([])
       setStats(null)
       setCandidateTableReady(false)
@@ -274,7 +274,7 @@ export default function MemoryPage() {
         : current)
       if (action === 'approve') await loadMemories()
     } catch {
-      setError('記憶候補を整理できませんでした。少し時間を置いて、もう一度試してください。')
+      setError('The memory candidate could not be updated. Please wait a moment and try again.')
     } finally {
       setCandidateBusyId(null)
     }
@@ -283,7 +283,7 @@ export default function MemoryPage() {
   const grouped = useMemo(() => {
     const map = new Map<string, MemoryItem[]>()
     for (const memory of memories) {
-      const key = memory.source_date ?? '日付なし'
+      const key = memory.source_date ?? 'No date'
       map.set(key, [...(map.get(key) ?? []), memory])
     }
     return Array.from(map.entries()).sort(([a], [b]) => b.localeCompare(a))
@@ -294,16 +294,16 @@ export default function MemoryPage() {
       <div style={{ maxWidth: 1080, margin: '0 auto' }}>
         <header style={headerStyle}>
           <div>
-            <Link href="/" style={backLinkStyle}>← ルナの部屋へ</Link>
+            <Link href="/" style={backLinkStyle}>Back to Luna's room</Link>
             <p style={eyebrowStyle}>Lunaria Memory</p>
-            <h1 style={titleStyle}>記憶の月棚</h1>
+            <h1 style={titleStyle}>Memory Shelf</h1>
             <p style={leadStyle}>
-              ルナが長く覚えておきたいことを、出どころと確信度つきで見返す場所。日記はその日の記録、記憶はこれからも参照する小さな灯りです。
+              A place to review what Luna may carry forward. Diary entries remember the day; memories are the small lights Luna may reference later.
             </p>
           </div>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-            <Link href="/diary" style={pillLinkStyle}>日記へ</Link>
-            <Link href="/gacha" style={pillLinkStyle}>月箱へ</Link>
+            <Link href="/diary" style={pillLinkStyle}>Diary</Link>
+            <Link href="/gacha" style={pillLinkStyle}>Moonbox</Link>
           </div>
         </header>
 
@@ -313,20 +313,20 @@ export default function MemoryPage() {
             value={date}
             onChange={event => setDate(event.target.value)}
             style={dateInputStyle}
-            aria-label="記憶の出どころ日付"
+            aria-label="Memory source date"
           />
-          <button onClick={() => setDate(todayJst())} style={navButtonStyle}>今日</button>
-          <button onClick={() => setDate('')} style={navButtonStyle}>全期間</button>
-          <select value={status} onChange={event => setStatus(event.target.value)} style={selectStyle}>
-            <option value="active">育てている記憶</option>
-            <option value="candidate">候補だけ</option>
-            <option value="confirmed">確認済みだけ</option>
-            <option value="archived">保留棚だけ</option>
-            <option value="all">すべて</option>
+          <button onClick={() => setDate(todayJst())} style={navButtonStyle}>Today</button>
+          <button onClick={() => setDate('')} style={navButtonStyle}>All dates</button>
+          <select value={status} onChange={event => setStatus(event.target.value)} style={selectStyle} aria-label="Memory status">
+            <option value="active">Active memories</option>
+            <option value="candidate">Candidates</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="archived">Archived</option>
+            <option value="all">All statuses</option>
           </select>
           <label style={checkLabelStyle}>
             <input type="checkbox" checked={includeProfile} onChange={event => setIncludeProfile(event.target.checked)} />
-            プロフィール系も見る
+            Include profile-like memories
           </label>
         </section>
 
@@ -334,19 +334,19 @@ export default function MemoryPage() {
 
         <div style={contentGridStyle}>
           <div style={{ display: 'grid', gap: 16 }}>
-            <Section title={date ? `${formatDate(date)} の記憶` : 'すべての記憶'}>
+            <Section title={date ? `${formatDate(date)} memories` : 'All memories'}>
               {loading ? (
-                <p style={mutedTextStyle}>記憶の棚を開いています...</p>
+                <p style={mutedTextStyle}>Opening the memory shelf...</p>
               ) : grouped.length === 0 ? (
                 <div>
-                  <p style={emptyTitleStyle}>この条件では記憶が見つかりませんでした。</p>
-                  <p style={mutedTextStyle}>日付を外すか、「すべて」を選ぶと、まだ出どころが古い形式の記憶も見つかるかもしれません。</p>
+                  <p style={emptyTitleStyle}>No memories match this filter yet.</p>
+                  <p style={mutedTextStyle}>Try removing the date filter or switching to another status.</p>
                 </div>
               ) : (
                 <div style={{ display: 'grid', gap: 18 }}>
                   {grouped.map(([groupDate, items]) => (
                     <div key={groupDate} style={{ display: 'grid', gap: 10 }}>
-                      <h3 style={groupTitleStyle}>{groupDate === '日付なし' ? groupDate : formatDate(groupDate)}</h3>
+                      <h3 style={groupTitleStyle}>{groupDate === 'No date' ? groupDate : formatDate(groupDate)}</h3>
                       {items.map(memory => <MemoryCard key={memory.id} memory={memory} />)}
                     </div>
                   ))}
@@ -356,16 +356,16 @@ export default function MemoryPage() {
           </div>
 
           <aside style={{ display: 'grid', gap: 16, alignContent: 'start' }}>
-            <Section title="記憶候補">
+            <Section title="Memory candidates">
               {loading ? (
-                <p style={mutedTextStyle}>候補の棚を開いています...</p>
+                <p style={mutedTextStyle}>Opening candidate shelf...</p>
               ) : !candidateTableReady ? (
                 <div>
-                  <p style={emptyTitleStyle}>候補棚はまだ準備中です。</p>
-                  <p style={mutedTextStyle}>Supabase に `019_memory_candidates.sql` を適用すると、会話や日記から抽出された記憶候補がここに並びます。</p>
+                  <p style={emptyTitleStyle}>Candidate shelf is not ready yet.</p>
+                  <p style={mutedTextStyle}>Apply `019_memory_candidates.sql` to review memory candidates here.</p>
                 </div>
               ) : candidates.length === 0 ? (
-                <p style={mutedTextStyle}>確認待ちの記憶候補はありません。</p>
+                <p style={mutedTextStyle}>No pending memory candidates right now.</p>
               ) : (
                 <div style={{ display: 'grid', gap: 10 }}>
                   {candidates.slice(0, 5).map(candidate => (
@@ -380,22 +380,22 @@ export default function MemoryPage() {
               )}
             </Section>
 
-            <Section title="棚の状態">
+            <Section title="Shelf status">
               <div style={{ display: 'grid', gap: 10, fontSize: 13 }}>
-                <Stat label="表示中" value={`${stats?.total ?? memories.length}件`} />
-                <Stat label="出どころ日付あり" value={`${stats?.with_source_date ?? 0}件`} />
-                <Stat label="候補" value={`${stats?.by_status?.candidate ?? 0}件`} />
-                <Stat label="育成中" value={`${stats?.by_status?.active ?? 0}件`} />
-                <Stat label="確認済み" value={`${stats?.by_status?.confirmed ?? 0}件`} />
-                <Stat label="確認待ち候補" value={candidateTableReady ? `${candidateStats?.total ?? candidates.length}件` : '未適用'} />
+                <Stat label="Shown" value={stats?.total ?? memories.length} />
+                <Stat label="With source date" value={stats?.with_source_date ?? 0} />
+                <Stat label="Candidates" value={stats?.by_status?.candidate ?? 0} />
+                <Stat label="Active" value={stats?.by_status?.active ?? 0} />
+                <Stat label="Confirmed" value={stats?.by_status?.confirmed ?? 0} />
+                <Stat label="Pending review" value={candidateTableReady ? (candidateStats?.total ?? candidates.length) : 'not applied'} />
               </div>
             </Section>
 
-            <Section title="見方">
+            <Section title="How to read this">
               <div style={{ display: 'grid', gap: 10 }}>
-                <p style={mutedTextStyle}>日記は「その日を思い出すための記録」です。</p>
-                <p style={mutedTextStyle}>記憶は「これからの会話でルナが参照するかもしれない情報」です。</p>
-                <p style={mutedTextStyle}>確信度や出どころが空のものは、古い形式で保存された記憶かもしれません。</p>
+                <p style={mutedTextStyle}>Diary is a record of a day. Memory is what Luna may use later.</p>
+                <p style={mutedTextStyle}>Candidates are suggestions. They only become durable memory when you approve them.</p>
+                <p style={mutedTextStyle}>Profile-like memories are hidden by default so stable settings do not get mixed with everyday memories.</p>
               </div>
             </Section>
           </aside>
@@ -531,6 +531,7 @@ const sectionTitleStyle: CSSProperties = {
   fontSize: 12,
   letterSpacing: '.16em',
   marginBottom: 12,
+  textTransform: 'uppercase',
 }
 
 const memoryCardStyle: CSSProperties = {

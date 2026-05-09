@@ -242,3 +242,45 @@ npm run gacha:smoke
 
 - `npm run build`: passed.
 - `npx tsc --noEmit --pretty false`: passed.
+
+## 2026-05-09 Memory UI Copy and Design Batch Review
+
+### Target
+
+- `lunaria-app/app/memory/page.tsx`
+- `lunaria/MEMORY_RESTORE_EDIT_DESIGN_2026-05-09.md`
+- `lunaria/ASSISTANT_REPLY_INTEGRATION_PLAN_2026-05-09.md`
+- `lunaria/PORTRAIT_COMPONENT_CONSOLIDATION_PLAN_2026-05-09.md`
+
+### Findings
+
+- No DB/API/schema/env/production changes in this batch.
+- `/memory` UI copy now explains that diary is day history, memory is carry-forward context, and candidates are user-approved suggestions.
+- Restore/edit work is intentionally design-only until the next implementation step.
+- AssistantReply plan recommends parser-first rollout to avoid breaking chat.
+- Portrait plan avoids a risky immediate component merge.
+
+### Residual Risks
+
+- Candidate approve/archive/reject still depends on migration `019` being applied in the real Supabase project.
+- Japanese UX copy should be restored later through a verified UTF-8 workflow.
+- Browser visual QA is recommended.
+
+## 2026-05-09 AssistantReply Parser Foundation Review
+
+### Target
+
+- `lunaria-app/lib/lunaria/assistant-reply.ts`
+- `lunaria-app/lib/lunaria/visual-state.ts`
+
+### Findings
+
+- No blocking findings during self-review.
+- Parser has raw-text fallback, so invalid/non-JSON model output can still become `{ message: rawText }`.
+- The new files are not wired into chat yet, intentionally avoiding runtime behavior changes.
+- zod dependency already exists in the project.
+
+### Residual Risks
+
+- Future integration must not break streaming chat.
+- `should_create_memory_candidate` should remain a hint, not an automatic write trigger.

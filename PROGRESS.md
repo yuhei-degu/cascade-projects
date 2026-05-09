@@ -249,3 +249,42 @@ Verification:
 - `npm run build`: passed.
 - `npx tsc --noEmit --pretty false`: passed.
 - Secret/write scan over the changed diary page: no matches.
+
+## 2026-05-09 Memory UI and Next Design Batch
+
+Completed a larger AI_DEV_OS batch without DB/API/schema changes.
+
+Changed:
+
+- `lunaria-app/app/memory/page.tsx`
+- `lunaria/MEMORY_RESTORE_EDIT_DESIGN_2026-05-09.md`
+- `lunaria/ASSISTANT_REPLY_INTEGRATION_PLAN_2026-05-09.md`
+- `lunaria/PORTRAIT_COMPONENT_CONSOLIDATION_PLAN_2026-05-09.md`
+
+Behavior:
+
+- `/memory` keeps existing API behavior and candidate actions, but copy is now readable and clearer about diary vs memory vs candidate review.
+- Memory restore/edit has a phased implementation design.
+- AssistantReply integration has a parser-first rollout plan.
+- Portrait component consolidation has a staged no-big-bang plan.
+
+Verification:
+
+- `npm run build`: passed.
+- `npx tsc --noEmit --pretty false`: passed.
+
+## 2026-05-09 AssistantReply Parser Foundation
+
+Implemented the first safe AssistantReply stage without changing chat runtime behavior.
+
+Changed:
+
+- `lunaria-app/lib/lunaria/assistant-reply.ts`
+- `lunaria-app/lib/lunaria/visual-state.ts`
+
+Behavior:
+
+- Structured AssistantReply JSON can be parsed and validated with zod.
+- Plain text remains valid through raw-text fallback.
+- Shared expression/motion visual-state types now exist for later portrait consolidation.
+- No chat route, DB, API contract, env, migration, or production behavior changed.

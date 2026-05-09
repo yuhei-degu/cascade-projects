@@ -1,4 +1,4 @@
-﻿# Lunaria Completion Snapshot
+# Lunaria Completion Snapshot
 
 Date: 2026-05-09
 Owner: Codex 5.5
@@ -13,8 +13,8 @@ Estimated state:
 
 | Target | Estimated Done | Estimated Remaining | Meaning |
 |---|---:|---:|---|
-| Local MVP / Private Alpha | 62% | 38% | Usable locally, core loops exist, but DB verification, memory governance, and polish remain |
-| Public Beta | 38% | 62% | Needs auth/profile hardening, production deployment flow, stronger UX, and migration confidence |
+| Local MVP / Private Alpha | 66% | 34% | Usable locally, core loops exist, diary/memory UI is clearer, but DB verification and restore/edit implementation remain |
+| Public Beta | 40% | 60% | Needs auth/profile hardening, production deployment flow, stronger UX, and migration confidence |
 | Full Life-log OS Vision | 18% | 82% | Long-term vision includes Live2D, life_events, integrations, profiles, external apps, monetization |
 
 These percentages are planning estimates, not exact engineering metrics. They are weighted by product risk, not just file count.
@@ -25,11 +25,11 @@ These percentages are planning estimates, not exact engineering metrics. They ar
 |---|---:|---:|---|---|
 | AI_DEV_OS operation | 70% | 30% | Active | Templates, task board, metrics, handoff, lessons learned exist. Needs ongoing cleanup and routine use. |
 | Chat core | 70% | 30% | Functional | Chat route and prompt foundation exist. AssistantReply schema integration remains. |
-| Diary | 55% | 45% | Functional but needs polish | Diary generation/list/detail exist. Needs UI review fixes, edit/delete/regenerate hardening, memory source handling. |
-| Memory governance | 45% | 55% | Foundation present | Candidate review APIs/UI exist. Needs real-data verification, restore/edit path, safer UX copy. |
+| Diary | 64% | 36% | Functional and clearer | Must-A/B/C UI polish is done. Edit/delete/regenerate hardening and memory source handling remain. |
+| Memory governance | 52% | 48% | Foundation present | Candidate review APIs/UI exist and copy is clearer. Needs real-data verification and restore/edit implementation. |
 | Gacha / Moonbox | 68% | 32% | Mostly functional locally | Gacha draw, inventory, admin, pity candidate design, reports exist. Needs migration-state verification and item integration. |
 | Character items/state | 38% | 62% | Staged | Mock UI, docs, migration candidates, read APIs, fallback pages exist. Needs Supabase apply, verification, equip writes. |
-| Visual expression / portrait | 30% | 70% | Prototype | Placeholder components exist. Needs schema unification, assets, final reaction-to-view wiring. |
+| Visual expression / portrait | 34% | 66% | Prototype | Placeholder components and shared visual-state types exist. Needs schema unification, assets, final reaction-to-view wiring. |
 | User profile / personality tuning | 18% | 82% | Design-heavy | Product direction exists. Needs schema, UI, prompt injection rules, privacy review. |
 | life_events / external integrations | 8% | 92% | Deferred | Architecture direction exists. No implementation yet. |
 | Production readiness | 25% | 75% | Deferred by current constraints | Build checks exist. Vercel/free-plan and Supabase apply flow remain gated. |
@@ -88,7 +88,7 @@ Required remaining work:
 | User-visible safety/control | Partial | Restore/edit memory UX and copy |
 | Handoff docs reflect reality | Improving | Continue AI_DEV_OS metrics and progress updates |
 
-Estimated Private Alpha remaining: about 38%.
+Estimated Private Alpha remaining: about 34%.
 
 ## Public Beta Exit Criteria
 
@@ -104,7 +104,7 @@ Major remaining work:
 - Basic observability and support runbook.
 - Clear onboarding and data-control UI.
 
-Estimated Public Beta remaining: about 62%.
+Estimated Public Beta remaining: about 60%.
 
 ## Recommended Next Sequence
 
