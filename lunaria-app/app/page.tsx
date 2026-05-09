@@ -1,8 +1,27 @@
 'use client'
 import { useState, useEffect, useRef, useCallback } from 'react'
+import LunariaPortrait from '@/components/character/LunariaPortrait'
+import {
+  type LunariaExpression,
+  type LunariaMotion,
+  isLunariaExpression,
+  isLunariaMotion,
+} from '@/lib/lunaria/visual-state'
 
 type RouteType = 'light_normal' | 'light_probe' | 'claude_serious'
 interface Msg { role: 'user' | 'assistant'; content: string; ts: number }
+interface AssistantMeta {
+  emotion?: string
+  expression?: string
+  motion?: string
+  voice_tone?: string
+  topic_tags?: string[]
+}
+interface AssistantVisualState {
+  expression: LunariaExpression
+  motion: LunariaMotion
+  label: string
+}
 const ROUTE_COLOR: Record<RouteType, string> = {
   light_normal:   '#4d8f7a',
   light_probe:    '#c8963c',
@@ -14,6 +33,34 @@ const load = <T,>(k: string, d: T): T => {
 }
 const save = (k: string, v: unknown) => {
   try { localStorage.setItem(k, JSON.stringify(v)) } catch {}
+}
+
+function visualFromAssistant(meta: AssistantMeta | null | undefined, routeType: RouteType): AssistantVisualState {
+  const expressionFromEmotion: Record<string, LunariaExpression> = {
+    warm: 'gentle_smile',
+    playful: 'teasing',
+    sad: 'sad',
+    serious: 'serious',
+    calm: 'gentle_smile',
+    surprised: 'surprised',
+    relieved: 'relieved',
+    worried: 'thinking',
+  }
+  const routeFallback: Record<RouteType, AssistantVisualState> = {
+    light_normal: { expression: 'gentle_smile', motion: 'idle', label: 'warm' },
+    light_probe: { expression: 'thinking', motion: 'tilt_head', label: 'thinking' },
+    claude_serious: { expression: 'serious', motion: 'lean_forward', label: 'serious' },
+  }
+  const fallback = routeFallback[routeType]
+  const expression = isLunariaExpression(meta?.expression)
+    ? meta.expression
+    : expressionFromEmotion[String(meta?.emotion ?? '')] ?? fallback.expression
+  const motion = isLunariaMotion(meta?.motion) ? meta.motion : fallback.motion
+  return {
+    expression,
+    motion,
+    label: meta?.emotion || meta?.voice_tone || fallback.label,
+  }
 }
 
 function Typing() {
@@ -60,6 +107,7 @@ export default function ChatPage() {
   const [convMode, setConvMode]               = useState<string>('continue')
   const [userName, setUserName]               = useState<string>('')
   const [ticketToast, setTicketToast]         = useState<string | null>(null)
+  const [assistantVisual, setAssistantVisual] = useState<AssistantVisualState>(() => visualFromAssistant(null, 'light_normal'))
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef  = useRef<HTMLInputElement>(null)
 
@@ -177,6 +225,7 @@ export default function ChatPage() {
             setLastSub(d.lastSubtopic ?? 'unknown')
             setCoverage(d.coverage ?? coverage)
             setConvMode(d.conversationMode ?? 'continue')
+            setAssistantVisual(visualFromAssistant(d.assistantMeta ?? null, d.routeType ?? 'light_normal'))
             if (d.userName) setUserName(d.userName)
             save('luna_scores', d.prevScores ?? [])
             save('luna_heavy', d.prevHeavy ?? 0)
@@ -240,6 +289,24 @@ export default function ChatPage() {
       )}
 
       {/* devパネル */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        padding: '8px 16px',
+        borderBottom: '1px solid rgba(255,255,255,.04)',
+        background: 'linear-gradient(90deg, rgba(200,160,96,.06), rgba(127,179,213,.035))',
+        flexShrink: 0,
+      }}>
+        <LunariaPortrait expression={assistantVisual.expression} motion={assistantVisual.motion} size="sm" />
+        <div style={{ minWidth: 0 }}>
+          <div style={{ color: '#c8a060', fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase' }}>Luna mood</div>
+          <div style={{ color: '#8f8372', fontSize: 12, marginTop: 2 }}>
+            {assistantVisual.label} / {assistantVisual.expression} / {assistantVisual.motion}
+          </div>
+        </div>
+      </div>
+
       {showDev && (
         <div style={{ background: '#0c0b09', borderBottom: '1px solid rgba(255,255,255,.05)', padding: '8px 16px', fontSize: 11, color: '#5a5450', flexShrink: 0, lineHeight: 1.8 }}>
           <div>

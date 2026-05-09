@@ -39,7 +39,7 @@ This file classifies active Lunaria tasks by difficulty, risk, required AI level
 | LUN-DIA-001 | Extract diary UI Must-A/B/C acceptance checklist | Low | Low | Claude Code | No | No | No | Small | Done | Acceptance checklist created |
 | LUN-DIA-002 | Implement diary UI Must-A/B/C fixes | Medium | Medium | Codex 5.5 | Yes | No | No | Medium | Done | Limited UI changes shipped with build/typecheck passing |
 | LUN-ASSIST-001 | Plan AssistantReply schema integration into chat path | Medium | Medium | Claude/Gemini + Codex 5.5 | Yes | No | Conditional | Medium | Done | Parser/types, integration plan, and guarded chat metadata response exist; current text reply contract unchanged |
-| LUN-ASSIST-002 | Map AssistantReply metadata to chat portrait state | Medium | Medium | Codex 5.5 | Yes | No | No | Medium | Todo | Next step after metadata response; should not change persisted message format |
+| LUN-ASSIST-002 | Map AssistantReply metadata to chat portrait state | Medium | Medium | Codex 5.5 | Yes | No | No | Medium | Done | Chat shows a small Luna mood portrait from AssistantReply metadata or route fallback; persisted message format unchanged |
 | LUN-CHAR-002 | Apply and verify `020/021` in Supabase | Medium | High | Human + Codex 5.5 | Yes | Yes | Yes | Medium | Blocked | Requires human DB action and migration state confirmation |
 | LUN-CHAR-003 | Add equip/apply item writes for character state | High | High | Codex 5.5 | Yes | Yes | Yes | Large | Deferred | Should wait until `020/021` are applied and verified |
 | LUN-PROF-001 | Design `user_communication_profiles` | High | High | Claude Code + Security Agent | Yes | Yes | Yes | Medium | Todo | Separates profile/style preferences from memory; privacy-sensitive |

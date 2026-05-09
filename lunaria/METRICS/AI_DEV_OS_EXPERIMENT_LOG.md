@@ -54,6 +54,8 @@ Purpose: Measure whether AI_DEV_OS improves Lunaria development speed, safety, a
 
 | LUN-ASSIST-001 | 2026-05-09 | Codex 5.5 | Codex self-review | api | Medium | Medium | No | 0m | ~30m | 4 | Yes | Yes | N/A | 0 | 0 | 0 | Done |  | Chat final output parses AssistantReply and emits optional `assistantMeta`; text reply contract preserved |
 
+| LUN-ASSIST-002 | 2026-05-09 | Codex 5.5 | Codex self-review | ui | Medium | Medium | No | 0m | ~25m | 3 | Yes | Yes | N/A | 0 | 0 | 0 | Done |  | Chat shows Luna mood portrait from AssistantReply metadata or route fallback; DB/env/prod untouched |
+
 ## Trial Notes
 
 - Task scope is clearer when each work item has risk, owner, and stop conditions.
