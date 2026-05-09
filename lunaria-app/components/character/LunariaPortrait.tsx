@@ -1,53 +1,12 @@
 'use client'
 
 import type { CSSProperties } from 'react'
+import {
+  type LunariaExpression,
+  type LunariaMotion,
+} from '@/lib/lunaria/visual-state'
 
-/**
- * LunariaPortrait
- *
- * 将来の Live2D 差し替え前提の placeholder コンポーネント。
- * 今は SVG / CSS だけで「ルナリアらしさ」を仮表示する。
- *
- * 使い方：
- *   <LunariaPortrait expression="gentle_smile" motion="idle" outfit="default" />
- *
- * 参照：
- *   - docs/CHARACTER_EXPRESSIONS.md（12 種の表情）
- *   - docs/CHARACTER_MOTIONS.md（10 種のモーション）
- *   - docs/LUNARIA_VISUAL_GUIDE.md（髪色 / 目色 / モチーフ）
- *   - docs/ASSISTANT_REPLY_SCHEMA.md（AI 返答の expression / motion をそのまま受ける）
- *
- * TODO（Codex 復帰後）：
- *   - 実立ち絵 PNG を public/lunaria/portrait/{outfit}/{expression}.png に配置
- *   - Live2D Cubism モデルへの段階移行（v1: パーツ差分、v2: Cubism）
- *   - voice_tone を audio prop で受ける
- */
-
-export type LunariaExpression =
-  | 'normal'
-  | 'smile'
-  | 'gentle_smile'
-  | 'teasing'
-  | 'surprised'
-  | 'thinking'
-  | 'sad'
-  | 'serious'
-  | 'embarrassed'
-  | 'sleepy'
-  | 'excited'
-  | 'relieved'
-
-export type LunariaMotion =
-  | 'idle'
-  | 'tilt_head'
-  | 'nod'
-  | 'shake_head'
-  | 'look_away'
-  | 'lean_forward'
-  | 'close_eyes'
-  | 'small_wave'
-  | 'arms_crossed'
-  | 'soft_laugh'
+export type { LunariaExpression, LunariaMotion }
 
 export type LunariaPortraitProps = {
   expression?: LunariaExpression | string
@@ -55,7 +14,6 @@ export type LunariaPortraitProps = {
   motion?: LunariaMotion | string
   className?: string
   size?: 'sm' | 'md' | 'lg'
-  /** 立ち絵 PNG の override パス。指定があればそれを表示、なければ SVG プレースホルダー */
   imageUrl?: string
 }
 
@@ -65,7 +23,6 @@ const SIZE_PX: Record<NonNullable<LunariaPortraitProps['size']>, number> = {
   lg: 240,
 }
 
-// 表情ごとに口角・眉の角度を変えて差別化（雰囲気だけ）
 const EXPRESSION_HINT: Record<string, { mouthCurve: number; browAngle: number; eyeOpenness: number; cheek: boolean }> = {
   normal: { mouthCurve: 0, browAngle: 0, eyeOpenness: 1, cheek: false },
   smile: { mouthCurve: 4, browAngle: -3, eyeOpenness: 0.85, cheek: false },
@@ -105,7 +62,6 @@ export default function LunariaPortrait({
   const px = SIZE_PX[size]
   const hint = EXPRESSION_HINT[expression] ?? EXPRESSION_HINT.normal
   const motionClass = MOTION_CLASS[motion] ?? MOTION_CLASS.idle
-
   const wrapperStyle: CSSProperties = {
     width: px,
     height: px,
@@ -113,7 +69,6 @@ export default function LunariaPortrait({
     display: 'inline-block',
   }
 
-  // 実画像があればそれを優先
   if (imageUrl) {
     return (
       <div className={className} style={wrapperStyle} data-expression={expression} data-motion={motion} data-outfit={outfit}>
@@ -128,7 +83,6 @@ export default function LunariaPortrait({
     )
   }
 
-  // SVG プレースホルダー
   const eyeRy = 4 * (hint.eyeOpenness ?? 1)
   const mouthPath =
     hint.mouthCurve === 0
@@ -161,32 +115,21 @@ export default function LunariaPortrait({
           </radialGradient>
         </defs>
 
-        {/* 月光の背景 */}
         <circle cx="50" cy="50" r="48" fill="url(#moonGlow)" />
-
-        {/* 髪（後ろ） */}
         <path d="M 18 38 Q 18 18 50 14 Q 82 18 82 38 L 82 78 Q 50 92 18 78 Z" fill="url(#hairGrad)" />
-
-        {/* 顔 */}
         <ellipse cx="50" cy="48" rx="20" ry="24" fill="#F4E9D8" />
-
-        {/* 髪（前） */}
         <path d="M 30 30 Q 38 24 50 26 Q 62 24 70 30 Q 65 35 50 33 Q 35 35 30 30 Z" fill="url(#hairGrad)" />
 
-        {/* 眉 */}
         <path d={`M 36 ${browLeftY} Q 40 ${browLeftY - 1} 44 ${browLeftY + 0.3}`} stroke="#2a2440" strokeWidth="1.2" fill="none" strokeLinecap="round" />
         <path d={`M 56 ${browRightY + 0.3} Q 60 ${browRightY - 1} 64 ${browRightY}`} stroke="#2a2440" strokeWidth="1.2" fill="none" strokeLinecap="round" />
 
-        {/* 目（瞳孔 + 金リング） */}
         <ellipse cx="40" cy="48" rx="3" ry={eyeRy} fill="#9bb4d6" />
         <ellipse cx="40" cy="48" rx="3" ry={eyeRy} fill="none" stroke="#d6c184" strokeWidth="0.4" />
         <ellipse cx="60" cy="48" rx="3" ry={eyeRy} fill="#9bb4d6" />
         <ellipse cx="60" cy="48" rx="3" ry={eyeRy} fill="none" stroke="#d6c184" strokeWidth="0.4" />
 
-        {/* 口 */}
         <path d={mouthPath} stroke="#a36a6f" strokeWidth="1.2" fill="none" strokeLinecap="round" />
 
-        {/* 頬（embarrassed / excited 時） */}
         {hint.cheek && (
           <>
             <ellipse cx="34" cy="55" rx="3" ry="1.5" fill="#e3a1a8" opacity="0.5" />
@@ -194,37 +137,31 @@ export default function LunariaPortrait({
           </>
         )}
 
-        {/* 月モチーフ（襟元） */}
         <circle cx="50" cy="86" r="2" fill="#d6c184" opacity="0.8" />
       </svg>
 
       <PortraitMotionStyles />
 
-      {/* outfit / motion のメタ表示（dev 用、size=lg のみ） */}
       {size === 'lg' && (
-        <div
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            bottom: -22,
-            textAlign: 'center',
-            fontSize: 10,
-            color: '#9E9CC2',
-            letterSpacing: 0.5,
-          }}
-        >
-          {expression} · {motion} · {outfit}
+        <div style={debugLabelStyle}>
+          {expression} / {motion} / {outfit}
         </div>
       )}
     </div>
   )
 }
 
-/**
- * モーション用の CSS を 1 度だけ inline で吐く。
- * 重複描画は許容（コンポーネント数本程度）。本番では globals.css に移動推奨。
- */
+const debugLabelStyle: CSSProperties = {
+  position: 'absolute',
+  left: 0,
+  right: 0,
+  bottom: -22,
+  textAlign: 'center',
+  fontSize: 10,
+  color: '#9E9CC2',
+  letterSpacing: 0.5,
+}
+
 const PORTRAIT_MOTION_CSS = `
 .lunaria-motion-idle { animation: lunaria-breathe 4.5s ease-in-out infinite; }
 .lunaria-motion-tilt { animation: lunaria-tilt 1.4s ease-in-out; }

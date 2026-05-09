@@ -288,3 +288,24 @@ Behavior:
 - Plain text remains valid through raw-text fallback.
 - Shared expression/motion visual-state types now exist for later portrait consolidation.
 - No chat route, DB, API contract, env, migration, or production behavior changed.
+
+## 2026-05-09 Memory Candidate Restore UI + Portrait Cleanup
+
+Implemented another safe batch without DB/API/schema/env/production changes.
+
+Changed:
+
+- `lunaria-app/app/memory/page.tsx`
+- `lunaria-app/components/character/LunariaPortrait.tsx`
+
+Behavior:
+
+- `/memory` candidate panel can filter `pending`, `archived`, `rejected`, `merged`, and `all` candidate states.
+- Archived/rejected candidates can be restored to review with the existing `PATCH /api/memory/candidates` action `pending`.
+- Candidate actions reload the memory/candidate shelves after mutation to avoid stale optimistic counters.
+- Character preview portrait now imports shared visual-state expression/motion types and has readable ASCII comments/labels.
+
+Remaining:
+
+- Core memory archive/restore/edit is still design-ready, not implemented.
+- Real-data verification still depends on Supabase migration `019` being applied.

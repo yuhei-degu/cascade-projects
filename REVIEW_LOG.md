@@ -284,3 +284,23 @@ npm run gacha:smoke
 
 - Future integration must not break streaming chat.
 - `should_create_memory_candidate` should remain a hint, not an automatic write trigger.
+
+## 2026-05-09 Memory Candidate Restore UI Review
+
+### Target
+
+- `lunaria-app/app/memory/page.tsx`
+- `lunaria-app/components/character/LunariaPortrait.tsx`
+
+### Findings
+
+- No DB schema or API contract changes.
+- Candidate restore uses the existing `pending` action already accepted by `PATCH /api/memory/candidates`.
+- Archived/rejected candidate restore is explicit and reversible.
+- Core memory restore/edit remains intentionally out of this implementation batch.
+- Portrait mock cleanup reduces future merge risk by sharing expression/motion types.
+
+### Residual Risks
+
+- Restore behavior needs real Supabase data after migration `019` is applied.
+- Candidate counts now refresh after each action rather than relying on local optimistic decrements, which is safer but adds a network reload.

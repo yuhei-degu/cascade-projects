@@ -48,6 +48,8 @@ Purpose: Measure whether AI_DEV_OS improves Lunaria development speed, safety, a
 
 | LUN-ASSIST-002 | 2026-05-09 | Codex 5.5 | Codex self-review | lib | Low | Low | No | 0m | ~20m | 4 | Yes | Yes | N/A | 0 | 0 | 0 | Done |  | Added AssistantReply parser and shared visual-state types; no runtime chat changes |
 
+| LUN-BATCH-004 | 2026-05-09 | Codex 5.5 | Codex self-review | ui+refactor | Medium | Medium | No | 0m | ~50m | 5 | Yes | Yes | N/A | 0 | 0 | 0 | Done |  | Candidate restore UI and portrait mock cleanup; DB/API/env untouched |
+
 ## Trial Notes
 
 - Task scope is clearer when each work item has risk, owner, and stop conditions.

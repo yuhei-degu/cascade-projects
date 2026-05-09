@@ -166,11 +166,14 @@ function CandidateCard({
   busy: boolean
   onAction: (id: string, action: CandidateAction) => void
 }) {
+  const isPending = candidate.status === 'pending'
+  const canRestore = candidate.status === 'archived' || candidate.status === 'rejected'
+
   return (
     <article style={candidateCardStyle}>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
         <span style={typeBadgeStyle}>{typeLabels[candidate.candidate_type] ?? candidate.candidate_type}</span>
-        <span style={candidateBadgeStyle}>Needs review</span>
+        <span style={candidateBadgeStyle}>{candidate.status === 'pending' ? 'Needs review' : candidate.status}</span>
         {candidate.source_date && (
           <Link href={`/diary?date=${encodeURIComponent(candidate.source_date)}`} style={dateBadgeStyle}>
             {formatDate(candidate.source_date)} diary
@@ -185,17 +188,28 @@ function CandidateCard({
         <Stat label="Created by" value={candidate.created_by} />
         <Stat label="Created" value={formatTime(candidate.created_at)} />
       </div>
-      <div style={candidateActionRowStyle}>
-        <button type="button" onClick={() => onAction(candidate.id, 'approve')} disabled={busy} style={primaryActionButtonStyle}>
-          {busy ? 'Saving...' : 'Remember this'}
-        </button>
-        <button type="button" onClick={() => onAction(candidate.id, 'archive')} disabled={busy} style={secondaryActionButtonStyle}>
-          Review later
-        </button>
-        <button type="button" onClick={() => onAction(candidate.id, 'reject')} disabled={busy} style={quietActionButtonStyle}>
-          Remove from shelf
-        </button>
-      </div>
+      {(isPending || canRestore) && (
+        <div style={candidateActionRowStyle}>
+          {isPending && (
+            <>
+              <button type="button" onClick={() => onAction(candidate.id, 'approve')} disabled={busy} style={primaryActionButtonStyle}>
+                {busy ? 'Saving...' : 'Remember this'}
+              </button>
+              <button type="button" onClick={() => onAction(candidate.id, 'archive')} disabled={busy} style={secondaryActionButtonStyle}>
+                Review later
+              </button>
+              <button type="button" onClick={() => onAction(candidate.id, 'reject')} disabled={busy} style={quietActionButtonStyle}>
+                Remove from shelf
+              </button>
+            </>
+          )}
+          {canRestore && (
+            <button type="button" onClick={() => onAction(candidate.id, 'pending')} disabled={busy} style={secondaryActionButtonStyle}>
+              {busy ? 'Restoring...' : 'Restore to review'}
+            </button>
+          )}
+        </div>
+      )}
     </article>
   )
 }
@@ -204,6 +218,7 @@ export default function MemoryPage() {
   const [date, setDate] = useState('')
   const [status, setStatus] = useState('active')
   const [includeProfile, setIncludeProfile] = useState(false)
+  const [candidateStatus, setCandidateStatus] = useState('pending')
   const [memories, setMemories] = useState<MemoryItem[]>([])
   const [stats, setStats] = useState<MemoryResponse['stats']>(null)
   const [candidateTableReady, setCandidateTableReady] = useState(false)
@@ -220,7 +235,7 @@ export default function MemoryPage() {
       const params = new URLSearchParams({ status, limit: '120' })
       if (date) params.set('date', date)
       if (includeProfile) params.set('profile', '1')
-      const candidateParams = new URLSearchParams({ status: 'pending', limit: '40' })
+      const candidateParams = new URLSearchParams({ status: candidateStatus, limit: '40' })
       if (date) candidateParams.set('date', date)
       const [memoryRes, candidateRes] = await Promise.all([
         fetch(`/api/memory?${params.toString()}`, { cache: 'no-store' }),
@@ -244,7 +259,7 @@ export default function MemoryPage() {
     } finally {
       setLoading(false)
     }
-  }, [date, includeProfile, status])
+  }, [candidateStatus, date, includeProfile, status])
 
   useEffect(() => {
     loadMemories()
@@ -261,18 +276,7 @@ export default function MemoryPage() {
       })
       const data = await res.json()
       if (!res.ok || !data?.ok) throw new Error(data?.error ?? 'review_failed')
-      setCandidates(current => current.filter(candidate => candidate.id !== id))
-      setCandidateStats(current => current
-        ? {
-            ...current,
-            total: Math.max(0, current.total - 1),
-            by_status: {
-              ...current.by_status,
-              pending: Math.max(0, (current.by_status.pending ?? 1) - 1),
-            },
-          }
-        : current)
-      if (action === 'approve') await loadMemories()
+      await loadMemories()
     } catch {
       setError('The memory candidate could not be updated. Please wait a moment and try again.')
     } finally {
@@ -328,6 +332,13 @@ export default function MemoryPage() {
             <input type="checkbox" checked={includeProfile} onChange={event => setIncludeProfile(event.target.checked)} />
             Include profile-like memories
           </label>
+          <select value={candidateStatus} onChange={event => setCandidateStatus(event.target.value)} style={selectStyle} aria-label="Candidate status">
+            <option value="pending">Pending candidates</option>
+            <option value="archived">Review later shelf</option>
+            <option value="rejected">Removed candidates</option>
+            <option value="merged">Remembered candidates</option>
+            <option value="all">All candidates</option>
+          </select>
         </section>
 
         {error && <div style={errorStyle}>{error}</div>}
@@ -365,7 +376,7 @@ export default function MemoryPage() {
                   <p style={mutedTextStyle}>Apply `019_memory_candidates.sql` to review memory candidates here.</p>
                 </div>
               ) : candidates.length === 0 ? (
-                <p style={mutedTextStyle}>No pending memory candidates right now.</p>
+                <p style={mutedTextStyle}>No memory candidates match this filter right now.</p>
               ) : (
                 <div style={{ display: 'grid', gap: 10 }}>
                   {candidates.slice(0, 5).map(candidate => (
@@ -387,7 +398,8 @@ export default function MemoryPage() {
                 <Stat label="Candidates" value={stats?.by_status?.candidate ?? 0} />
                 <Stat label="Active" value={stats?.by_status?.active ?? 0} />
                 <Stat label="Confirmed" value={stats?.by_status?.confirmed ?? 0} />
-                <Stat label="Pending review" value={candidateTableReady ? (candidateStats?.total ?? candidates.length) : 'not applied'} />
+                <Stat label="Candidate filter" value={candidateStatus} />
+                <Stat label="Candidate rows" value={candidateTableReady ? (candidateStats?.total ?? candidates.length) : 'not applied'} />
               </div>
             </Section>
 

@@ -18,7 +18,8 @@ Status: AI_DEV_OS task board for active Lunaria development
 | P0 | Review remaining uncommitted docs and classify them | Review Agent | DONE | Current git status | `lunaria/DOC_TRIAGE_2026-05-09.md` classifies accepted docs and defers `lunaria-app/docs/` |
 | P1 | Confirm Supabase migration state `014` through `019` | Human + Ops Agent | TODO | Supabase SQL Editor access | `supabase:verify`, `gacha:verify`, and relevant smoke checks match expected DB state |
 | P1 | Verify memory candidate review actions with real data | Implement Agent | TODO | Migration `019` applied | Candidate can be approved to confirmed core memory, archived, and rejected without errors |
-| P1 | Add memory governance restore path for archived candidates/core memories | Implement Agent | DESIGN READY | Current memory APIs | `lunaria/MEMORY_RESTORE_EDIT_DESIGN_2026-05-09.md` defines candidate/core-memory restore and edit phases |
+| P1 | Add memory governance restore path for archived candidates/core memories | Implement Agent | PARTIAL | Current memory APIs | Candidate restore UI is implemented using existing `pending` action; core memory restore/edit remains design-ready |
+| P1 | Add memory candidate restore UI | Codex 5.5 | DONE | Existing candidate PATCH `pending` action | `/memory` can filter archived/rejected/merged/all candidates and restore archived/rejected candidates to review |
 | P1 | Add review log for memory candidate behavior | Review Agent | TODO | Memory candidate verification | `REVIEW_LOG.md` includes findings, risks, and next actions |
 | P1 | Review migration candidates `020` / `021` before Supabase apply | Security + Review Agent | TODO | `020_user_items.sql`, `021_character_states.sql` | RLS, backfill, dependency order, and rollback notes are approved before SQL Editor use |
 | P2 | Add `lib/lunaria/reactions.ts` foundation | Tech Lead + Implement Agent | DONE | `lunaria/LUNARIA_REACTION_MVP_SPEC.md` | Reaction IDs, context mapping, and fallback order are centralized without changing chat behavior; build passes |
@@ -39,6 +40,7 @@ Status: AI_DEV_OS task board for active Lunaria development
 | P2 | Add AssistantReply parser foundation | Codex 5.5 | DONE | AssistantReply integration plan | `lib/lunaria/assistant-reply.ts` parses structured replies with raw-text fallback and does not change chat behavior |
 | P2 | Consolidate duplicate portrait component strategy | Tech Lead Agent | DONE | Existing two portrait components | `lunaria/PORTRAIT_COMPONENT_CONSOLIDATION_PLAN_2026-05-09.md` recommends short-term separation and staged consolidation |
 | P2 | Add shared visual-state types | Codex 5.5 | DONE | Portrait consolidation plan | `lib/lunaria/visual-state.ts` defines expression/motion unions for future component consolidation |
+| P2 | Clean character portrait mock component | Codex 5.5 | DONE | Portrait consolidation plan | `components/character/LunariaPortrait.tsx` uses shared visual-state types and no longer contains mojibake comments |
 | P3 | End-world game MVP scope doc | PM/UX Agent | DEFERRED | Core diary/memory/character stable | Scope is cut to a future weekly text MVP; no implementation started |
 | P3 | Live2D / 3D asset pipeline | Tech Lead Agent | DEFERRED | Reaction layer stable | Pipeline proposal exists with cost/risk notes |
 | P3 | Stripe/payment readiness | Security + Release Agent | DEFERRED | Product monetization decision | Stripe checklist and env separation are ready before any payment code |
