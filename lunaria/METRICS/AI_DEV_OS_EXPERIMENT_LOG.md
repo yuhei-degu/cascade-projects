@@ -1,4 +1,4 @@
-﻿# Lunaria AI_DEV_OS Experiment Log
+# Lunaria AI_DEV_OS Experiment Log
 
 Date: 2026-05-09
 Purpose: Measure whether AI_DEV_OS improves Lunaria development speed, safety, and handoff quality.
@@ -41,6 +41,8 @@ Purpose: Measure whether AI_DEV_OS improves Lunaria development speed, safety, a
 | LUN-STATUS-001 | 2026-05-09 | Codex 5.5 | Codex self-review | planning-docs | Low | Low | No | 0m | ~25m | 4 | N/A | N/A | N/A | 0 | 0 | 0 | Done |  | Added completion snapshot and rewrote task evaluation in readable ASCII; no app code touched |
 
 | LUN-DIA-001 | 2026-05-09 | Codex 5.5 | Codex self-review | planning-docs | Low | Low | No | 0m | ~20m | 2 | N/A | N/A | N/A | 0 | 0 | 0 | Done |  | Extracted diary UI Must-A/B/C into an implementation checklist; no app code touched |
+
+| LUN-DIA-002 | 2026-05-09 | Codex 5.5 | Codex self-review | ui | Medium | Medium | No | 0m | ~45m | 4 | Yes | Yes | N/A | 0 | 0 | 0 | Done |  | Implemented diary Must-A/B/C UI fixes; DB/API/env untouched |
 
 ## Trial Notes
 

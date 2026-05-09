@@ -1,4 +1,4 @@
-﻿# TASKS.md
+# TASKS.md
 
 Created: 2026-05-09
 Status: AI_DEV_OS task board for active Lunaria development
@@ -33,7 +33,7 @@ Status: AI_DEV_OS task board for active Lunaria development
 | P2 | Draft `user_communication_profiles` design | Tech Lead + Security Agent | TODO | Memory/profile docs | Design separates style preferences from core memory and avoids sensitive over-inference |
 | P2 | Improve `/memory` UX copy after real use | UX Agent | TODO | Candidate review verification | Copy makes user control clear and avoids surveillance feeling |
 | P2 | Extract diary UI Must-A/B/C acceptance checklist | Claude Code or Codex | DONE | `lunaria/DIARY_UI_REVIEW_2026-05-04.md` | `lunaria/DIARY_UI_ACCEPTANCE_CHECKLIST_2026-05-09.md` defines exact acceptance criteria before implementation |
-| P2 | Implement diary UI Must-A/B/C fixes | Codex 5.5 | TODO | Diary checklist | User-facing diary issues improve without DB schema changes |
+| P2 | Implement diary UI Must-A/B/C fixes | Codex 5.5 | DONE | Diary checklist | `/diary` hides memory candidates/source conversation by default and moves raw stats into technical details; build/typecheck pass |
 | P2 | Plan AssistantReply schema integration | Claude/Gemini + Codex | TODO | `lunaria-app/docs/ASSISTANT_REPLY_SCHEMA.md` | Plan explains how to add structured reply tags without breaking chat |
 | P2 | Consolidate duplicate portrait component strategy | Tech Lead Agent | TODO | Existing two portrait components | Decision doc explains whether to merge or keep separate before refactor |
 | P3 | End-world game MVP scope doc | PM/UX Agent | DEFERRED | Core diary/memory/character stable | Scope is cut to a future weekly text MVP; no implementation started |

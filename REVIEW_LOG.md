@@ -217,3 +217,28 @@ npm run gacha:smoke
 
 - Current implementation uses the existing fixed dev user pattern, consistent with the rest of the app but not production auth-ready.
 - Equipment mutations are intentionally not implemented yet; ownership validation should be reviewed before adding writes.
+
+## 2026-05-09 Diary UI Must-A/B/C Review
+
+### Target
+
+- `lunaria-app/app/diary/page.tsx`
+- `lunaria/DIARY_UI_ACCEPTANCE_CHECKLIST_2026-05-09.md`
+
+### Findings
+
+- No blocking findings during self-review.
+- The implementation does not change DB, API routes, migrations, auth, env, or production settings.
+- Memory candidates are no longer shown as a default expanded main section.
+- Raw diary metrics are now behind `Diary source details`.
+- Source conversation is lower in the main flow and collapsed by default.
+
+### Residual Risks
+
+- UI copy is currently ASCII/English to avoid Windows encoding corruption in shared files; Japanese tone pass should be done later with a verified UTF-8 workflow.
+- Visual QA in browser is still recommended after the local dev server is running.
+
+### Verification
+
+- `npm run build`: passed.
+- `npx tsc --noEmit --pretty false`: passed.

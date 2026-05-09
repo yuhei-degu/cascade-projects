@@ -1,4 +1,4 @@
-﻿# PROGRESS.md
+# PROGRESS.md
 
 Created: 2026-05-09
 Status: initial AI_DEV_OS progress snapshot for active Lunaria development
@@ -228,3 +228,24 @@ Next safe implementation target:
 - Collapse `memory_changes` by default.
 - Move internal diary stats behind a details/dev layer.
 - Move source conversation lower in the flow and keep it collapsed by default.
+
+## 2026-05-09 Diary UI Must-A/B/C Implementation
+
+Implemented the diary UI acceptance checklist without DB/API/schema changes.
+
+Changed:
+
+- `lunaria-app/app/diary/page.tsx`
+
+Behavior:
+
+- `memory_changes` are hidden by default inside `Memory candidates` details.
+- Internal diary stats moved into `Diary source details` details.
+- Source conversation moved below the diary content and remains collapsed by default.
+- Existing `/api/diary`, `/api/diary/month`, and `/api/messages` contracts are unchanged.
+
+Verification:
+
+- `npm run build`: passed.
+- `npx tsc --noEmit --pretty false`: passed.
+- Secret/write scan over the changed diary page: no matches.

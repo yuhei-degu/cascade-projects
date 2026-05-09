@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 interface DiaryLog {
@@ -44,18 +44,18 @@ interface MonthDay {
 }
 
 const emotionLabels: Record<string, string> = {
-  joy: 'うれしさ',
-  anger: '怒り',
-  sadness: 'さみしさ',
-  shyness: '照れ',
-  loneliness: '孤独感',
-  anxiety: '不安',
+  joy: 'Joy',
+  anger: 'Anger',
+  sadness: 'Sadness',
+  shyness: 'Shyness',
+  loneliness: 'Loneliness',
+  anxiety: 'Anxiety',
 }
 
 const memoryActionLabels: Record<string, string> = {
-  candidate: '候補',
-  saved: '保存',
-  confirmed: '確認済み',
+  candidate: 'Candidate',
+  saved: 'Saved',
+  confirmed: 'Confirmed',
 }
 
 function todayJst(): string {
@@ -80,7 +80,7 @@ function asMemoryChanges(value: DiaryLog['memory_changes'] | undefined): Array<{
   return Array.isArray(value)
     ? value
         .filter((item): item is { content: string; action?: string } => typeof item?.content === 'string' && item.content.trim().length > 0)
-        .slice(0, 4)
+        .slice(0, 6)
     : []
 }
 
@@ -92,7 +92,7 @@ function shiftDate(date: string, days: number): string {
 
 function formatDateLabel(date: string): string {
   const [year, month, day] = date.split('-').map(Number)
-  return new Intl.DateTimeFormat('ja-JP', {
+  return new Intl.DateTimeFormat('en-US', {
     timeZone: 'Asia/Tokyo',
     month: 'long',
     day: 'numeric',
@@ -101,34 +101,18 @@ function formatDateLabel(date: string): string {
 }
 
 function formatTime(ts: number): string {
-  return new Intl.DateTimeFormat('ja-JP', {
+  return new Intl.DateTimeFormat('en-US', {
     timeZone: 'Asia/Tokyo',
     hour: '2-digit',
     minute: '2-digit',
   }).format(new Date(ts))
 }
 
-function Section({ title, accent, children }: { title: string; accent?: string; children: React.ReactNode }) {
+function Section({ title, accent, children }: { title: string; accent?: string; children: ReactNode }) {
   return (
-    <section style={{
-      border: '1px solid rgba(230,210,170,.13)',
-      background: 'linear-gradient(145deg, rgba(31,27,21,.86), rgba(15,14,12,.94))',
-      borderRadius: 24,
-      padding: 18,
-      boxShadow: '0 18px 60px rgba(0,0,0,.28)',
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
-      <div style={{
-        position: 'absolute',
-        inset: '0 auto auto 0',
-        width: 120,
-        height: 120,
-        background: `radial-gradient(circle, ${accent ?? 'rgba(200,160,96,.16)'}, transparent 68%)`,
-        opacity: .9,
-        pointerEvents: 'none',
-      }} />
-      <h2 style={{ fontSize: 12, letterSpacing: '.16em', color: '#c8a060', marginBottom: 12, position: 'relative' }}>{title}</h2>
+    <section style={sectionStyle}>
+      <div style={{ ...sectionGlowStyle, background: `radial-gradient(circle, ${accent ?? 'rgba(200,160,96,.16)'}, transparent 68%)` }} />
+      <h2 style={sectionTitleStyle}>{title}</h2>
       <div style={{ position: 'relative' }}>{children}</div>
     </section>
   )
@@ -140,7 +124,7 @@ function ListBlock({ items, empty }: { items: string[]; empty: string }) {
     <div style={{ display: 'grid', gap: 9 }}>
       {items.map((item, index) => (
         <div key={`${item}-${index}`} style={listItemStyle}>
-          <span style={{ color: '#7fb3d5', marginTop: 1 }}>✦</span>
+          <span style={{ color: '#7fb3d5', marginTop: 1 }}>-</span>
           <span>{item}</span>
         </div>
       ))}
@@ -148,7 +132,7 @@ function ListBlock({ items, empty }: { items: string[]; empty: string }) {
   )
 }
 
-function Stat({ label, value }: { label: string; value: React.ReactNode }) {
+function Stat({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
       <span style={{ color: '#8f8372' }}>{label}</span>
@@ -164,7 +148,6 @@ export default function DiaryPage() {
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [showMessages, setShowMessages] = useState(false)
   const [sourceCounts, setSourceCounts] = useState({ extraction_count: 0, message_count: 0 })
   const [monthDays, setMonthDays] = useState<MonthDay[]>([])
 
@@ -197,7 +180,7 @@ export default function DiaryPage() {
       const messageData = await messagesRes.json()
       setMessages(Array.isArray(messageData.messages) ? messageData.messages : [])
     } catch {
-      setError('この日の記録を開けませんでした。少し時間を置いて、もう一度試してみてください。')
+      setError('The diary shelf could not be opened. Please wait a moment and try again.')
       setDiary(null)
       setMessages([])
       setSourceCounts({ extraction_count: 0, message_count: 0 })
@@ -226,13 +209,13 @@ export default function DiaryPage() {
       const data = await res.json()
       if (!res.ok || !data.ok) {
         setError(data.reason === 'no_source'
-          ? 'この日は、まだ日記にできる会話が見つかりません。少し話してからまた試してみてください。'
-          : '会話は見つかりましたが、今日は日記に綴れませんでした。もう一度だけ試してみてください。')
+          ? 'There is not enough conversation from this day to write a diary yet.'
+          : 'Luna found the day, but could not weave it into a diary this time. Please try again.')
       }
       await loadDay(date)
       await loadMonth(date)
     } catch {
-      setError('日記を綴る途中で、月明かりが途切れました。もう一度試してみてください。')
+      setError('Moonlight slipped while writing the diary. Please try again.')
     } finally {
       setGenerating(false)
     }
@@ -251,30 +234,30 @@ export default function DiaryPage() {
       <div style={{ maxWidth: 1060, margin: '0 auto' }}>
         <header style={headerStyle}>
           <div>
-            <Link href="/" style={backLinkStyle}>← ルナの部屋へ</Link>
+            <Link href="/" style={backLinkStyle}>Back to Luna's room</Link>
             <p style={eyebrowStyle}>Lunaria Diary</p>
-            <h1 style={titleStyle}>日々の月棚</h1>
+            <h1 style={titleStyle}>Day Shelf</h1>
             <p style={leadStyle}>
-              その日に話したこと、残った気持ち、次に開けたい話題を、ルナがそっとしまっておく場所。
+              A quiet place where Luna gathers what you talked about, what lingered, and what might be worth carrying forward.
             </p>
           </div>
 
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-            <Link href="/memory" style={moonboxLinkStyle}>記憶へ</Link>
-            <Link href="/gacha" style={moonboxLinkStyle}>月箱へ</Link>
+            <Link href="/memory" style={moonboxLinkStyle}>Memory</Link>
+            <Link href="/gacha" style={moonboxLinkStyle}>Moonbox</Link>
           </div>
         </header>
 
         <section style={toolbarStyle}>
-          <button onClick={() => setDate(shiftDate(date, -1))} style={navButtonStyle}>前の日</button>
+          <button onClick={() => setDate(shiftDate(date, -1))} style={navButtonStyle}>Previous day</button>
           <input
             type="date"
             value={date}
             onChange={event => setDate(event.target.value || todayJst())}
             style={dateInputStyle}
           />
-          <button onClick={() => setDate(shiftDate(date, 1))} style={navButtonStyle}>次の日</button>
-          <button onClick={() => setDate(todayJst())} style={navButtonStyle}>今日</button>
+          <button onClick={() => setDate(shiftDate(date, 1))} style={navButtonStyle}>Next day</button>
+          <button onClick={() => setDate(todayJst())} style={navButtonStyle}>Today</button>
           <button onClick={generateDiary} disabled={generating} style={{
             ...navButtonStyle,
             marginLeft: 'auto',
@@ -283,75 +266,103 @@ export default function DiaryPage() {
             borderColor: 'rgba(200,160,96,.5)',
             fontWeight: 700,
           }}>
-            {generating ? '日記を綴っています...' : 'この日をまとめる'}
+            {generating ? 'Weaving diary...' : 'Write this day'}
           </button>
         </section>
 
         {error && <div style={errorStyle}>{error}</div>}
 
         {loading ? (
-          <div style={loadingStyle}>月棚を開いています...</div>
+          <div style={loadingStyle}>Opening the shelf...</div>
         ) : (
           <div style={contentGridStyle}>
             <div style={{ display: 'grid', gap: 16 }}>
-              <Section title={hasDiary ? `${formatDateLabel(date)} の日記` : `${formatDateLabel(date)} の空き棚`} accent="rgba(200,160,96,.18)">
+              <Section title={hasDiary ? `${formatDateLabel(date)} Diary` : `${formatDateLabel(date)} Empty Shelf`} accent="rgba(200,160,96,.18)">
                 {hasDiary ? (
                   <div>
                     <div style={datePillStyle}>{date}</div>
                     {diary?.title && <h2 style={diaryTitleStyle}>{diary.title}</h2>}
                     <p style={lunaCommentStyle}>
-                      {diary?.luna_comment || '今日は、言葉の輪郭だけが静かに残っているみたい。'}
+                      {diary?.luna_comment || 'A few quiet words are still resting here.'}
                     </p>
                     <p style={summaryStyle}>
-                      {diary?.summary || 'この日の要約はまだ短いままです。'}
+                      {diary?.summary || 'This day has not found its full shape yet.'}
                     </p>
+                    <div style={softStatusStyle}>{hasDiary ? 'Diary available' : 'Not generated yet'}</div>
                   </div>
                 ) : (
                   <div>
-                    <p style={summaryStyle}>この日は、まだルナの棚に日記がありません。</p>
-                    <p style={mutedTextStyle}>会話が残っている日なら、「この日をまとめる」から日記を生成できます。</p>
+                    <p style={summaryStyle}>Luna has not placed a diary on this shelf yet.</p>
+                    <p style={mutedTextStyle}>If there is conversation from this day, use "Write this day" to generate one.</p>
                   </div>
                 )}
               </Section>
 
-              <Section title="この日にあったこと" accent="rgba(127,179,213,.16)">
-                <ListBlock items={asList(diary?.events)} empty="まだ出来事は並んでいません。" />
+              <Section title="What happened" accent="rgba(127,179,213,.16)">
+                <ListBlock items={asList(diary?.events)} empty="No events have settled into words yet." />
               </Section>
 
               {talkedAbout.length > 0 && (
-                <Section title="話したこと" accent="rgba(159,207,189,.15)">
+                <Section title="Talked about" accent="rgba(159,207,189,.15)">
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {talkedAbout.map(topic => <span key={topic} style={topicPillStyle}>{topic}</span>)}
                   </div>
                 </Section>
               )}
 
-              <Section title="まだ続きそうな話" accent="rgba(230,165,141,.13)">
-                <ListBlock items={asList(diary?.unresolved_issues)} empty="未解決の話題はありません。" />
+              <Section title="Still open" accent="rgba(230,165,141,.13)">
+                <ListBlock items={asList(diary?.unresolved_issues)} empty="No unresolved threads are calling for attention right now." />
               </Section>
 
-              <Section title="次に話せそうなこと" accent="rgba(200,160,96,.15)">
-                <ListBlock items={asList(diary?.next_topics)} empty="次の話題はまだ見つかっていません。" />
+              <Section title="Next time" accent="rgba(200,160,96,.15)">
+                <ListBlock items={asList(diary?.next_topics)} empty="Luna has not found a next topic yet." />
               </Section>
 
               {memoryChanges.length > 0 && (
-                <Section title="ルナが覚えたいこと" accent="rgba(159,207,189,.14)">
-                  <div style={{ display: 'grid', gap: 8 }}>
-                    {memoryChanges.map((item, index) => (
-                      <div key={`${item.content}-${index}`} style={memoryCardStyle}>
-                        <span>{item.content}</span>
-                        {item.action && <span style={memoryBadgeStyle}>{memoryActionLabels[item.action] ?? item.action}</span>}
+                <Section title="Memory candidates" accent="rgba(159,207,189,.14)">
+                  <details style={detailsStyle}>
+                    <summary style={summaryToggleStyle}>Things Luna may remember ({memoryChanges.length})</summary>
+                    <p style={mutedTextStyle}>These are reviewable candidates, not final facts. You stay in control of what becomes memory.</p>
+                    <div style={{ display: 'grid', gap: 8, marginTop: 10 }}>
+                      {memoryChanges.map((item, index) => (
+                        <div key={`${item.content}-${index}`} style={memoryCardStyle}>
+                          <span>{item.content}</span>
+                          {item.action && <span style={memoryBadgeStyle}>{memoryActionLabels[item.action] ?? item.action}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                </Section>
+              )}
+
+              <Section title="Source conversation" accent="rgba(230,165,141,.1)">
+                <details style={detailsStyle}>
+                  <summary style={summaryToggleStyle}>Source conversation for this day ({messages.length})</summary>
+                  <div style={messageListStyle} className="scroll-thin">
+                    {messages.length === 0 ? (
+                      <p style={mutedTextStyle}>No source conversation was found for this day.</p>
+                    ) : messages.map((message, index) => (
+                      <div key={`${message.ts}-${index}`} style={{
+                        border: '1px solid rgba(255,255,255,.07)',
+                        borderRadius: 15,
+                        padding: 11,
+                        background: message.role === 'assistant' ? 'rgba(127,179,213,.06)' : 'rgba(200,160,96,.06)',
+                      }}>
+                        <div style={{ color: '#766d60', fontSize: 11, marginBottom: 5 }}>
+                          {message.role === 'assistant' ? 'Luna' : 'You'} / {formatTime(message.ts)}
+                        </div>
+                        <div style={{ color: '#d8cebd', fontSize: 13, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{message.content}</div>
                       </div>
                     ))}
                   </div>
-                </Section>
-              )}
+                </details>
+              </Section>
             </div>
 
             <aside style={{ display: 'grid', gap: 16, alignContent: 'start' }}>
-              <Section title="今月の棚" accent="rgba(200,160,96,.13)">
+              <Section title="Month shelf" accent="rgba(200,160,96,.13)">
                 {monthDays.length === 0 ? (
-                  <p style={mutedTextStyle}>この月には、まだ並んだ日がありません。</p>
+                  <p style={mutedTextStyle}>No days are lined up for this month yet.</p>
                 ) : (
                   <div style={{ display: 'grid', gap: 8 }}>
                     {monthDays.map(day => (
@@ -366,7 +377,7 @@ export default function DiaryPage() {
                       >
                         <span style={{ color: '#ddd5c5', fontSize: 13 }}>{day.date.slice(5)}</span>
                         <span style={{ color: day.generated ? '#9fcfbd' : '#8f8372', fontSize: 11 }}>
-                          {day.generated ? '日記あり' : '会話あり'} / {day.message_count}件
+                          {day.generated ? 'diary' : 'talk'} / {day.message_count}
                         </span>
                       </button>
                     ))}
@@ -374,20 +385,9 @@ export default function DiaryPage() {
                 )}
               </Section>
 
-              <Section title="記録の気配" accent="rgba(127,179,213,.13)">
-                <div style={{ display: 'grid', gap: 10, color: '#b8ad9c', fontSize: 13 }}>
-                  <Stat label="会話数" value={`${sourceCounts.message_count}件`} />
-                  <Stat label="抽出メモ" value={`${sourceCounts.extraction_count}件`} />
-                  <Stat label="重要度" value={diary?.importance ?? '-'} />
-                  <Stat label="参照会話" value={diary?.source_message_count ?? '-'} />
-                  <Stat label="生成時刻" value={diary?.generated_at ? formatTime(Date.parse(diary.generated_at)) : '-'} />
-                  <Stat label="日記" value={<span style={{ color: hasDiary ? '#9fcfbd' : '#8f8372' }}>{hasDiary ? 'あり' : '未生成'}</span>} />
-                </div>
-              </Section>
-
-              <Section title="感情の残響" accent="rgba(159,207,189,.12)">
+              <Section title="Emotion trace" accent="rgba(159,207,189,.12)">
                 {emotionEntries.length === 0 ? (
-                  <p style={mutedTextStyle}>まだ淡い月明かりです。</p>
+                  <p style={mutedTextStyle}>No strong emotion trace yet.</p>
                 ) : (
                   <div style={{ display: 'grid', gap: 10 }}>
                     {emotionEntries.map(([key, value]) => (
@@ -405,29 +405,17 @@ export default function DiaryPage() {
                 )}
               </Section>
 
-              <Section title="その日の会話" accent="rgba(230,165,141,.1)">
-                <button onClick={() => setShowMessages(value => !value)} style={navButtonStyle}>
-                  {showMessages ? '閉じる' : '会話を開く'}
-                </button>
-                {showMessages && (
-                  <div style={messageListStyle} className="scroll-thin">
-                    {messages.length === 0 ? (
-                      <p style={mutedTextStyle}>この日の会話ログは見つかりませんでした。</p>
-                    ) : messages.map((message, index) => (
-                      <div key={`${message.ts}-${index}`} style={{
-                        border: '1px solid rgba(255,255,255,.07)',
-                        borderRadius: 15,
-                        padding: 11,
-                        background: message.role === 'assistant' ? 'rgba(127,179,213,.06)' : 'rgba(200,160,96,.06)',
-                      }}>
-                        <div style={{ color: '#766d60', fontSize: 11, marginBottom: 5 }}>
-                          {message.role === 'assistant' ? 'Luna' : 'You'} / {formatTime(message.ts)}
-                        </div>
-                        <div style={{ color: '#d8cebd', fontSize: 13, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{message.content}</div>
-                      </div>
-                    ))}
+              <Section title="Diary source details" accent="rgba(127,179,213,.13)">
+                <details style={detailsStyle}>
+                  <summary style={summaryToggleStyle}>Technical details</summary>
+                  <div style={{ display: 'grid', gap: 10, color: '#b8ad9c', fontSize: 13, marginTop: 10 }}>
+                    <Stat label="Messages" value={sourceCounts.message_count} />
+                    <Stat label="Extractions" value={sourceCounts.extraction_count} />
+                    <Stat label="Importance" value={diary?.importance ?? '-'} />
+                    <Stat label="Source messages" value={diary?.source_message_count ?? '-'} />
+                    <Stat label="Generated at" value={diary?.generated_at ? formatTime(Date.parse(diary.generated_at)) : '-'} />
                   </div>
-                )}
+                </details>
               </Section>
             </aside>
           </div>
@@ -552,6 +540,34 @@ const contentGridStyle: CSSProperties = {
   gap: 16,
 }
 
+const sectionStyle: CSSProperties = {
+  border: '1px solid rgba(230,210,170,.13)',
+  background: 'linear-gradient(145deg, rgba(31,27,21,.86), rgba(15,14,12,.94))',
+  borderRadius: 24,
+  padding: 18,
+  boxShadow: '0 18px 60px rgba(0,0,0,.28)',
+  position: 'relative',
+  overflow: 'hidden',
+}
+
+const sectionGlowStyle: CSSProperties = {
+  position: 'absolute',
+  inset: '0 auto auto 0',
+  width: 120,
+  height: 120,
+  opacity: .9,
+  pointerEvents: 'none',
+}
+
+const sectionTitleStyle: CSSProperties = {
+  fontSize: 12,
+  letterSpacing: '.16em',
+  color: '#c8a060',
+  marginBottom: 12,
+  position: 'relative',
+  textTransform: 'uppercase',
+}
+
 const datePillStyle: CSSProperties = {
   display: 'inline-flex',
   color: '#9fcfbd',
@@ -589,6 +605,16 @@ const mutedTextStyle: CSSProperties = {
   lineHeight: 1.8,
 }
 
+const softStatusStyle: CSSProperties = {
+  color: '#9fcfbd',
+  border: '1px solid rgba(159,207,189,.18)',
+  borderRadius: 999,
+  display: 'inline-flex',
+  fontSize: 11,
+  marginTop: 14,
+  padding: '5px 9px',
+}
+
 const listItemStyle: CSSProperties = {
   display: 'flex',
   gap: 10,
@@ -605,6 +631,17 @@ const topicPillStyle: CSSProperties = {
   fontSize: 12,
   padding: '6px 10px',
   background: 'rgba(127,179,213,.07)',
+}
+
+const detailsStyle: CSSProperties = {
+  color: '#d8cebd',
+}
+
+const summaryToggleStyle: CSSProperties = {
+  color: '#c8bda9',
+  cursor: 'pointer',
+  fontSize: 13,
+  lineHeight: 1.6,
 }
 
 const memoryCardStyle: CSSProperties = {
