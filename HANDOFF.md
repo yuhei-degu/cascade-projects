@@ -206,3 +206,21 @@ npm run character:verify
 ```
 
 `character:verify` should be run only after the migrations are applied to the intended Supabase project.
+
+## 2026-05-09 Items/Character DB-Fallback Notes
+
+New DB-aware but migration-safe layer:
+
+- `GET /api/items`
+- `GET /api/character/state`
+- `lib/lunaria/character-items.ts`
+
+The pages now show their data source:
+
+- `user_items`: after `020` is applied.
+- `gacha_inventory`: before `020`, but existing gacha tables are available.
+- `mock`: when DB is unavailable.
+
+This means `/items` and `/character` can be reviewed now without forcing a DB apply.
+
+Verification note: `npm run build` and full `tsc` must be run sequentially for this Next.js app because `.next/types` is regenerated during build. Parallel execution can produce false `TS6053` missing generated type errors.

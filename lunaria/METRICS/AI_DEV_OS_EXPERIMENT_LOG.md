@@ -90,3 +90,4 @@ Next Experiment:
 | LUN-CLAUDE-001 | 2026-05-09 | Codex 5.5 | Codex self-review | docs+mock-ui | Medium | Medium | No | 0m | ~45m | 30 | Yes | Yes | N/A | 0 | 0 | 0 | Done |  | Claude handoff accepted; `/items` and `/character` remain mock-only; DB/env/auth/prod untouched |
 | LUN-DB-020-021 | 2026-05-09 | Codex 5.5 | Codex self-review | db-design | Medium | High | Yes before apply | 0m | ~40m | 8 | Yes | Yes | N/A | 0 | 0 | 0 | Review |  | Candidate migrations created only; Supabase not touched |
 | LUN-DB-RUNBOOK-020-021 | 2026-05-09 | Codex 5.5 | Codex self-review | ops-docs | Low | Medium | No | 0m | ~30m | 7 | Yes | Yes | N/A | 0 | 0 | 0 | Done |  | Runbook/security review/scripts added; DB untouched |
+| LUN-CHAR-API-001 | 2026-05-09 | Codex 5.5 | Codex self-review | api+ui | Medium | Medium | No | 0m | ~45m | 8 | Yes | Yes | N/A | 0 | 0 | 0 | Done |  | `/items` and `/character` use DB-aware read APIs with safe fallback; DB untouched |

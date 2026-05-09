@@ -180,3 +180,40 @@ npm run gacha:smoke
 ### Status
 
 - Accepted as pre-apply support material
+
+## 2026-05-09
+
+### Items/Character DB-Fallback Review
+
+### Review Date
+
+2026-05-09
+
+### Target
+
+- `lunaria-app/lib/lunaria/character-items.ts`
+- `lunaria-app/app/api/items/route.ts`
+- `lunaria-app/app/api/character/state/route.ts`
+- `lunaria-app/app/items/page.tsx`
+- `lunaria-app/app/character/page.tsx`
+
+### Findings
+
+- No blocking findings during self-review.
+- New APIs are read-only.
+- Missing `020/021` tables are handled as fallback cases, not page-breaking errors.
+- `/items` can use existing `lunaria_gacha_inventory` before `lunaria_user_items` exists.
+- `/character` remains usable before `lunaria_character_states` exists.
+
+### Severity
+
+- Medium
+
+### Status
+
+- Accepted for staged rollout
+
+### Residual Risks
+
+- Current implementation uses the existing fixed dev user pattern, consistent with the rest of the app but not production auth-ready.
+- Equipment mutations are intentionally not implemented yet; ownership validation should be reviewed before adding writes.

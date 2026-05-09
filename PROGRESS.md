@@ -171,3 +171,26 @@ Status:
 - SQL bundle generation works.
 - `character:verify` is intended for after Supabase `020/021` are applied.
 - No Supabase DB was touched.
+
+## 2026-05-09 Items/Character DB-Fallback Wiring
+
+Implemented the first DB-aware app layer without requiring Supabase `020/021` to be applied yet.
+
+Changed:
+- `lunaria-app/lib/lunaria/character-items.ts`
+- `lunaria-app/app/api/items/route.ts`
+- `lunaria-app/app/api/character/state/route.ts`
+- `lunaria-app/app/items/page.tsx`
+- `lunaria-app/app/character/page.tsx`
+
+Behavior:
+- `/api/items` prefers `lunaria_user_items` when available.
+- If `lunaria_user_items` is missing, `/api/items` falls back to existing `lunaria_gacha_inventory`.
+- If gacha DB is unavailable, `/api/items` returns a small mock set.
+- `/api/character/state` prefers `lunaria_character_states` when available.
+- If `lunaria_character_states` is missing, `/character` still works with mock state.
+- No Supabase migrations were applied.
+
+Verification:
+- `npm run build`: passed.
+- `npx tsc --noEmit --pretty false`: passed.

@@ -84,3 +84,9 @@ Lunaria の現在タスクを、難易度・リスク・必要 AI レベル・�
 | ID | Task | Difficulty | Risk | Suggested AI | Review | Security | Human Approval | Task Size | Status | Reason |
 |---|---|---:|---:|---|---|---|---|---|---|---|
 | LUN-DB-RUNBOOK-020-021 | Add runbook and verification support for 020/021 | Low | Medium | Codex 5.5 | Yes | Yes | No | Small | Done | No DB touched; adds operator docs, SQL bundle generation, and read-only post-apply verifier |
+
+## 2026-05-09 Additional Task Evaluation
+
+| ID | Task | Difficulty | Risk | Suggested AI | Review | Security | Human Approval | Task Size | Status | Reason |
+|---|---|---:|---:|---|---|---|---|---|---|---|
+| LUN-CHAR-API-001 | Add DB-aware read APIs for `/items` and `/character` with fallback | Medium | Medium | Codex 5.5 | Yes | No | No | Medium | Done | Read-only API/UI integration; no DB apply; fallback keeps current app usable |

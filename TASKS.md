@@ -69,3 +69,4 @@ Use for memory, diary, gacha, character state, DB, auth, payment, or release wor
 - DB verification depends on actual Supabase project state, not just migration files.
 - `/gacha` 500 may be local server/cache state, DB mismatch, or a real app bug; do not assume until logs are read.
 | P1 | Add `020/021` apply runbook and verification scripts | Codex 5.5 | DONE | Migration candidates | Runbook, security review, SQL bundle generator, and read-only verifier exist |
+| P2 | Wire `/items` and `/character` to DB-aware read APIs with fallback | Codex 5.5 | DONE | `020/021` migration candidates | Pages prefer DB data when available and fall back safely before migrations are applied |

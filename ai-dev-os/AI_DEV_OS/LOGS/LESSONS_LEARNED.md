@@ -41,3 +41,14 @@ Parallel AI output should be routed through an explicit intake task before becom
 
 ### Next Rule
 When Claude/Codex/Cursor produces a large bundle, create an intake task with: changed files, scope classification, secret scan, build/typecheck results, accepted/deferred files, and next implementation gates. Do not jump directly from handoff to DB or production work.
+
+## 2026-05-09
+
+### Project
+Lunaria
+
+### Lesson
+For Next.js projects, do not run `next build` and standalone `tsc --noEmit` in parallel when `tsconfig.json` includes `.next/types/**/*.ts`. The build can regenerate `.next/types` while TypeScript reads the previous incremental graph, causing false `TS6053` missing file errors.
+
+### Next Rule
+Run verification in this order: `npm run build`, then remove ignored `tsconfig.tsbuildinfo` if needed, then `npx tsc --noEmit --pretty false`. Keep these checks sequential, not parallel.

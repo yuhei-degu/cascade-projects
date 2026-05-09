@@ -78,3 +78,22 @@ Manual Supabase SQL Editor work is safer when the exact apply order, post-apply 
 ### Review Conditions
 
 Keep `character:verify` read-only. Do not add mutation behavior to verification scripts.
+
+## 2026-05-09
+
+### Decision
+
+Make `/items` and `/character` DB-aware with safe fallback before applying `020/021`.
+
+### Reason
+
+This lets the UI and API integration be tested incrementally while keeping the human gate for Supabase schema changes intact.
+
+### Alternatives
+
+- Keep pages as pure mock until migrations are applied.
+- Require `020/021` before any app integration.
+
+### Review Conditions
+
+After `020/021` are applied, verify the pages report `source: user_items` and `source: character_states` respectively.
