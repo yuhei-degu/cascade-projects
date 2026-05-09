@@ -51,3 +51,10 @@ AI_DEV_OS 試験導入中に、開発速度より優先して見るべきリス�
 - Owner:
 - Review Date:
 ```
+
+## 2026-05-09 Additional Risks
+
+| ID | Risk | Severity | Area | Status | Mitigation |
+|---|---|---:|---|---|---|
+| RISK-008 | `/items` and `/character` mock pages may be mistaken for DB-backed features | Medium | Product / UX | Open | Keep mock notices visible; only remove after `character_states` and `user_items` are implemented and verified |
+| RISK-009 | Duplicate portrait components diverge over time | Medium | Frontend / Architecture | Open | Consolidate `components/lunaria/LunariaPortrait.tsx` and `components/character/LunariaPortrait.tsx` after character-state direction is fixed |

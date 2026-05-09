@@ -26,6 +26,7 @@ Status: initial AI_DEV_OS task board for active Lunaria development
 | P2 | Draft `user_communication_profiles` design | Tech Lead + Security Agent | TODO | Memory/profile docs | Design separates style preferences from core memory and avoids sensitive over-inference |
 | P2 | Improve `/memory` UX copy after real use | UX Agent | TODO | Candidate review verification | Copy makes user control clear and avoids surveillance feeling |
 | P2 | Wire `LunariaPortrait` into one low-risk surface | Implement + UX Agent | DONE | Placeholder component | `/gacha` result modal uses the portrait component without requiring final art assets or changing chat response format; build passes |
+| P2 | Intake Claude visual/items mock UI and docs | Codex 5.5 | DONE | Claude handoff summary | `lunaria-app/docs/`, `/items`, `/character`, and `components/character/LunariaPortrait.tsx` are reviewed, verified, and recorded; build/typecheck pass |
 | P2 | Update root `DECISIONS.md` with current AI_DEV_OS adoption decision | PM Agent | TODO | This initialization | Decision entry explains why AI_DEV_OS was applied and its scope |
 | P3 | End-world game MVP scope doc | PM/UX Agent | DEFERRED | Core diary/memory/character stable | Scope is cut to a future weekly text MVP; no implementation started |
 | P3 | Live2D / 3D asset pipeline | Tech Lead Agent | DEFERRED | Reaction layer stable | Pipeline proposal exists with cost/risk notes |

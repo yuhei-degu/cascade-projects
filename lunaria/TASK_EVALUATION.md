@@ -66,3 +66,9 @@ Lunaria の現在タスクを、難易度・リスク・必要 AI レベル・�
 
 - 次の低リスク実装実験を `/memory` UX 改善にするか、先に Supabase 適用状態確認へ戻すか。
 - DB 状態確認は人間作業として別枠にするか。
+
+## 2026-05-09 Additional Task Evaluation
+
+| ID | Task | Difficulty | Risk | Suggested AI | Review | Security | Human Approval | Task Size | Status | Reason |
+|---|---|---:|---:|---|---|---|---|---|---|---|
+| LUN-CLAUDE-001 | Intake Claude visual/items docs and mock UI | Medium | Medium | Codex 5.5 | Yes | No | No | Medium | Done | Reviewed `lunaria-app/docs/`, `/items`, `/character`, and mock portrait component; DB/auth/env/prod untouched; build/typecheck pass |

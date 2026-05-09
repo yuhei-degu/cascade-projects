@@ -109,3 +109,24 @@ Recommended next order:
 - This progress file is repository-root coordination for Lunaria, not a replacement for detailed docs in `lunaria/`.
 - Existing project docs remain authoritative for deep feature details.
 - Future agents should read this file first, then `SPEC.md`, then `HANDOFF.md`.
+
+## 2026-05-09 Claude Visual/Items Mock UI Intake
+
+Claude's visual/items handoff has been reviewed and accepted as a mock/design layer.
+
+Completed:
+- `lunaria-app/docs/` now contains visual, item, brand, character, and DB design handoff docs.
+- `/items` and `/character` are mock-only pages and do not touch DB/auth/env/production.
+- `components/character/LunariaPortrait.tsx` is a separate mock portrait component for the new character preview area.
+- Existing `/`, `/diary`, `/memory`, `/gacha`, and `/admin/gacha` behavior was not changed by this intake.
+
+Verification:
+- `npm run build`: passed.
+- `npx tsc --noEmit -p tsconfig.mocks.json --pretty false`: passed.
+- `npx tsc --noEmit --pretty false`: passed.
+- Secret/env pattern scan over the new docs and mock UI: no matches.
+
+Next:
+- Keep `/items` and `/character` clearly mock-only until `character_states` and `user_items` are implemented.
+- Treat `lunaria-app/docs/DB_*.md` as design input, not applied migrations.
+- Consolidate duplicate portrait components after the character-state path is fixed.

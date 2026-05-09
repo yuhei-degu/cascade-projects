@@ -42,6 +42,7 @@ ai-dev-os/AI_DEV_OS/LOGS/*
 **/*.tmp
 **/*.log
 **/*~
+**/*.broken-bak
 
 # Node.js / Next.js
 **/node_modules/

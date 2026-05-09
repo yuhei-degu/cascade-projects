@@ -102,3 +102,9 @@ AI に渡すときは以下を含める。
 
 - Claude Code をどこまで設計担当に寄せるか。
 - Gemini を長文比較用に常用するか、必要時だけ使うか。
+
+## 2026-05-09 Additional Routing
+
+| Task ID | Task | Primary | Reviewer | Human Approval | Status |
+|---|---|---|---|---|---|
+| LUN-CLAUDE-001 | Claude visual/items docs and mock UI intake | Codex 5.5 | Codex self-review | No | Done |

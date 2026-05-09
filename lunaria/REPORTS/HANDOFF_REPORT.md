@@ -72,3 +72,23 @@ Do not touch:
 
 - 次回からこの `HANDOFF_REPORT.md` を Claude / Codex 共通の短期引き継ぎとして使うか。
 - ルート `HANDOFF.md` と役割をどう分けるか。
+
+## 2026-05-09 Claude Intake Addendum
+
+Accepted Claude's latest work as design/mock material:
+
+- `lunaria-app/docs/`: 18 design/status/spec files for visual, items, brand, character, and DB proposals.
+- `lunaria-app/app/items/page.tsx`: mock item catalog with category filter and owned/unowned toggle.
+- `lunaria-app/app/character/page.tsx`: mock character state preview with expression/motion controls.
+- `lunaria-app/components/character/LunariaPortrait.tsx`: mock portrait component for character preview.
+- `lunaria-app/tsconfig.mocks.json`: focused typecheck config for the new mock files.
+
+Validation:
+- `npm run build`: passed.
+- `npx tsc --noEmit -p tsconfig.mocks.json --pretty false`: passed.
+- `npx tsc --noEmit --pretty false`: passed.
+
+Next Codex-safe tasks:
+1. Keep `/items` and `/character` mock-only until DB migrations are reviewed.
+2. Design `character_states` and `user_items` migrations as `020`/`021` candidates, but do not apply without human approval.
+3. Consolidate duplicate portrait components after the character-state implementation path is clear.

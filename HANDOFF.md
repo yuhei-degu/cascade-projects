@@ -151,3 +151,24 @@ Check git status before changing files.
 Do not revert existing uncommitted changes.
 Use Markdown files for handoff notes.
 ```
+
+## Claude Intake Completed
+
+Claude's visual/items handoff has been reviewed and accepted as a mock/design layer:
+
+- `lunaria-app/docs/` contains the current character, item, visual, brand, and DB proposal docs from Claude.
+- `lunaria-app/app/items/page.tsx` is a mock-only item catalog page.
+- `lunaria-app/app/character/page.tsx` is a mock-only character state preview page.
+- `lunaria-app/components/character/LunariaPortrait.tsx` is a second portrait placeholder component for the character preview area.
+- Existing `/`, `/diary`, `/memory`, `/gacha`, and `/admin/gacha` behavior was not changed by this intake.
+
+Verification:
+
+- `npm run build`: passed.
+- `npx tsc --noEmit -p tsconfig.mocks.json --pretty false`: passed.
+- `npx tsc --noEmit --pretty false`: passed.
+
+Residual cautions:
+
+- There are now two portrait components: `components/lunaria/LunariaPortrait.tsx` for the earlier reaction foundation, and `components/character/LunariaPortrait.tsx` for Claude's mock character preview. Consolidate later, not during intake.
+- `/items` and `/character` must remain clearly marked as mock until `character_states` and `user_items` are implemented.

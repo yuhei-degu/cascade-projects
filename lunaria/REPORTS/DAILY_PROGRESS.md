@@ -76,3 +76,20 @@
 ### Human Decisions Needed
 -
 ```
+
+## 2026-05-09 Claude Intake Addendum
+
+Completed:
+- Claude visual/items handoff accepted as docs + mock UI.
+- `/items` and `/character` mock pages verified.
+- New Claude `components/character/LunariaPortrait.tsx` verified separately from the existing gacha reaction portrait.
+
+Verification:
+- `npm run build`: passed.
+- `npx tsc --noEmit -p tsconfig.mocks.json --pretty false`: passed.
+- `npx tsc --noEmit --pretty false`: passed.
+- `git diff --check`: passed.
+
+Risks:
+- `/items` and `/character` are mock-only and should not be presented as DB-backed features yet.
+- Two portrait components exist temporarily and should be consolidated later.

@@ -30,3 +30,14 @@ AI_DEV_OS works best when the first trial task is deliberately small, reversible
 
 ### Next Rule
 Before the first implementation task in a project, create a project-local trial plan, task evaluation table, routing table, experiment log, and reports folder. Then pick one low-risk task with objective verification commands.
+
+## 2026-05-09
+
+### Project
+Lunaria
+
+### Lesson
+Parallel AI output should be routed through an explicit intake task before becoming the next implementation base. The intake should classify artifacts as "design", "mock UI", "production code", or "backup artifact"; run objective checks; and record residual risks.
+
+### Next Rule
+When Claude/Codex/Cursor produces a large bundle, create an intake task with: changed files, scope classification, secret scan, build/typecheck results, accepted/deferred files, and next implementation gates. Do not jump directly from handoff to DB or production work.

@@ -1,0 +1,24 @@
+{
+  "_comment": "Helper config used during cowork session to type-check newly added mock UI in isolation. Safe to delete on the user's local machine.",
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": { "@/*": ["./*"] }
+  },
+  "include": [
+    "components/character/LunariaPortrait.tsx",
+    "app/items/page.tsx",
+    "app/character/page.tsx"
+  ]
+}

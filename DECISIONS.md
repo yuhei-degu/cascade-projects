@@ -20,3 +20,22 @@
 ### 後で見直す条件
 
 例: 有料ユーザーからチーム利用の要望が 5 件以上出たら再検討する。
+
+## 2026-05-09
+
+### Decision
+
+Adopt Claude's visual/items output as design and mock UI source material, not as completed DB-backed functionality.
+
+### Reason
+
+The new `/items` and `/character` pages are useful for product direction, visual QA, and future DB implementation planning, while staying safe because they do not touch Supabase, auth, env, Stripe, or production.
+
+### Alternatives
+
+- Defer the Claude output entirely until DB migrations are ready.
+- Immediately connect the mock pages to DB tables.
+
+### Review Conditions
+
+Revisit after `character_states` and `user_items` migrations are designed, reviewed, and applied in the intended environment.

@@ -79,3 +79,39 @@ npm run gacha:smoke
 ### メモ
 
 - 判断理由や再確認事項を書く
+
+## 2026-05-09
+
+### Claude Visual/Items Mock UI Intake
+
+### Review Date
+
+2026-05-09
+
+### Target
+
+- `lunaria-app/docs/`
+- `lunaria-app/app/items/page.tsx`
+- `lunaria-app/app/character/page.tsx`
+- `lunaria-app/components/character/LunariaPortrait.tsx`
+- `lunaria-app/tsconfig.mocks.json`
+
+### Findings
+
+- No blocking code findings were found during intake.
+- The new pages are explicitly mock-only and do not fetch Supabase data.
+- No secret/env patterns were found in the new docs and mock UI files.
+- Build and TypeScript checks pass locally.
+
+### Severity
+
+- Low
+
+### Status
+
+- Accepted
+
+### Residual Risks
+
+- There are two portrait placeholder components in different component folders. This is acceptable for intake, but should be consolidated before deeper character-state integration.
+- `/items` and `/character` can be mistaken for production-backed pages unless future work keeps the mock notice visible until DB integration is complete.

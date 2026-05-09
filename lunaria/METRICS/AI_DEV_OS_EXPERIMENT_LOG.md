@@ -87,3 +87,4 @@ Next Experiment:
 
 - 記録粒度は「1PRごと」か「1タスクごと」か。
 - 所要時間は厳密に測るか、概算でよいか。
+| LUN-CLAUDE-001 | 2026-05-09 | Codex 5.5 | Codex self-review | docs+mock-ui | Medium | Medium | No | 0m | ~45m | 30 | Yes | Yes | N/A | 0 | 0 | 0 | Done |  | Claude handoff accepted; `/items` and `/character` remain mock-only; DB/env/auth/prod untouched |
