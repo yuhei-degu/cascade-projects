@@ -1,4 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@layer base { html { font-feature-settings: "palt"; } body { @apply bg-gray-50 text-gray-900 antialiased; } }
+@layer base {
+  html {
+    font-feature-settings: "palt";
+    font-family: "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+}

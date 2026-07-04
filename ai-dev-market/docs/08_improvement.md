@@ -1,103 +1,31 @@
-# 8. 改善案 — AI Dev Market
+# 8. Improvements (Post-MVP)
 
-## フェーズ1: MVP後すぐ（収益化に必要）
+## Product expansion
 
-### ① SEO強化 — 集客の要
-```
-- ターゲットキーワード: "スクリプト作成 依頼", "ツール開発 個人", "Excel自動化 依頼"
-- /blog ページ開設（制作事例・技術解説）
-- Open Graph タグ整備（SNSシェア対策）
-- Google Search Console 登録
-```
+- Two-sided marketplace: provider onboarding, profiles, availability, matching
+- Clearer SKUs: “Script fix”, “Data import”, “Slack bot”, etc.
+- Reusable templates: plan templates per category + tier
 
-### ② ポートフォリオ展示ページ
-```
-/works に完成案件を掲載
-- 依頼者の許可を得たサンプルを公開
-- 「こんなの作れます」の説得力が増し受注率向上
-```
+## Trust & safety
 
-### ③ 見積もりシミュレーター
-```
-- カテゴリ×機能数 でおおよその価格をリアルタイム表示
-- 「この条件なら¥15,000〜¥20,000」と示すことで依頼の敷居を下げる
-```
+- Stronger secret detection + auto-redaction
+- Audit log UI for status changes and admin actions
+- Abuse prevention: rate limits, spam filters, domain allowlists
 
----
+## Quality & delivery
 
-## フェーズ2: 月5〜10万円安定後
+- Artifact hosting policies (Supabase Storage vs external)
+- Automated acceptance checks (lint/build/run) in a sandbox environment
+- Structured “Definition of Done” per deliverable type
 
-### ④ 定期メンテナンスプラン
-```
-月額¥3,000〜¥5,000 で既納品物のアップデート対応
-- 月1〜2件の既存客からサブスクで安定収益化
-- Stripe Subscription で自動課金
-```
+## Growth
 
-### ⑤ テンプレートマーケット
-```
-汎用ツールを¥3,000〜¥5,000で販売（ワンタイム購入）
-- 例: "Slack通知スクリプト", "CSV集計ダッシュボード"
-- 制作ゼロで収益化できる在庫型ビジネス
-```
+- SEO landing pages per use case + portfolio/works page
+- Lead capture + newsletter
+- Retargeting and referral loops
 
-### ⑥ AI精度向上（審査の精緻化）
-```
-- 過去の受注実績をファインチューニングデータとして活用
-- 「この類の依頼は実際にX時間かかった」という実績ベース見積もり
-- C判定率が高すぎる→しきい値調整
-- C判定率が低すぎる→工数超過リスク増
-```
+## Business model
 
----
-
-## フェーズ3: 月20万円以上を目指す
-
-### ⑦ サブコントラクター制度
-```
-案件が増えたら信頼できる外部AIエンジニアを登録
-- 自分はディレクション・品質管理に集中
-- 手数料20〜30%をマージンとして収益化
-```
-
-### ⑧ 企業向けプランの追加
-```
-中小企業の内製化支援として月額契約
-- 月10件まで¥50,000/月（単価¥5,000）
-- インボイス対応・法人契約のビジネスとして安定化
-```
-
-### ⑨ Slack/LINE連携
-```
-- 依頼者がSlack/LINEで気軽に相談できる窓口設置
-- 相談→フォーム入力誘導 の動線強化
-- LINE公式アカウントで既存客へのリマインドができる
-```
-
----
-
-## 技術的改善案
-
-| 優先度 | 内容 | 効果 |
-|--------|------|------|
-| 🔴 高 | Supabase Realtime でチャット即時更新 | 依頼者体験向上 |
-| 🔴 高 | エラーモニタリング (Sentry) | 障害の早期発見 |
-| 🟡 中 | Redis キャッシュで AI審査高速化 | コスト削減 |
-| 🟡 中 | プロトタイプのサンドボックス実行 | 試作の信頼性向上 |
-| 🟢 低 | PWA化 | モバイル体験向上 |
-| 🟢 低 | 多言語対応（英語）| 海外マーケット開拓 |
-
----
-
-## KPI目標
-
-| 期間 | 件数/月 | 単価 | 月収目標 |
-|------|---------|------|---------|
-| 1ヶ月目 | 1〜3件 | ¥15,000 | ¥15,000〜45,000 |
-| 3ヶ月目 | 4〜7件 | ¥18,000 | ¥72,000〜126,000 |
-| 6ヶ月目 | 8〜12件 | ¥20,000 | ¥160,000〜240,000 |
-
-## 成功のための3原則
-1. **小さく始める**: 最初の3件は赤字でもOK。実績とフローを作ることが先決
-2. **断る勇気**: C判定の精度を上げて無理な案件を受けない。品質維持が口コミを生む
-3. **自動化を徹底**: AI審査・メール・決済の自動化で、1件あたりの工数を2時間以内に抑える
+- Subscription for “monthly request credits”
+- Paid discovery for Tier C
+- Refund/dispute policies (requires careful ops)

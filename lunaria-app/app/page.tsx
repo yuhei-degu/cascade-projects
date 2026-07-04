@@ -16,6 +16,7 @@ interface AssistantMeta {
   motion?: string
   voice_tone?: string
   topic_tags?: string[]
+  next_step?: string
 }
 interface AssistantVisualState {
   expression: LunariaExpression
@@ -65,12 +66,12 @@ function visualFromAssistant(meta: AssistantMeta | null | undefined, routeType: 
 
 function Typing() {
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
-      <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#c8a060', flexShrink: 0, marginBottom: 3 }} />
+    <div role="status" aria-live="polite" aria-atomic="true" aria-label="Lunaria is replying" style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
+      <div aria-hidden="true" style={{ width: 6, height: 6, borderRadius: '50%', background: '#c8a060', flexShrink: 0, marginBottom: 3 }} />
       <div style={{ background: '#1a1815', border: '1px solid rgba(255,255,255,.07)', borderRadius: '4px 14px 14px 14px', padding: '9px 14px', fontSize: 14 }}>
-        <span className="blink-dot" style={{ color: '#c8a060', animationDelay: '0s' }}>・</span>
-        <span className="blink-dot" style={{ color: '#c8a060', animationDelay: '.3s' }}>・</span>
-        <span className="blink-dot" style={{ color: '#c8a060', animationDelay: '.6s' }}>・</span>
+        <span aria-hidden="true" className="blink-dot" style={{ color: '#c8a060', animationDelay: '0s' }}>・</span>
+        <span aria-hidden="true" className="blink-dot" style={{ color: '#c8a060', animationDelay: '.3s' }}>・</span>
+        <span aria-hidden="true" className="blink-dot" style={{ color: '#c8a060', animationDelay: '.6s' }}>・</span>
       </div>
     </div>
   )
@@ -79,8 +80,8 @@ function Typing() {
 function ChatMsg({ msg }: { msg: Msg }) {
   const ai = msg.role === 'assistant'
   return (
-    <div className="fade-up" style={{ display: 'flex', alignItems: 'flex-end', gap: 8, justifyContent: ai ? 'flex-start' : 'flex-end' }}>
-      {ai && <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#c8a060', flexShrink: 0, marginBottom: 3 }} />}
+    <div className="fade-up" aria-label={ai ? 'Lunaria message' : 'Your message'} style={{ display: 'flex', alignItems: 'flex-end', gap: 8, justifyContent: ai ? 'flex-start' : 'flex-end' }}>
+      {ai && <div aria-hidden="true" style={{ width: 6, height: 6, borderRadius: '50%', background: '#c8a060', flexShrink: 0, marginBottom: 3 }} />}
       <div style={{ maxWidth: '76%', fontSize: 14, lineHeight: 1.7, padding: '9px 13px', background: ai ? '#1a1815' : '#231f1b', border: `1px solid ${ai ? 'rgba(255,255,255,.07)' : 'rgba(255,255,255,.04)'}`, borderRadius: ai ? '4px 14px 14px 14px' : '14px 4px 14px 14px', color: ai ? '#ddd5c5' : '#c5bdb0' }}>
         {msg.content}
       </div>
@@ -108,6 +109,7 @@ export default function ChatPage() {
   const [userName, setUserName]               = useState<string>('')
   const [ticketToast, setTicketToast]         = useState<string | null>(null)
   const [assistantVisual, setAssistantVisual] = useState<AssistantVisualState>(() => visualFromAssistant(null, 'light_normal'))
+  const [assistantNextStep, setAssistantNextStep] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef  = useRef<HTMLInputElement>(null)
 
@@ -155,7 +157,7 @@ export default function ChatPage() {
     if (!text || loading) return
     const userMsg: Msg = { role: 'user', content: text, ts: Date.now() }
     const newMsgs = [...msgs, userMsg]
-    setMsgs(newMsgs); setInput(''); setLoading(true)
+    setMsgs(newMsgs); setInput(''); setLoading(true); setAssistantNextStep('')
 
     // 受信開始したら typing インジケータを切って placeholder を出す
     let placeholderInserted = false
@@ -225,7 +227,9 @@ export default function ChatPage() {
             setLastSub(d.lastSubtopic ?? 'unknown')
             setCoverage(d.coverage ?? coverage)
             setConvMode(d.conversationMode ?? 'continue')
-            setAssistantVisual(visualFromAssistant(d.assistantMeta ?? null, d.routeType ?? 'light_normal'))
+            const nextAssistantMeta = d.assistantMeta ?? null
+            setAssistantVisual(visualFromAssistant(nextAssistantMeta, d.routeType ?? 'light_normal'))
+            setAssistantNextStep(typeof nextAssistantMeta?.next_step === 'string' ? nextAssistantMeta.next_step.trim() : '')
             if (d.userName) setUserName(d.userName)
             save('luna_scores', d.prevScores ?? [])
             save('luna_heavy', d.prevHeavy ?? 0)
@@ -265,20 +269,23 @@ export default function ChatPage() {
       {/* ヘッダー */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 16px', borderBottom: '1px solid rgba(255,255,255,.05)', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div className="orb-anim" style={{ width: 8, height: 8, borderRadius: '50%', background: orbColor, transition: 'background 1s' }} />
+          <div aria-hidden="true" className="orb-anim" style={{ width: 8, height: 8, borderRadius: '50%', background: orbColor, transition: 'background 1s' }} />
           <span style={{ fontSize: 15, fontWeight: 500, letterSpacing: '.06em' }}>ルナ</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <a href="/diary" style={{ fontSize: 12, color: '#7a7060', textDecoration: 'none' }}>日々</a>
-          <a href="/memory" style={{ fontSize: 12, color: '#7a7060', textDecoration: 'none' }}>記憶</a>
-          <a href="/gacha" style={{ fontSize: 12, color: '#7a7060', textDecoration: 'none' }}>🎟</a>
-          <button onClick={() => setShowDev(v => !v)} style={{ fontSize: 10, color: showDev ? '#7a7060' : '#2e2c28', background: 'none', border: 'none', cursor: 'pointer' }}>dev</button>
-        </div>
+        <nav aria-label="Lunaria navigation" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <a href="/diary" aria-label="Open diary" style={{ fontSize: 12, color: '#7a7060', textDecoration: 'none' }}>日々</a>
+          <a href="/memory" aria-label="Open memory" style={{ fontSize: 12, color: '#7a7060', textDecoration: 'none' }}>記憶</a>
+          <a href="/character" aria-label="Open character" style={{ fontSize: 12, color: '#7a7060', textDecoration: 'none' }}>姿</a>
+          <a href="/items" aria-label="Open items" style={{ fontSize: 12, color: '#7a7060', textDecoration: 'none' }}>品</a>
+          <a href="/games" aria-label="Open games" style={{ fontSize: 12, color: '#7a7060', textDecoration: 'none' }}>Games</a>
+          <a href="/gacha" aria-label="Open gacha" style={{ fontSize: 12, color: '#7a7060', textDecoration: 'none' }}>🎟</a>
+          <button onClick={() => setShowDev(v => !v)} aria-label="Toggle developer diagnostics" aria-pressed={showDev} style={{ fontSize: 10, color: showDev ? '#7a7060' : '#2e2c28', background: 'none', border: 'none', cursor: 'pointer' }}>dev</button>
+        </nav>
       </div>
 
       {/* ガチャチケット獲得トースト */}
       {ticketToast && (
-        <div style={{
+        <div role="status" aria-live="polite" aria-atomic="true" aria-label="Gacha ticket received" style={{
           position: 'fixed', top: 50, left: '50%', transform: 'translateX(-50%)',
           background: 'rgba(127,179,213,0.15)', border: '1px solid rgba(127,179,213,0.4)',
           color: '#7fb3d5', borderRadius: 20, padding: '6px 14px', fontSize: 12,
@@ -289,7 +296,7 @@ export default function ChatPage() {
       )}
 
       {/* devパネル */}
-      <div style={{
+      <div role="group" aria-live="polite" aria-atomic="true" aria-label="Lunaria current mood" style={{
         display: 'flex',
         alignItems: 'center',
         gap: 10,
@@ -304,6 +311,11 @@ export default function ChatPage() {
           <div style={{ color: '#8f8372', fontSize: 12, marginTop: 2 }}>
             {assistantVisual.label} / {assistantVisual.expression} / {assistantVisual.motion}
           </div>
+          {assistantNextStep && (
+            <div role="status" aria-live="polite" aria-atomic="true" aria-label="Lunaria suggested next step" style={{ color: '#bba989', fontSize: 12, lineHeight: 1.45, marginTop: 4, maxWidth: 'min(64vw, 520px)', overflowWrap: 'anywhere' }}>
+              Next: {assistantNextStep}
+            </div>
+          )}
         </div>
       </div>
 
@@ -345,18 +357,18 @@ export default function ChatPage() {
       )}
 
       {/* チャット */}
-      <div className="scroll-thin" style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {msgs.length === 0 && <div style={{ fontSize: 13, color: '#3a3632', textAlign: 'center', marginTop: 40 }}>話しかけてみて</div>}
-        {msgs.map((m, i) => <ChatMsg key={i} msg={m} />)}
+      <div id="lunaria-conversation-log" className="scroll-thin" role="log" aria-live="polite" aria-atomic="false" aria-relevant="additions text" aria-label="Lunaria conversation" aria-busy={loading} style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {msgs.length === 0 && <div role="note" aria-label="Start a conversation with Lunaria" style={{ fontSize: 13, color: '#3a3632', textAlign: 'center', marginTop: 40 }}>話しかけてみて</div>}
+        {msgs.map((m, i) => <ChatMsg key={`${m.role}-${m.ts}-${i}`} msg={m} />)}
         {loading && <Typing />}
         <div ref={bottomRef} />
       </div>
 
       {/* 入力 */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px 16px', borderTop: '1px solid rgba(255,255,255,.05)', flexShrink: 0 }}>
-        <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={onKey} placeholder="話しかける..." disabled={loading} autoComplete="off"
+      <div role="group" aria-label="Lunaria message composer" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px 16px', borderTop: '1px solid rgba(255,255,255,.05)', flexShrink: 0 }}>
+        <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={onKey} placeholder="話しかける..." disabled={loading} autoComplete="off" aria-label="Lunaria chat message" aria-keyshortcuts="Enter" aria-controls="lunaria-conversation-log" enterKeyHint="send"
           style={{ flex: 1, background: '#181511', border: '1px solid rgba(255,255,255,.08)', borderRadius: 20, padding: '9px 15px', fontSize: 14, color: '#ddd5c5', caretColor: orbColor, fontFamily: 'inherit' }} />
-        <button onClick={send} disabled={!input.trim() || loading}
+        <button onClick={send} disabled={!input.trim() || loading} aria-label="Send message to Lunaria"
           style={{ width: 34, height: 34, borderRadius: '50%', background: orbColor, border: 'none', color: '#0e0d0b', fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0, opacity: input.trim() && !loading ? 1 : .22, transition: 'opacity .2s, background 1s' }}>↑</button>
       </div>
     </div>

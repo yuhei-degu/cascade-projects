@@ -30,6 +30,11 @@
    ベーススタイル
    ============================================================ */
 @layer base {
+  :root {
+    --font-noto-serif-jp: "Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN";
+    --font-noto-sans-jp: "Noto Sans JP", "Yu Gothic", "Hiragino Sans", "Meiryo";
+  }
+
   /* タップ時のハイライトを無効化（iOS Safari） */
   * {
     -webkit-tap-highlight-color: transparent;

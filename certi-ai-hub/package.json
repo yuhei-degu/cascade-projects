@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit --incremental false",
     "test": "vitest",
     "test:e2e": "playwright test",
     "db:types": "supabase gen types typescript --local > src/types/supabase.ts"

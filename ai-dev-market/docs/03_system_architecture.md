@@ -1,66 +1,91 @@
-# 3. システム構成 — AI Dev Market
+# 3. System Architecture — AI Dev Market
 
-## アーキテクチャ図
+## MVP architecture (logical)
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      CLIENT (ブラウザ)                       │
-│  ① 依頼フォーム  ④ プロトタイプ確認  チャット  決済ページ     │
-└──────────────────────────┬──────────────────────────────────┘
-                           │ HTTPS
-┌──────────────────────────▼──────────────────────────────────┐
-│                   Next.js 14 (Vercel)                        │
-│  App Router / Server Actions / API Routes                    │
-│  ┌─────────────┐  ┌──────────────┐  ┌───────────────────┐   │
-│  │  公開ページ  │  │  管理画面    │  │  API Routes       │   │
-│  │ /request    │  │  /admin      │  │  /api/requests    │   │
-│  │ /preview    │  │  /admin/[id] │  │  /api/ai/*        │   │
-│  │ /chat/[id]  │  │              │  │  /api/chat        │   │
-│  │ /payment    │  │              │  │  /api/payment     │   │
-│  └─────────────┘  └──────────────┘  └───────────────────┘   │
-└──────┬─────────────────────────────────────────────────────┘
-       │
-┌──────▼────────────┐    ┌──────────────────────────────────┐
-│   Supabase        │    │         AI APIs                   │
-│ ┌───────────────┐ │    │  ┌─────────────┐ ┌─────────────┐ │
-│ │ PostgreSQL DB │ │    │  │ OpenAI GPT  │ │ Gemini API  │ │
-│ │ Auth          │ │    │  │ (審査+生成)  │ │ (審査)      │ │
-│ │ Storage       │ │    │  └─────────────┘ └─────────────┘ │
-│ │ Realtime      │ │    │  ┌─────────────┐                 │
-│ └───────────────┘ │    │  │ Claude API  │                 │
-└───────────────────┘    │  │(プロトタイプ)│                 │
-                         │  └─────────────┘                 │
-┌─────────────────────┐  └──────────────────────────────────┘
-│   Stripe            │
-│  Checkout / Webhook │
-└─────────────────────┘
-┌─────────────────────┐
-│   Resend            │
-│  メール送信 API      │
-└─────────────────────┘
+Browser (Requester/Admin)
+  |
+  | HTTPS
+  v
+Next.js (App Router)
+  - UI routes (request, plan, admin)
+  - API routes / server actions
+  - Auth guards
+  |
+  +--> Supabase
+  |     - Postgres (requests, plans, messages, payments)
+  |     - Auth (requester/admin)
+  |     - Storage (optional: artifacts)
+  |
+  +--> AI Providers (triage + plan generation)
+  |     - Primary: OpenAI / Gemini (triage)
+  |     - Optional: Claude (drafting copy / plan polish)
+  |
+  +--> Stripe (TEST MODE)
+  |     - Checkout session
+  |     - Webhook -> paid
+  |
+  +--> Email (Resend)
+        - plan ready, payment received, delivery ready
 ```
 
-## 技術スタック選定理由
+## Key design choices
 
-| 技術 | 理由 |
-|------|------|
-| Next.js 14 | App Router + Server Actions で API/UI を一体化、Vercel無料枠で運用 |
-| Supabase | PostgreSQL+Auth+Realtime をSaaS提供、個人運営に十分な無料枠 |
-| Stripe | 決済実績No.1、個人でも即日利用可、手数料3.6% |
-| Resend | メール送信SaaS、無料3,000通/月、設定が最も簡単 |
-| GPT-4o | 審査精度最高クラス、JSON強制応答でパース安定 |
-| Gemini-1.5-pro | GPT-4oの並列審査役、無料枠あり |
-| Claude-3.5-sonnet | コード生成品質最高クラス、プロトタイプ生成に最適 |
+- **Managed marketplace first**: admin-in-the-loop avoids unsafe automation.
+- **Tiering**: route Tier C into “estimate-only” to avoid overpromising.
+- **State machine**: explicit request status transitions; log transitions.
+- **Safety-first AI**: risk flags and secret detection gate the flow.
 
-## 費用試算（月額）
+## Data model (minimum viable)
 
-| サービス | 無料枠 | 超過時 |
-|--------|-------|--------|
-| Vercel | 100GB帯域 | Pro $20 |
-| Supabase | DB 500MB | Pro $25 |
-| Resend | 3,000通 | $20/月 |
-| OpenAI | なし | 従量課金 ~¥500/月 |
-| Gemini | 60req/min | 従量課金 ~¥100/月 |
-| Claude | なし | 従量課金 ~¥500/月 |
-| Stripe | なし | 手数料3.6% |
-| **合計** | **月¥0〜** | **月¥2,000〜3,000** |
+Tables (conceptual):
+
+- `requests`
+  - id, requester_id, title, description, category, budget_band, deadline_pref
+  - status, created_at, updated_at
+- `ai_triage`
+  - request_id, tier, rationale, risk_flags (json), questions (json), created_at
+- `prototype_plans`
+  - request_id, plan_markdown, assumptions (json), timeline_band, price_band
+  - version, created_at
+- `messages`
+  - request_id, sender_role, body_markdown, created_at
+- `payments`
+  - request_id, provider, checkout_session_id, status, amount, currency, created_at
+- `deliveries`
+  - request_id, artifacts (json), handoff_markdown, delivered_at
+
+## Sequence: estimate-ready flow
+
+1. Requester submits request → `requests.status=pending`
+2. System runs triage → writes `ai_triage`, sets `reviewing`
+3. System drafts `prototype_plans` → sets `plan_ready`
+4. Admin edits/approves → sets `plan_sent`
+5. Requester approves scope → sets `approved`
+
+## Sequence: payment + delivery (test mode)
+
+1. Admin triggers checkout creation → `payment_pending`
+2. Stripe webhook confirms (idempotent) → `paid`
+3. Admin attaches artifacts + handoff → `delivered` then `closed`
+
+## Safety and guardrails
+
+- Redact likely secrets (API keys, tokens) from stored content.
+- Block “production deploy” paths in MVP; deliver artifacts for user-run.
+- Require admin approval for:
+  - Tier C
+  - any risk flag
+  - any request that implies destructive actions
+
+## Observability (MVP)
+
+Log events:
+- `request.created`
+- `triage.completed`
+- `plan.generated`
+- `status.changed`
+- `payment.webhook_received`
+- `delivery.sent`
+
+Attach a correlation id per request for debugging.

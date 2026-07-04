@@ -4,8 +4,8 @@ import { saveCoreMemory } from './memory'
 const USER_ID = '00000000-0000-0000-0000-000000000001'
 const T = { candidates: 'lunaria_memory_candidates' } as const
 
-export type MemoryCandidateType = 'value' | 'pattern' | 'goal' | 'trigger' | 'name' | 'other'
-export type MemoryCandidateSourceType = 'conversation' | 'diary' | 'profile' | 'manual'
+export type MemoryCandidateType = 'value' | 'pattern' | 'goal' | 'trigger' | 'mid' | 'name' | 'other'
+export type MemoryCandidateSourceType = 'conversation' | 'diary' | 'profile' | 'manual' | 'game'
 export type MemoryCandidateStatus = 'pending' | 'approved' | 'rejected' | 'merged' | 'archived'
 
 export interface SaveMemoryCandidateOptions {
@@ -30,9 +30,15 @@ function normalizeConfidence(confidence: number | null | undefined): number | nu
 }
 
 function normalizeType(type: string): MemoryCandidateType {
-  return type === 'value' || type === 'pattern' || type === 'goal' || type === 'trigger' || type === 'name'
+  return type === 'value' || type === 'pattern' || type === 'goal' || type === 'trigger' || type === 'mid' || type === 'name'
     ? type
     : 'other'
+}
+
+function coreMemoryTypeForCandidate(type: MemoryCandidateType): 'value' | 'pattern' | 'goal' | 'trigger' | 'mid' | null {
+  if (type === 'value' || type === 'pattern' || type === 'goal' || type === 'trigger' || type === 'mid') return type
+  if (type === 'name') return null
+  return 'mid'
 }
 
 export async function saveMemoryCandidate(
@@ -67,7 +73,7 @@ export async function saveMemoryCandidate(
   if (!isMissingCandidateTable(error)) throw error
 
   if (options.legacyFallbackToCoreMemory !== false && candidateType !== 'name') {
-    await saveCoreMemory(candidateType, normalized, {
+    await saveCoreMemory(coreMemoryTypeForCandidate(candidateType) ?? 'mid', normalized, {
       sourceDate: options.sourceDate,
       confidence: options.confidence,
       status: 'candidate',

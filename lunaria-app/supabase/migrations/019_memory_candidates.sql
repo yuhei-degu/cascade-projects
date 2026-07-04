@@ -4,9 +4,9 @@
 create table if not exists public.lunaria_memory_candidates (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.lunaria_users(id) on delete cascade,
-  candidate_type text not null check (candidate_type in ('value', 'pattern', 'goal', 'trigger', 'name', 'other')),
+  candidate_type text not null check (candidate_type in ('value', 'pattern', 'goal', 'trigger', 'mid', 'name', 'other')),
   content text not null,
-  source_type text not null default 'conversation' check (source_type in ('conversation', 'diary', 'profile', 'manual')),
+  source_type text not null default 'conversation' check (source_type in ('conversation', 'diary', 'profile', 'manual', 'game')),
   source_id uuid,
   source_date date,
   source_message_ids uuid[] not null default '{}',

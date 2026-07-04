@@ -1,72 +1,121 @@
-# 2. 要件定義 — AI Dev Market
+# 2. Requirements — AI Dev Market
 
-## 機能要件
+## Roles
 
-### F-01 依頼投稿フォーム
-- タイトル（必須、100文字以内）
-- 詳細説明（必須、3000文字以内）
-- カテゴリ（スクリプト/Webツール/API連携/自動化/ダッシュボード/サイト/その他）
-- 希望予算（¥10,000 / ¥20,000 / ¥30,000 / 要相談）
-- 希望納期（任意）
-- 連絡先メールアドレス（必須）
-- サンプルファイルURL（任意）
+- **Requester**: submits a dev request, approves plan, pays, receives delivery.
+- **Admin/Operator**: reviews AI output, manages status, delivers artifacts.
+- **System**: AI triage, notifications, payment hooks (test mode).
 
-### F-02 AI自動審査
-- GPT-4o と Gemini-1.5-pro で並列審査
-- 判定: A（可）/ B（条件付き可）/ C（不可）
-- 見積工数（時間）・見積金額（円）を自動算出
-- C判定時: 丁寧なお断りメール自動送信
-- 審査結果を管理者が上書き可能
+## Core entities (conceptual)
 
-### F-03 プロトタイプ自動生成
-- A/B判定の案件に対しClaudeがコード骨格を自動生成
-- 生成内容: HTML/CSS/JSまたはPythonスクリプトの骨格
-- プレビューページで依頼者に提示
-- 「OK/修正希望/キャンセル」の3択で回答
+- `Request`: submission data + status + tier
+- `Clarification`: questions/answers
+- `Estimate`: tier + price band + time band + assumptions
+- `PrototypePlan`: deliverables + milestones + acceptance checks
+- `Message`: chat thread items (admin ↔ requester)
+- `Payment`: intent/session + status (test mode)
+- `Delivery`: artifact links + handoff notes + revision log
 
-### F-04 チャット機能
-- 依頼者↔管理者間のメッセージング
-- 修正依頼の受付
-- 1回目の修正は無料、2回目以降は追加料金提示
+## Functional requirements (MVP)
 
-### F-05 決済機能（Stripe）
-- Stripe Checkout（前払い）
-- テスト/本番切り替え対応
-- 領収書メール自動送信（Stripeが送信）
+### F-01 Request intake
 
-### F-06 納品管理
-- 納品物URL/ダウンロードリンク登録
-- 納品完了メール自動送信
-- ステータス管理（8段階）
+- Create request with:
+  - title, description, desired outcome
+  - category (script/web/api/other)
+  - budget band + deadline preference
+  - optional links (repo URL, docs URL)
+- Validate inputs (length, URL shape).
+- Store request and assign initial status `pending`.
 
-### F-07 管理者ダッシュボード
-- 全依頼一覧・フィルタ・ステータス更新
-- AI審査結果確認・上書き
-- チャット管理
-- 売上統計（月次・累計）
+### F-02 AI triage (estimate-ready)
 
-## 非機能要件
+- Generate:
+  - tier (`A`/`B`/`C`)
+  - complexity rationale (short)
+  - risk flags (secrets, destructive ops, compliance)
+  - clarification questions (0–5)
+- If high-risk flags: force admin review before any plan is shown.
 
-| 項目 | 要件 |
-|------|------|
-| デプロイ | Vercel（フロント）+ Supabase（DB/Auth） |
-| 認証 | Supabase Auth（管理者のみ） |
-| メール | Resend API（代替: SendGrid） |
-| セキュリティ | プレビューURLはトークン認証 |
-| スケール | 個人運営に最適化（同時10件程度） |
-| 費用目安 | 月¥2,000〜3,000（Vercel + Supabase無料枠 + Resend） |
+### F-03 Prototype plan generation
 
-## ステータス遷移
+- Produce a plan with:
+  - deliverables (what user will receive)
+  - assumptions + out-of-scope bullets
+  - timeline band (e.g., 1–3 days / 1 week)
+  - acceptance checks (“done means…”)
+- For Tier C: allow “plan-only” without prototype build.
 
-```
-pending        → 投稿直後
-reviewing      → AI審査中
-rejected       → AI/管理者却下
-prototype_ready → プロトタイプ生成済み・依頼者確認待ち
-prototype_ok   → 依頼者承認済み
-payment_pending → 決済待ち
-paid           → 決済完了・開発中
-delivered      → 納品完了
-revision       → 修正対応中
-closed         → 完了クローズ
-```
+### F-04 Admin review console
+
+- Admin can:
+  - view request + AI outputs
+  - edit tier/price/time bands
+  - edit plan text
+  - change status (see workflow below)
+  - send clarification questions to requester
+
+### F-05 Requester approval
+
+- Requester can:
+  - review the plan
+  - accept scope (approve)
+  - request changes (sends message)
+
+### F-06 Payment (test mode only)
+
+- Create checkout session for approved plan.
+- Update request/payment status via webhook.
+- Explicitly block live-mode keys in CI/docs for this task.
+
+### F-07 Delivery + revisions
+
+- Admin can attach:
+  - artifact links (zip/repo link/docs link)
+  - handoff notes
+- Support a limited revision loop (e.g., 1 revision window).
+
+### F-08 Notifications (minimal)
+
+- Email notifications for:
+  - plan ready
+  - payment received
+  - delivery ready
+
+## Workflow status model (MVP)
+
+Recommended request status enum:
+
+- `pending` — submitted, not yet triaged
+- `reviewing` — AI triage in progress / admin reviewing
+- `needs_clarification` — waiting for requester answers
+- `plan_ready` — plan drafted
+- `plan_sent` — plan sent to requester
+- `approved` — requester approved plan
+- `payment_pending` — awaiting payment
+- `paid` — payment confirmed
+- `delivered` — delivery sent
+- `revision` — revision in progress
+- `closed` — done / archived
+- `rejected` — declined
+
+## Non-functional requirements (MVP)
+
+- **Security**
+  - never store plaintext secrets from users; redact/strip if detected
+  - principle of least privilege for admin vs requester
+- **Reliability**
+  - idempotent webhooks (payment)
+  - safe retries for email/AI calls
+- **Observability**
+  - structured logs for AI calls, webhooks, state transitions
+- **Cost controls**
+  - cap AI tokens per request
+  - cache/reuse triage results unless request changes
+
+## Out of scope (explicit)
+
+- public provider onboarding + matching marketplace
+- multi-currency tax invoicing
+- SLA guarantees
+- production deployment automation

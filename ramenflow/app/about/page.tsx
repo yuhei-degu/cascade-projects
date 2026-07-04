@@ -4,6 +4,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { PublicLayout } from '@/components/layout/PublicLayout'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: '店舗情報',
@@ -74,9 +75,9 @@ export default async function AboutPage() {
 
         {/* トップへ戻るリンク */}
         <div className="text-center pb-4">
-          <a href="/" className="font-sans text-sm text-brand-red underline hover:opacity-70">
+          <Link href="/" className="font-sans text-sm text-brand-red underline hover:opacity-70">
             ← トップページへ戻る
-          </a>
+          </Link>
         </div>
       </div>
     </PublicLayout>

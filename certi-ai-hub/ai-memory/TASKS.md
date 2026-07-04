@@ -107,3 +107,20 @@ completed_by:
 
 ---
 _Last updated by: CLAUDE at 2026-03-11 00:00:00_
+
+---
+
+## META: AI_DEV_OS Onboarding (Docs-Only)
+
+These tasks are intentionally separated from the 20 implementation tasks above.
+
+- [x] CAH-IMPL-001 | priority:MEDIUM | agent:CODEX
+  AI Dev OS onboarding control docs (no app-code changes)
+  Files:
+  - AI_DEV_OS_STATUS.md
+  - TASK_EVALUATION.md
+  - HANDOFF.md
+  - ai-memory/PROGRESS.md
+  - ai-memory/TASKS.md
+
+_Last updated by: CODEX at 2026-05-09_

@@ -1,0 +1,38 @@
+{
+  "name": "lunaria",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "set NODE_ENV=development&& next dev",
+    "build": "node -e \"const cp=require('child_process');const env={...process.env};if(!env.CI&&!env.VERCEL){env.NEXT_PUBLIC_SUPABASE_URL ||= 'http://127.0.0.1:54321';env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||= 'local-anon-key';env.SUPABASE_SERVICE_ROLE_KEY ||= 'local-service-role-key';env.GEMINI_API_KEY ||= 'local-gemini-key';}const r=cp.spawnSync(process.execPath,['node_modules/next/dist/bin/next','build'],{stdio:'inherit',env});process.exit(r.status ?? 1)\"",
+    "start": "next start",
+    "lint": "next lint",
+    "env:check": "node scripts/env-check.js",
+    "prod:check": "node scripts/prod-selfcheck.js",
+    "gacha:report": "node scripts/gacha-report.js",
+    "gacha:smoke": "node scripts/gacha-smoke.js",
+    "gacha:verify": "node scripts/gacha-verify.js",
+    "gacha:sql-pack": "node scripts/gacha-sql-pack.js",
+    "supabase:verify": "node scripts/supabase-verify.js",
+    "character:sql-pack": "node scripts/character-sql-pack.js",
+    "character:verify": "node scripts/character-verify.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.36.3",
+    "@supabase/supabase-js": "^2.49.4",
+    "next": "15.2.4",
+    "openai": "^4.77.0",
+    "postcss": "^8.5.8",
+    "postcss-preset-env": "^11.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "^19",
+    "cross-env": "^10.1.0",
+    "typescript": "5.9.3"
+  }
+}

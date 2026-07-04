@@ -9,7 +9,7 @@ import { useOrdersRealtime } from '@/hooks/useRealtime'
 import { updateOrderItemStatus, clearTable } from '@/actions/staff'
 import { OrderItemStatusBadge } from '@/components/ui/Badge'
 import { formatPrice, getElapsedMinutes, isOverdue, cn } from '@/lib/utils'
-import type { OrderWithItems, OrderItemStatus } from '@/lib/types/database'
+import type { OrderWithItems } from '@/lib/types/database'
 import { NEXT_ORDER_ITEM_STATUS, NEXT_ORDER_ITEM_STATUS_LABEL } from '@/lib/types/database'
 
 // ============================================================
@@ -46,9 +46,9 @@ function OrderItemRow({
         )}>
           {item.menu_item.name}
         </p>
-        {(item.selected_options as any[]).length > 0 && (
+        {item.selected_options.length > 0 && (
           <p className="font-sans text-sm text-gray-400 mt-0.5">
-            {(item.selected_options as any[]).map((o: any) => o.option_name).join(' / ')}
+            {item.selected_options.map((option) => option.option_name).join(' / ')}
           </p>
         )}
       </div>

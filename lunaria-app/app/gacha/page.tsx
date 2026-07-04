@@ -186,15 +186,15 @@ export default function GachaPage() {
       background: 'radial-gradient(circle at 50% 10%, rgba(127,179,213,0.08), transparent 38%)',
     }}>
       {/* ヘッダー */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
-        <Link href="/" style={{ color: '#888', textDecoration: 'none', fontSize: '14px' }}>← 戻る</Link>
+      <nav aria-label="Gacha navigation" style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
+        <Link href="/" aria-label="Back to Lunaria room" style={{ color: '#888', textDecoration: 'none', fontSize: '14px' }}>← 戻る</Link>
         <h1 style={{ flex: 1, textAlign: 'center', fontSize: '18px', fontWeight: 'normal', color: '#ddd5c5' }}>
           月箱
         </h1>
-        <Link href="/gacha/inventory" style={{ color: '#888', textDecoration: 'none', fontSize: '14px' }}>
+        <Link href="/gacha/inventory" aria-label="Open gacha inventory" style={{ color: '#888', textDecoration: 'none', fontSize: '14px' }}>
           所持品 →
         </Link>
-      </div>
+      </nav>
 
       {/* 状態表示 */}
       {state && (

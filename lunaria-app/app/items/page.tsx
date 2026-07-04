@@ -165,10 +165,10 @@ export default function ItemsPage() {
   return (
     <main style={{ minHeight: '100vh', background: PAGE_BG, color: TEXT_MAIN, padding: '40px 20px' }}>
       <div style={{ maxWidth: 1120, margin: '0 auto' }}>
-        <nav style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
-          <Link href="/" style={navLinkStyle}>Back to Room</Link>
-          <Link href="/gacha" style={navLinkStyle}>Moonbox</Link>
-          <Link href="/character" style={navLinkStyle}>Character State</Link>
+        <nav aria-label="Items navigation" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
+          <Link href="/" aria-label="Back to Lunaria room" style={navLinkStyle}>Back to Room</Link>
+          <Link href="/gacha" aria-label="Open gacha" style={navLinkStyle}>Moonbox</Link>
+          <Link href="/character" aria-label="Open character" style={navLinkStyle}>Character State</Link>
         </nav>
 
         <section style={{ ...panelStyle, marginBottom: 22 }}>

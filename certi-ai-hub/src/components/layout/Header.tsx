@@ -1,7 +1,7 @@
 "use client"
-// src/components/layout/Header.tsx
+
 import Link from "next/link"
-import { Menu, LogOut, Crown } from "lucide-react"
+import { Crown, LogOut, Menu, PlayCircle } from "lucide-react"
 import { useSidebar } from "./SidebarContext"
 import { useEffect, useState } from "react"
 import { createAuthClient } from "@/lib/supabase/auth"
@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation"
 export default function Header() {
   const { toggle } = useSidebar()
   const router = useRouter()
-  const [user, setUser]       = useState<any>(null)
+  const [user, setUser] = useState<any>(null)
   const [premium, setPremium] = useState(false)
 
   useEffect(() => {
@@ -19,11 +19,12 @@ export default function Header() {
       setUser(data.user)
       if (data.user) {
         db.from("profiles").select("is_premium").eq("id", data.user.id).single()
-          .then(({ data: p }) => setPremium(p?.is_premium ?? false))
+          .then(({ data: profile }) => setPremium(profile?.is_premium ?? false))
       }
     })
-    const { data: { subscription } } = db.auth.onAuthStateChange((_e, session) => {
+    const { data: { subscription } } = db.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
+      if (!session?.user) setPremium(false)
     })
     return () => subscription.unsubscribe()
   }, [])
@@ -31,59 +32,69 @@ export default function Header() {
   async function handleLogout() {
     const db = createAuthClient()
     await db.auth.signOut()
-    setUser(null); setPremium(false)
-    router.push("/"); router.refresh()
+    setUser(null)
+    setPremium(false)
+    router.push("/")
+    router.refresh()
   }
 
   return (
-    <header className="h-14 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-30 transition-all duration-300">
-      <div className="h-full px-4 flex items-center justify-between gap-4 max-w-[1400px] mx-auto">
-        <button onClick={toggle}
-          className="p-2 rounded-xl hover:bg-slate-100/80 text-slate-500 hover:text-slate-800 transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-slate-200"
-          aria-label="サイドバーを開閉">
-          <Menu size={18} />
+    <header className="sticky top-0 z-30 h-14 border-b border-slate-200 bg-white/95 backdrop-blur">
+      <div className="mx-auto flex h-full max-w-[1400px] items-center gap-3 px-4">
+        <button
+          onClick={toggle}
+          className="flex h-9 w-9 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-200"
+          aria-label="サイドバーを開閉"
+        >
+          <Menu size={19} />
         </button>
 
-        <Link href="/" className="flex items-center gap-1.5 font-black text-lg md:hidden tracking-tight">
-          <span className="text-xl drop-shadow-sm">🛡️</span><span className="text-slate-900 text-sm font-black">AIセキュリティ<span className="text-indigo-600">エンジニア養成所</span></span>
+        <Link href="/" className="flex items-center gap-2 font-black text-slate-950 md:hidden">
+          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo-600 text-xs text-white">AI</span>
+          <span className="text-sm">Certi-AI Hub</span>
         </Link>
 
-        {/* モバイルナビ */}
-        <nav className="flex md:hidden items-center gap-4 text-xs font-semibold text-slate-500 ml-auto tracking-wide">
-          <Link href="/common/exam?module=SC&mode=exam" className="hover:text-indigo-600 transition-colors">SC模試</Link>
-          <Link href="/common/exam?module=AIF&mode=exam" className="hover:text-orange-500 transition-colors">AIF模試</Link>
+        <nav className="hidden items-center gap-1 md:flex">
+          <Link href="/common/exam?module=MIXED" className="rounded-md px-3 py-2 text-xs font-bold text-slate-600 transition hover:bg-indigo-50 hover:text-indigo-700">
+            混合10問
+          </Link>
+          <Link href="/sc-module" className="rounded-md px-3 py-2 text-xs font-bold text-slate-600 transition hover:bg-sky-50 hover:text-sky-700">
+            SC
+          </Link>
+          <Link href="/aws-module" className="rounded-md px-3 py-2 text-xs font-bold text-slate-600 transition hover:bg-orange-50 hover:text-orange-700">
+            AIF
+          </Link>
         </nav>
 
-        {/* ログイン状態 */}
-        <div className="ml-auto flex items-center gap-2 shrink-0">
+        <div className="ml-auto flex items-center gap-2">
+          <Link href="/common/exam?module=MIXED" className="hidden h-9 items-center gap-2 rounded-md bg-slate-950 px-3 text-xs font-bold text-white transition hover:bg-slate-800 sm:flex">
+            <PlayCircle size={15} />
+            今日の10問
+          </Link>
           {user ? (
             <>
-              {premium && (
-                <span className="hidden sm:flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50/80 border border-amber-200/60 px-2.5 py-1 rounded-full shadow-sm">
-                  <Crown size={12} strokeWidth={2.5} />プレミアム
+              {premium ? (
+                <span className="hidden items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-xs font-bold text-amber-700 sm:flex">
+                  <Crown size={13} />
+                  Premium
                 </span>
-              )}
-              {!premium && (
-                <Link href="/pricing"
-                  className="hidden sm:block text-[11px] font-bold text-indigo-700 bg-indigo-50/80 border border-indigo-200/60 px-3 py-1.5 rounded-full hover:bg-indigo-100 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200">
-                  ✨ アップグレード
+              ) : (
+                <Link href="/pricing" className="hidden rounded-md border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-700 transition hover:bg-indigo-100 sm:block">
+                  Premiumへ
                 </Link>
               )}
-              <button onClick={handleLogout}
-                className="flex items-center gap-1 text-[11px] font-medium text-slate-400 hover:text-slate-600 px-2.5 py-1.5 rounded-xl hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200">
-                <LogOut size={14} />
+              <button onClick={handleLogout} className="flex h-9 items-center gap-1 rounded-md px-2.5 text-xs font-bold text-slate-500 transition hover:bg-slate-100 hover:text-slate-800">
+                <LogOut size={15} />
                 <span className="hidden sm:inline">ログアウト</span>
               </button>
             </>
           ) : (
             <>
-              <Link href="/login"
-                className="text-[11px] font-bold text-slate-600 px-3 py-1.5 rounded-full hover:bg-slate-100 transition-colors">
+              <Link href="/login" className="rounded-md px-3 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-100">
                 ログイン
               </Link>
-              <Link href="/pricing"
-                className="text-[11px] font-bold bg-indigo-600 text-white px-3.5 py-1.5 rounded-full hover:bg-indigo-700 transition-all shadow-md shadow-indigo-200 hover:shadow-lg hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-indigo-300">
-                ✨ プレミアム
+              <Link href="/pricing" className="rounded-md bg-indigo-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-indigo-700">
+                Premium
               </Link>
             </>
           )}

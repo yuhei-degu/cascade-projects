@@ -14,7 +14,9 @@ interface Props {
 }
 
 export function ResultPanel({ question, userAnswer, onNext, isLast }: Props) {
-  const normalize = (v: string) => v.trim().toUpperCase()
+  const normalize = (v: string | undefined) => (v ?? "").trim().toUpperCase()
+  const correctAnswer = question.answer || "確認中"
+  const explanation = question.explanation || "解説を取得できませんでした。"
   const isCorrect = normalize(userAnswer) === normalize(question.answer)
   const [hint, setHint] = useState<HintResponse | null>(null)
   const [loadingHint, setLoadingHint] = useState(false)
@@ -42,14 +44,14 @@ export function ResultPanel({ question, userAnswer, onNext, isLast }: Props) {
         ${isCorrect ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
         {isCorrect
           ? <><CheckCircle size={24} /> 正解！ 素晴らしい！</>
-          : <><XCircle size={24} /> 不正解。正解は <strong className="mx-1">{question.answer}</strong> でした</>
+          : <><XCircle size={24} /> 不正解。正解は <strong className="mx-1">{correctAnswer}</strong> でした</>
         }
       </div>
 
       {/* 解説 */}
       <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
         <p className="text-xs font-bold text-blue-600 mb-2">📖 解説</p>
-        <p className="text-sm text-blue-800 leading-relaxed">{question.explanation}</p>
+        <p className="text-sm text-blue-800 leading-relaxed">{explanation}</p>
       </div>
 
       {/* AIヒント */}

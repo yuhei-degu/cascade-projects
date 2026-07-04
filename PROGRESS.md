@@ -309,3 +309,123 @@ Remaining:
 
 - Core memory archive/restore/edit is still design-ready, not implemented.
 - Real-data verification still depends on Supabase migration `019` being applied.
+
+## 2026-05-27 Main Conversation UI Correction
+
+Corrected the active target after the user clarified that the real Lunaria screen is `lunaria-app/`, not the separate defense prototype.
+
+Changed:
+- `lunaria-app/app/page.tsx`
+- `lunaria-app/app/gacha/page.tsx`
+- `lunaria-app/app/globals.css`
+
+Behavior:
+- The home screen is now positioned as the main conversation surface again.
+- Quick prompts and focus cards prioritize talking with Lunaria, diary/memory separation, and Moon Box as a conversation reward.
+- Moon Box copy now points users back to conversation and frames gacha as a light relationship/room ornament.
+- Narrow/mobile layout constrains the portrait so the chat panel appears in the first viewport.
+- No DB schema, API contract, chat persistence, diary, memory, or gacha business logic was intentionally changed.
+
+Verification:
+- `npm run build`: passed.
+- `npx tsc --noEmit --pretty false`: passed after build.
+- Browser check: `http://localhost:3009/` and `/gacha` loaded without runtime error after restarting the dev server.
+
+## 2026-05-27 Antigravity UI Pass Handoff
+
+Prepared and launched an Antigravity-focused UI/design pass for the real Lunaria app.
+
+Added:
+- `lunaria-app/docs/ANTIGRAVITY_UI_PASS_2026-05-27.md`
+- `lunaria-app/scripts/start-antigravity-ui-pass.ps1`
+
+Scope given to Antigravity:
+- Improve visible Lunaria screens and Japanese UI copy.
+- Prioritize main conversation screen, Moon Box/gacha, diary, memory, items, and character pages.
+- Preserve API, DB, auth, env, persistence, and product architecture boundaries.
+- Avoid reverting unrelated dirty files.
+
+Launch command used:
+- `powershell -ExecutionPolicy Bypass -File .\scripts\start-antigravity-ui-pass.ps1`
+
+Next:
+- Review Antigravity's edits before committing or broadening the pass.
+- Re-run `npm run build`, `npx tsc --noEmit --pretty false`, and browser checks after Antigravity changes files.
+
+## 2026-05-27 Antigravity UI Pass Review + Cache Fix
+
+Antigravity did edit visible UI files after the handoff.
+
+Observed changed areas:
+- `lunaria-app/app/gacha/page.tsx`
+- `lunaria-app/app/diary/page.tsx`
+- `lunaria-app/app/memory/page.tsx`
+- `lunaria-app/app/items/page.tsx`
+- `lunaria-app/app/character/page.tsx`
+- `lunaria-app/app/globals.css`
+
+Follow-up fixes by Codex:
+- Cleared stale `.next` cache after `Cannot find module './*.js'` dev-server errors.
+- Restarted the dev server on `http://localhost:3009/`.
+- Fixed mobile Moon Box layout where the box and explanatory copy overlapped.
+- Confirmed `/`, `/gacha`, `/diary`, `/memory`, `/items`, and `/character` load without runtime error on the clean dev server.
+
+Verification:
+- `npm run build`: passed.
+- `npx tsc --noEmit --pretty false`: passed.
+- Browser smoke: `/` and `/gacha` loaded without runtime error after clean dev restart.
+
+Operational note:
+- Do not run `npm run build` while the Next dev server is serving the same `.next` directory. Stop dev, build/typecheck, clear `.next`, then restart dev.
+
+## 2026-05-27 Conversation Regression From Real User Log
+
+The user provided an actual bad chat transcript. The previous check was too shallow because it verified page load/build but not conversation behavior.
+
+Fixed:
+- `lunaria-app/app/api/chat/route.ts`
+- `lunaria-app/lib/lunaria/conversation-polish.ts`
+- `lunaria-app/package.json`
+- `lunaria-app/scripts/conversation-devtest-smoke.js`
+
+Behavior changes:
+- Luna no longer claims durable memory when only recent chat history is available.
+- Memory answers now distinguish recent conversation history from long-term memory.
+- Developer/test context is treated as a product test, not customer-service mode.
+- Repetitive "その気持ちを聞かせて" style responses are caught in developer-test context.
+- Tone is pushed back toward a close childhood-friend style instead of formal customer-service Japanese.
+- Incomplete replies are repaired with a clean closing sentence instead of being shown mid-sentence.
+- Moon Box results are treated as inventory/conversation hooks, not core memory.
+
+New verification:
+- `npm run chat:devtest`
+
+Verification run:
+- `npm run chat:devtest`: passed.
+- `npm run build`: passed.
+- `npx tsc --noEmit --pretty false`: passed.
+- Browser check: `/` on `http://localhost:3009/` loaded without runtime error after clean dev restart.
+
+## 2026-05-27 Antigravity Remaining UI Review
+
+Reviewed the remaining Antigravity handoff items for Moon Box result animation and mobile controls.
+
+Fixed:
+- `lunaria-app/lib/lunaria/reactions.ts`
+  - The reference 2D motion sheet now loads first, avoiding a missing PNG/fallback flicker in gacha and character portraits.
+- `lunaria-app/app/globals.css`
+  - Tightened gacha result item-name wrapping and mobile result action tap targets.
+- `lunaria-app/app/character/page.tsx`
+  - Converted expression/motion control labels to Japanese.
+  - Raised nav/control tap targets to the 44px mobile baseline.
+- `lunaria-app/app/memory/page.tsx`
+  - Raised toolbar and review action tap targets to the 44px mobile baseline.
+
+Verification:
+- `npx tsc --noEmit --pretty false`: passed.
+- Browser check at 390x844:
+  - `/gacha`: no broken images, no detected overflow, sprite portrait rendered from `lunaria-reference-head-turns-8.jpg`.
+  - `/character`: Japanese labels, 44px controls, no detected overflow.
+  - `/memory`: toolbar/action controls at 44px, no detected overflow.
+- Browser check at 1280x800:
+  - Real gacha draw result dialog rendered cleanly with the 2D portrait sheet, no broken images, no detected result overflow.

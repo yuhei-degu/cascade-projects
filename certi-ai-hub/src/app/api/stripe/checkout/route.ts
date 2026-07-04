@@ -1,25 +1,21 @@
 // src/app/api/stripe/checkout/route.ts
 import { NextRequest, NextResponse } from "next/server"
 import Stripe from "stripe"
-import { createServiceClient } from "@/lib/supabase/server"
+import { createClient, createServiceClient } from "@/lib/supabase/server"
 
 export async function POST(req: NextRequest) {
+  const authDb = await createClient()
+  const { data: { user } } = await authDb.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+  const user_id = user.id
+  const email = user.email
+
   // 環境変数チェック
   if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY.includes("dummy")) {
     console.error("STRIPE_SECRET_KEY is not configured")
     return NextResponse.json({ error: "Payment not configured. Please contact support." }, { status: 503 })
-  }
-
-  let body: any
-  try {
-    body = await req.json()
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
-  }
-
-  const { user_id, email } = body
-  if (!user_id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
   try {

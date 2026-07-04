@@ -58,6 +58,27 @@ Purpose: Measure whether AI_DEV_OS improves Lunaria development speed, safety, a
 
 | LUN-CHAR-UI-002 | 2026-05-09 | Codex 5.5 | Codex self-review | ui | Low | Low | No | 0m | ~20m | 3 | Yes | Yes | N/A | 0 | 0 | 0 | Done |  | `/items` and `/character` source/fallback UX clarified; mobile character grid improved; DB/API/env untouched |
 
+| LUN-CHAT-003 | 2026-05-16 | Codex 5.5 | Codex self-review | api+test | Medium | Low | No | 0m | ~45m | 3 | Yes | Yes | Yes | 0 | 0 | 0 | Done |  | Added conversation polish post-processor and restored readable chat smoke scenarios; DB/env/prod untouched |
+
+| LUN-CHAT-004 | 2026-05-16 | Codex 5.5 | Codex self-review | docs+test-data | Low | Low | No | 0m | ~20m | 2 | N/A | N/A | Yes | 0 | 0 | 0 | Done |  | Added conversation evaluation casebook and JSON seed cases; no runtime/product behavior changes |
+
+| LUN-CHAT-005 | 2026-05-16 | Codex 5.5 | Codex self-review | api+docs+test | Medium | Medium | No | 0m | ~60m | 9 | Yes | Yes | Yes | 1 | 0 | 0 | Done |  | Added real transcript regression cases; repaired mojibake prompt/polish strings, calendar context, and partial JSON salvage; DB/env/prod untouched |
+
+| LUN-ENDWORLD-002 | 2026-05-17 | Codex 5.5 | Codex self-review | game-ui+docs | High | Medium | No | 0m | ~90m | 9 | Yes | Yes | Yes | 1 | 0 | 0 | Done |  | Rewrote Endworld from linear mood novel into prep/resource/check survival MVP; DB/env/prod untouched |
+
+| LUN-ENDWORLD-003 | 2026-05-17 | Codex 5.5 | Codex self-review | game-ui+test-data | Medium | Low | No | 0m | ~35m | 7 | Yes | Yes | Yes | 1 | 0 | 0 | Done |  | Added full Day 1-7 event coverage, fixed ending day count, added weekly cadence notice and source invariant check; DB/env/prod untouched |
+
+| LUN-ENDWORLD-004 | 2026-05-17 | Codex 5.5 | Claude handoff intake | game-ui+test | Medium | Low | No | 0m | ~45m | 8 | Yes | Yes | Yes | 1 | 0 | 0 | Done |  | Reconciled Claude Endworld v2 vignette implementation, repaired visible mojibake, aligned source/smoke checks, added v2 handoff home card; DB/env/prod untouched |
+
+| LUN-ENDWORLD-005 | 2026-05-17 | Codex 5.5 | Codex self-review | game-api+ui+test | Medium | Medium | No | 0m | ~35m | 5 | Yes | Yes | Yes | 0 | 0 | 0 | Done |  | Wired Endworld v2 approved residue into memory candidate POST without core-memory fallback; DB/env/prod untouched |
+
+| LUN-AUTO-006 | 2026-05-20 | Codex 5.5 | Codex self-review | docs+game-ui+test | Medium | Medium | No | 0m | ~120m | 13 | Yes | Yes | Yes | 2 | 0 | 0 | Done |  | Canonical spec, collision queue, 37-case conversation fixture, Endworld survival v2 cleanup, and new checks; DB/env/prod untouched |
+
+| LUN-UI-007 | 2026-05-20 | Codex 5.5 | Codex self-review | ui+copy+test | Medium | Medium | No | 0m | ~75m | 5 | Yes | Yes | Yes | 1 | 1 | 0 | Done |  | Home and Endworld visible UI copy Japanese-first; home visual polish added; screenshot blocked by unavailable IAB; DB/env/prod untouched |
+
+| LUN-AUTO-GUARD-008 | 2026-05-20 | Codex 5.5 | Codex self-review | automation+ui+test | Medium | Medium | No | 0m | ~45m | 9 | Yes | Yes | Yes | 1 | 0 | 0 | Done |  | Added auto-dev guardrails and
+pm run auto:guard; localized /character after guard caught English/internal copy; DB/env/prod untouched |
+
 ## Trial Notes
 
 - Task scope is clearer when each work item has risk, owner, and stop conditions.
@@ -70,3 +91,10 @@ Purpose: Measure whether AI_DEV_OS improves Lunaria development speed, safety, a
 - Should metrics be recorded per commit, per task, or per PR?
 - Which fields create useful signal versus documentation overhead?
 - Does Solo Developer Fast Mode reduce human wait time without increasing rework?
+
+| LUN-VISUAL-009 | 2026-05-24 | Codex 5.5 | Codex self-review | ui+assets | Low | Low | No | 0m | ~35m | 12 | Yes | Yes | Yes | 0 | 0 | 0 | Done |  | Added Lunaria visual asset manifest and `/character/gallery`; copied curated local assets only; DB/env/prod untouched |
+| LUN-QUALITY-010 | 2026-05-24 | Codex 5.5 | Codex self-review + browser audit | api+ui+copy+test | High | Medium | No | 0m | ~90m | 10 | Yes | Yes | Yes | 2 | 0 | 0 | Done |  | Repaired chat mojibake route logic, added deterministic replies for calendar/quality/game reports, localized visible UI copy, refreshed games smoke; DB/env/prod untouched |
+| LUN-GAME-011 | 2026-05-25 | Codex 5.5 | Codex self-review + browser audit | game-ui+mechanics+test | High | Medium | No | 0m | ~80m | 7 | Yes | Yes | Yes | 1 | 0 | 0 | Done |  | Added readable game pressure to Endworld and chance/roll mechanics to side games; DB/env/prod untouched |
+| LUN-CHAT-012 | 2026-05-26 | Codex 5.5 | Codex self-review + live API check | api+conversation-tests+docs | Medium | Low | No | 0m | ~55m | 5 | Yes | Yes | Yes | 1 | 0 | 0 | Done |  | Applied hospitality/service-recovery conversation rules; added service_recovery cases; DB/env/prod untouched |
+| LUN-VISUAL-013 | 2026-05-27 | Codex 5.5 | Codex self-review + browser audit | visual-qa+ui+motion | Medium | Low | No | 0m | ~45m | 5 | Yes | Yes | Yes | 2 | 0 | 0 | Done |  | Reviewed Antigravity 2D/gacha pass; fixed mobile home CSS overrides and emotion/reaction motion fallbacks; DB/env/prod untouched |
+| LUN-CHAT-014 | 2026-05-31 | Codex 5.5 | Codex self-review + live API smoke | api+conversation-tests | Medium | Low | No | 0m | ~45m | 5 | Yes | Yes | Yes | 1 | 0 | 0 | Done |  | Repaired bad live conversation cases: truncated planning, thin small-talk, Endworld result misrouting, and weak game-result one-liners; DB/env/prod untouched |

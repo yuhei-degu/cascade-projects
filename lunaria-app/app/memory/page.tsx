@@ -74,6 +74,14 @@ const typeLabels: Record<string, string> = {
   other: 'Memo',
 }
 
+const sourceTypeLabels: Record<string, string> = {
+  conversation: 'Conversation',
+  diary: 'Diary',
+  profile: 'Profile',
+  manual: 'Manual note',
+  game: 'Game carryover',
+}
+
 function todayJst(): string {
   return new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Tokyo',
@@ -108,6 +116,14 @@ function formatTime(value: string | null): string {
 function confidenceLabel(value: number | null): string {
   if (typeof value !== 'number') return 'Unset'
   return `${Math.round(value * 100)}%`
+}
+
+function sourceTypeLabel(value: string): string {
+  return sourceTypeLabels[value] ?? value
+}
+
+function sourceDateLabel(value: string): string {
+  return value === 'game' ? 'game day' : 'diary'
 }
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -203,6 +219,7 @@ function CandidateCard({
 }) {
   const isPending = candidate.status === 'pending'
   const canRestore = candidate.status === 'archived' || candidate.status === 'rejected'
+  const isGameCandidate = candidate.source_type === 'game'
 
   return (
     <article style={candidateCardStyle}>
@@ -211,7 +228,7 @@ function CandidateCard({
         <span style={candidateBadgeStyle}>{candidate.status === 'pending' ? 'Needs review' : candidate.status}</span>
         {candidate.source_date && (
           <Link href={`/diary?date=${encodeURIComponent(candidate.source_date)}`} style={dateBadgeStyle}>
-            {formatDate(candidate.source_date)} diary
+            {formatDate(candidate.source_date)} {sourceDateLabel(candidate.source_type)}
           </Link>
         )}
       </div>
@@ -219,7 +236,7 @@ function CandidateCard({
       {candidate.reason && <p style={notesStyle}>Why Luna noticed it: {candidate.reason}</p>}
       <div style={memoryMetaGridStyle}>
         <Stat label="Confidence" value={confidenceLabel(candidate.confidence)} />
-        <Stat label="Source" value={candidate.source_type} />
+        <Stat label="Source" value={sourceTypeLabel(candidate.source_type)} />
         <Stat label="Created by" value={candidate.created_by} />
         <Stat label="Created" value={formatTime(candidate.created_at)} />
       </div>
@@ -243,6 +260,14 @@ function CandidateCard({
               {busy ? 'Restoring...' : 'Restore to review'}
             </button>
           )}
+        </div>
+      )}
+      {isGameCandidate && (
+        <div aria-label="Game carryover return" style={gameCarryoverReturnStyle}>
+          <span>After approval, return to the room and ask Luna to use this result.</span>
+          <Link href="/" aria-label="Return to Lunaria room with approved game carryover" style={returnRoomLinkStyle}>
+            Room
+          </Link>
         </div>
       )}
     </article>
@@ -362,23 +387,25 @@ export default function MemoryPage() {
     }
     return Array.from(map.entries()).sort(([a], [b]) => b.localeCompare(a))
   }, [memories])
+  const gameCandidateCount = useMemo(() => candidates.filter(candidate => candidate.source_type === 'game').length, [candidates])
 
   return (
     <main style={pageStyle}>
       <div style={{ maxWidth: 1080, margin: '0 auto' }}>
         <header style={headerStyle}>
           <div>
-            <Link href="/" style={backLinkStyle}>Back to Luna's room</Link>
+            <Link href="/" aria-label="Back to Lunaria room" style={backLinkStyle}>Back to Luna's room</Link>
             <p style={eyebrowStyle}>Lunaria Memory</p>
             <h1 style={titleStyle}>Memory Shelf</h1>
             <p style={leadStyle}>
               A place to review what Luna may carry forward. Diary entries remember the day; memories are the small lights Luna may reference later.
             </p>
           </div>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-            <Link href="/diary" style={pillLinkStyle}>Diary</Link>
-            <Link href="/gacha" style={pillLinkStyle}>Moonbox</Link>
-          </div>
+          <nav aria-label="Memory navigation" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <Link href="/diary" aria-label="Open diary" style={pillLinkStyle}>Diary</Link>
+            <Link href="/games" aria-label="Open games" style={pillLinkStyle}>Games</Link>
+            <Link href="/gacha" aria-label="Open gacha" style={pillLinkStyle}>Moonbox</Link>
+          </nav>
         </header>
 
         <section style={toolbarStyle}>
@@ -477,6 +504,7 @@ export default function MemoryPage() {
                 <Stat label="Confirmed" value={stats?.by_status?.confirmed ?? 0} />
                 <Stat label="Candidate filter" value={candidateStatus} />
                 <Stat label="Candidate rows" value={candidateTableReady ? (candidateStats?.total ?? candidates.length) : 'not applied'} />
+                <Stat label="Game carryovers" value={candidateTableReady ? gameCandidateCount : 'not applied'} />
               </div>
             </Section>
 
@@ -703,6 +731,28 @@ const candidateActionRowStyle: CSSProperties = {
   marginTop: 14,
   paddingTop: 12,
   borderTop: '1px solid rgba(255,255,255,.07)',
+}
+
+const gameCarryoverReturnStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 10,
+  borderTop: '1px solid rgba(255,255,255,.07)',
+  color: '#b3a896',
+  fontSize: 12,
+  lineHeight: 1.6,
+  marginTop: 12,
+  paddingTop: 12,
+}
+
+const returnRoomLinkStyle: CSSProperties = {
+  color: '#0f0d0a',
+  background: '#d8b66d',
+  borderRadius: 8,
+  padding: '5px 10px',
+  textDecoration: 'none',
+  whiteSpace: 'nowrap',
 }
 
 const actionButtonBaseStyle: CSSProperties = {

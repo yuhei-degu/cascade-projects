@@ -21,6 +21,7 @@ import { tryGrantTicketByScore } from '../../../lib/lunaria/gacha'
 import { getJstDateString } from '../../../lib/lunaria/date'
 import { parseAssistantReply, stringifyAssistantMessage } from '../../../lib/lunaria/assistant-reply'
 import type { AssistantReply } from '../../../lib/lunaria/assistant-reply'
+import { buildGameHandoffResponseHint, getGameHandoffNextStep, withGameHandoffNextStep } from '../../../lib/lunaria/game-handoff'
 
 const gemini = new OpenAI({
   apiKey: process.env.GEMINI_API_KEY,
@@ -257,8 +258,11 @@ export async function POST(req: NextRequest) {
       console.log('[intent] answer_directly, topic:', topicResult.current_topic)
       if (DEBUG_PROMPT) console.log('[DEBUG-PROMPT]\n' + systemWithContext)
     }
+    const gameHandoffNextStep = getGameHandoffNextStep(userMessage, contextualMem ?? null, history)
+    const gameHandoffResponseHint = buildGameHandoffResponseHint(gameHandoffNextStep)
     const llmMsgs: OpenAI.Chat.ChatCompletionMessageParam[] = [
       { role: 'system', content: systemWithContext },
+      ...(gameHandoffResponseHint ? [{ role: 'system' as const, content: gameHandoffResponseHint }] : []),
       ...history.slice(-12).map((m: any) => ({
         role: m.role as 'user' | 'assistant',
         content: m.content,
@@ -282,7 +286,7 @@ export async function POST(req: NextRequest) {
         try {
           if (precomputedReply !== null) {
             // テンプレ系：単一 chunk で送出（streaming プロトコルだが内容は一発）
-            const structuredReply = parseAssistantReply(precomputedReply)
+            const structuredReply = withGameHandoffNextStep(parseAssistantReply(precomputedReply), gameHandoffNextStep)
             reply = stringifyAssistantMessage(structuredReply)
             assistantMeta = toAssistantMeta(structuredReply)
             send({ type: 'chunk', text: reply })
@@ -334,7 +338,7 @@ export async function POST(req: NextRequest) {
                 throw primaryErr
               }
             }
-            const structuredReply = parseAssistantReply(raw)
+            const structuredReply = withGameHandoffNextStep(parseAssistantReply(raw), gameHandoffNextStep)
             assistantMeta = toAssistantMeta(structuredReply)
             reply = truncateAtSentence(stringifyAssistantMessage(structuredReply), 400)
             // 切り詰めが入った時だけクライアント側に最終形を上書きさせる

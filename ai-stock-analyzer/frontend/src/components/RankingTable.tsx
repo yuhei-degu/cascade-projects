@@ -1,97 +1,115 @@
-/**
- * ランキングテーブル — クライアントコンポーネント
- *
- * 企業ランキングをテーブル形式で表示する。
- * ソート・フィルター・ページネーション対応。
- */
-
 "use client";
 
-import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useMemo, useState, useTransition } from "react";
 import { fetchRanking } from "@/lib/api";
 import type { CompanyRankingItem, RankingResponse, ValuationLabel } from "@/types";
-import {
-  getValuationLabel,
-  getValuationColorClass,
-  getScoreBarColor,
-  formatMarketCap,
-} from "@/types";
+import { formatMarketCap, getScoreBarColor, getValuationColorClass, getValuationLabel } from "@/types";
 
 interface Props {
   initialData: RankingResponse;
 }
 
-/** スコアバー（0-100 の視覚的表現） */
-function ScoreBar({ score, label }: { score: number | null; label: string }) {
-  const pct = score ?? 0;
+function ScoreBar({ score }: { score: number | null }) {
+  const value = score ?? 0;
+
   return (
-    <div className="flex items-center gap-2 min-w-[120px]">
-      <div className="flex-1 h-1.5 bg-gray-700 rounded-full overflow-hidden">
+    <div className="flex min-w-[128px] items-center gap-2">
+      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-800">
         <div
-          className={`h-full rounded-full transition-all duration-500 ${getScoreBarColor(pct)}`}
-          style={{ width: `${pct}%` }}
+          className={`h-full rounded-full transition-all duration-500 ${getScoreBarColor(value)}`}
+          style={{ width: `${Math.max(0, Math.min(100, value))}%` }}
         />
       </div>
-      <span className="text-xs tabular-nums text-gray-400 w-8 text-right">
-        {score !== null ? score.toFixed(1) : "—"}
+      <span className="w-10 text-right text-xs tabular-nums text-slate-400">
+        {score !== null ? score.toFixed(1) : "-"}
       </span>
     </div>
   );
 }
 
-/** 割安度バッジ */
 function ValuationBadge({ score }: { score: number | null }) {
   const label = getValuationLabel(score);
-  const colorClass = getValuationColorClass(label);
   const labelText: Record<ValuationLabel, string> = {
-    very_cheap: "激安",
-    cheap:      "割安",
-    fair:       "適正",
-    expensive:  "割高",
-    unknown:    "—",
+    very_cheap: "かなり割安",
+    cheap: "割安",
+    fair: "妥当",
+    expensive: "割高",
+    unknown: "不明",
   };
+
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${colorClass}`}>
+    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${getValuationColorClass(label)}`}>
       {labelText[label]}
     </span>
   );
 }
 
-/** ソートアイコン */
 function SortIcon({ active, direction }: { active: boolean; direction: "asc" | "desc" }) {
-  if (!active) return <span className="text-gray-600 ml-1">↕</span>;
-  return <span className="text-blue-400 ml-1">{direction === "desc" ? "↓" : "↑"}</span>;
+  if (!active) return <span className="ml-1 text-slate-600">↕</span>;
+  return <span className="ml-1 text-cyan-300">{direction === "desc" ? "↓" : "↑"}</span>;
+}
+
+const columns: { key: keyof CompanyRankingItem; label: string; numeric?: boolean; score?: boolean }[] = [
+  { key: "ticker", label: "ティッカー" },
+  { key: "name", label: "企業名" },
+  { key: "sector", label: "テーマ" },
+  { key: "composite_score", label: "総合", numeric: true, score: true },
+  { key: "tech_score", label: "技術", numeric: true, score: true },
+  { key: "growth_score", label: "成長", numeric: true, score: true },
+  { key: "profitability_score", label: "収益", numeric: true, score: true },
+  { key: "valuation_score", label: "割安", numeric: true },
+  { key: "per", label: "PER", numeric: true },
+  { key: "peg", label: "PEG", numeric: true },
+  { key: "market_cap", label: "時価総額", numeric: true },
+];
+
+function getComparableValue(item: CompanyRankingItem, key: keyof CompanyRankingItem) {
+  const value = item[key];
+  if (typeof value === "number") return value;
+  if (typeof value === "string") return value;
+  return "";
 }
 
 export function RankingTable({ initialData }: Props) {
   const [data, setData] = useState<RankingResponse>(initialData);
-  const [sortKey, setSortKey] = useState<keyof CompanyRankingItem>("valuation_score");
+  const [sortKey, setSortKey] = useState<keyof CompanyRankingItem>("composite_score");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [sectorFilter, setSectorFilter] = useState<string>("");
+  const [sectorFilter, setSectorFilter] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  // クライアントサイドソート
-  const sorted = [...data.data].sort((a, b) => {
-    const av = (a[sortKey] as number | null) ?? -Infinity;
-    const bv = (b[sortKey] as number | null) ?? -Infinity;
-    return sortDir === "desc" ? bv - av : av - bv;
-  });
+  const sectors = useMemo(
+    () => Array.from(new Set(data.data.map((company) => company.sector).filter(Boolean))) as string[],
+    [data.data],
+  );
 
-  // セクターユニーク一覧
-  const sectors = Array.from(new Set(data.data.map((c) => c.sector).filter(Boolean)));
+  const filteredData = useMemo(() => {
+    const filtered = sectorFilter
+      ? data.data.filter((company) => company.sector === sectorFilter)
+      : data.data;
 
-  const filteredData = sectorFilter
-    ? sorted.filter((c) => c.sector === sectorFilter)
-    : sorted;
+    return [...filtered].sort((a, b) => {
+      const av = getComparableValue(a, sortKey);
+      const bv = getComparableValue(b, sortKey);
+
+      if (typeof av === "number" && typeof bv === "number") {
+        return sortDir === "desc" ? bv - av : av - bv;
+      }
+
+      return sortDir === "desc"
+        ? String(bv).localeCompare(String(av), "ja")
+        : String(av).localeCompare(String(bv), "ja");
+    });
+  }, [data.data, sectorFilter, sortDir, sortKey]);
 
   function handleSort(key: keyof CompanyRankingItem) {
     if (sortKey === key) {
-      setSortDir((d) => (d === "desc" ? "asc" : "desc"));
-    } else {
-      setSortKey(key);
-      setSortDir("desc");
+      setSortDir((current) => (current === "desc" ? "asc" : "desc"));
+      return;
     }
+
+    setSortKey(key);
+    setSortDir("desc");
   }
 
   function loadPage(page: number) {
@@ -101,130 +119,91 @@ export function RankingTable({ initialData }: Props) {
     });
   }
 
-  const cols: { key: keyof CompanyRankingItem; label: string; numeric?: boolean }[] = [
-    { key: "ticker",           label: "ティッカー" },
-    { key: "name",             label: "企業名" },
-    { key: "sector",           label: "セクター" },
-    { key: "valuation_score",  label: "割安スコア", numeric: true },
-    { key: "composite_score",  label: "AI総合",     numeric: true },
-    { key: "tech_score",       label: "技術力",     numeric: true },
-    { key: "growth_score",     label: "成長性",     numeric: true },
-    { key: "profitability_score", label: "収益性",  numeric: true },
-    { key: "per",              label: "PER",        numeric: true },
-    { key: "peg",              label: "PEG",        numeric: true },
-    { key: "market_cap",       label: "時価総額",   numeric: true },
-  ];
-
   return (
-    <div className={`transition-opacity ${isPending ? "opacity-50" : "opacity-100"}`}>
-      {/* フィルターバー */}
-      <div className="flex flex-wrap gap-3 mb-5 items-center">
-        <span className="text-sm text-gray-400">セクター:</span>
+    <div className={`transition-opacity ${isPending ? "opacity-55" : "opacity-100"}`}>
+      <div className="mb-5 flex flex-wrap items-center gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4">
+        <label className="text-sm font-semibold text-slate-300" htmlFor="sector-filter">テーマ</label>
         <select
+          id="sector-filter"
           value={sectorFilter}
-          onChange={(e) => setSectorFilter(e.target.value)}
-          className="bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-1.5 focus:ring-blue-500 focus:border-blue-500"
+          onChange={(event) => setSectorFilter(event.target.value)}
+          className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-cyan-400"
         >
           <option value="">すべて</option>
-          {sectors.map((s) => (
-            <option key={s} value={s!}>{s}</option>
+          {sectors.map((sector) => (
+            <option key={sector} value={sector}>{sector}</option>
           ))}
         </select>
-        <span className="text-xs text-gray-500 ml-auto">
-          {filteredData.length}社 | スコア基準日: {data.score_date}
+        <span className="ml-auto text-xs text-slate-500">
+          {filteredData.length}件 / 評価日 {data.score_date}
         </span>
       </div>
 
-      {/* テーブル */}
-      <div className="overflow-x-auto rounded-xl border border-gray-800">
+      <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-900 border-b border-gray-800">
-              <th className="px-3 py-3 text-left text-gray-500 font-semibold w-8">#</th>
-              {cols.map((col) => (
+            <tr className="border-b border-slate-800 bg-slate-900">
+              <th className="w-10 px-3 py-3 text-left font-semibold text-slate-500">#</th>
+              {columns.map((column) => (
                 <th
-                  key={col.key}
-                  onClick={() => handleSort(col.key)}
-                  className="px-3 py-3 text-left text-gray-400 font-semibold cursor-pointer hover:text-gray-200 select-none whitespace-nowrap"
+                  key={column.key}
+                  onClick={() => handleSort(column.key)}
+                  className="cursor-pointer select-none whitespace-nowrap px-3 py-3 text-left font-semibold text-slate-400 hover:text-slate-100"
                 >
-                  {col.label}
-                  <SortIcon active={sortKey === col.key} direction={sortDir} />
+                  {column.label}
+                  <SortIcon active={sortKey === column.key} direction={sortDir} />
                 </th>
               ))}
-              <th className="px-3 py-3 text-left text-gray-400 font-semibold">割安度</th>
+              <th className="whitespace-nowrap px-3 py-3 text-left font-semibold text-slate-400">割安度</th>
             </tr>
           </thead>
           <tbody>
             {filteredData.map((company, index) => (
-              <tr
-                key={company.id}
-                className="border-b border-gray-800/50 hover:bg-gray-800/40 transition-colors"
-              >
-                <td className="px-3 py-3.5 text-gray-600 font-mono text-xs">{index + 1}</td>
-                <td className="px-3 py-3.5 font-mono font-bold text-blue-400">
+              <tr key={company.id} className="border-b border-slate-800/60 transition-colors hover:bg-slate-900/70">
+                <td className="px-3 py-3.5 text-xs font-semibold text-slate-600">{index + 1}</td>
+                <td className="px-3 py-3.5 font-mono font-bold text-cyan-300">
                   <Link href={`/company/${company.ticker}`} className="hover:underline">
                     {company.ticker}
                   </Link>
                 </td>
-                <td className="px-3 py-3.5 text-gray-200 max-w-[200px] truncate">
-                  <Link href={`/company/${company.ticker}`} className="hover:text-blue-300">
+                <td className="max-w-[220px] truncate px-3 py-3.5 text-slate-100">
+                  <Link href={`/company/${company.ticker}`} className="hover:text-cyan-200">
                     {company.name}
                   </Link>
                 </td>
-                <td className="px-3 py-3.5 text-gray-400 text-xs whitespace-nowrap">
-                  {company.sector ?? "—"}
-                </td>
-                <td className="px-3 py-3.5">
-                  <ScoreBar score={company.valuation_score !== null ? Math.min(company.valuation_score * 10, 100) : null} label="割安" />
-                </td>
-                <td className="px-3 py-3.5">
-                  <ScoreBar score={company.composite_score} label="総合" />
-                </td>
-                <td className="px-3 py-3.5">
-                  <ScoreBar score={company.tech_score} label="技術" />
-                </td>
-                <td className="px-3 py-3.5">
-                  <ScoreBar score={company.growth_score} label="成長" />
-                </td>
-                <td className="px-3 py-3.5">
-                  <ScoreBar score={company.profitability_score} label="収益" />
-                </td>
-                <td className="px-3 py-3.5 text-gray-300 tabular-nums">
-                  {company.per !== null ? company.per.toFixed(1) : "—"}
-                </td>
-                <td className="px-3 py-3.5 text-gray-300 tabular-nums">
-                  {company.peg !== null ? company.peg.toFixed(2) : "—"}
-                </td>
-                <td className="px-3 py-3.5 text-gray-400 tabular-nums text-xs">
-                  {formatMarketCap(company.market_cap)}
-                </td>
-                <td className="px-3 py-3.5">
-                  <ValuationBadge score={company.valuation_score} />
-                </td>
+                <td className="whitespace-nowrap px-3 py-3.5 text-xs text-slate-400">{company.sector ?? "-"}</td>
+                <td className="px-3 py-3.5"><ScoreBar score={company.composite_score} /></td>
+                <td className="px-3 py-3.5"><ScoreBar score={company.tech_score} /></td>
+                <td className="px-3 py-3.5"><ScoreBar score={company.growth_score} /></td>
+                <td className="px-3 py-3.5"><ScoreBar score={company.profitability_score} /></td>
+                <td className="px-3 py-3.5 text-slate-300 tabular-nums">{company.valuation_score !== null ? company.valuation_score.toFixed(1) : "-"}</td>
+                <td className="px-3 py-3.5 text-slate-300 tabular-nums">{company.per !== null ? company.per.toFixed(1) : "-"}</td>
+                <td className="px-3 py-3.5 text-slate-300 tabular-nums">{company.peg !== null ? company.peg.toFixed(2) : "-"}</td>
+                <td className="whitespace-nowrap px-3 py-3.5 text-xs text-slate-400 tabular-nums">{formatMarketCap(company.market_cap)}</td>
+                <td className="px-3 py-3.5"><ValuationBadge score={company.valuation_score} /></td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      {/* ページネーション */}
-      <div className="flex justify-between items-center mt-4 text-sm text-gray-400">
-        <span>全 {data.meta.total} 社</span>
-        <div className="flex gap-2">
+      <div className="mt-4 flex items-center justify-between text-sm text-slate-400">
+        <span>全 {data.meta.total} 件</span>
+        <div className="flex items-center gap-2">
           <button
             onClick={() => loadPage(data.meta.page - 1)}
             disabled={data.meta.page <= 1 || isPending}
-            className="px-3 py-1.5 bg-gray-800 rounded-lg disabled:opacity-40 hover:bg-gray-700"
+            className="rounded-lg bg-slate-800 px-3 py-1.5 hover:bg-slate-700 disabled:opacity-40"
           >
-            ← 前
+            前へ
           </button>
           <span className="px-3 py-1.5">{data.meta.page} / {data.meta.total_pages}</span>
           <button
             onClick={() => loadPage(data.meta.page + 1)}
             disabled={data.meta.page >= data.meta.total_pages || isPending}
-            className="px-3 py-1.5 bg-gray-800 rounded-lg disabled:opacity-40 hover:bg-gray-700"
+            className="rounded-lg bg-slate-800 px-3 py-1.5 hover:bg-slate-700 disabled:opacity-40"
           >
-            次 →
+            次へ
           </button>
         </div>
       </div>

@@ -75,6 +75,8 @@ docs/
 ├── 01_service_design.md  # サービス設計
 ├── 02_requirements.md    # 要件定義
 ├── 03_system_architecture.md # システム構成
+├── 04_mvp_slices.md      # MVPスライス（縦切り・プロトタイプフロー）
+├── 05_estimate.md        # 見積もり（MVP）
 └── 08_improvement.md     # 改善案
 
 supabase/

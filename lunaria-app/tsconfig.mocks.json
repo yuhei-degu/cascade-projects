@@ -18,7 +18,17 @@
   },
   "include": [
     "components/character/LunariaPortrait.tsx",
+    "components/games/SceneCurtain.tsx",
     "app/items/page.tsx",
-    "app/character/page.tsx"
+    "app/character/page.tsx",
+    "app/endworld/page.tsx",
+    "app/games/memory-quest/page.tsx",
+    "app/games/dream-repair/page.tsx",
+    "lib/games/core/types.ts",
+    "lib/games/core/engine.ts",
+    "lib/games/core/aftertaste.ts",
+    "lib/games/core/memory-hook.ts",
+    "lib/games/endworld/vignettes.ts",
+    "lib/games/endworld/storage.ts"
   ]
 }

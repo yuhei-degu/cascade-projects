@@ -7,8 +7,10 @@
 ## 必読ファイル（優先順）
 1. `ai-memory/SPEC.md`         — プロダクト仕様
 2. `ai-memory/ARCHITECTURE.md` — DB設計・API設計（必須）
-3. `ai-memory/TASKS.md`        — タスク一覧（[ ]が未着手）
-4. `ai-memory/PROGRESS.md`     — 現在5/20完了
+3. `ai-memory/ESTIMATE_LEARNING_MVP.md` — 学習MVPスライスと見積り
+4. `ai-memory/LEARNING_MVP_TASKS.md`    — 学習MVPの実装タスク
+5. `ai-memory/TASKS.md`                — 全タスク一覧（[ ]が未着手）
+6. `ai-memory/PROGRESS.md`             — 進捗
 
 ## 技術スタック
 - Next.js 15 (App Router) + TypeScript strict
@@ -16,11 +18,11 @@
 - Tailwind CSS（カスタムカラー: brand/sc/aws）
 - shadcn/ui（必要に応じて追加）
 
-## 次に実装するタスク（TASK-006から）
+## 次に実装するタスク（学習MVP）
 ```
-TASK-006: グローバルレイアウト（Header/Sidebar）
-TASK-007: ランディングページ（LP）
-TASK-008: QuestionCard コンポーネント
+TASK-021: ヒントAPIの入出力スキーマ固定（zod）
+TASK-022: ヒント出力の制約（答えを直接言わない）
+TASK-023: UIに段階ヒント（1→2→3）を追加
 ```
 
 ## 重要な設計ルール

@@ -234,7 +234,7 @@ export default function DiaryPage() {
       <div style={{ maxWidth: 1060, margin: '0 auto' }}>
         <header style={headerStyle}>
           <div>
-            <Link href="/" style={backLinkStyle}>Back to Luna's room</Link>
+            <Link href="/" aria-label="Back to Lunaria room" style={backLinkStyle}>Back to Luna's room</Link>
             <p style={eyebrowStyle}>Lunaria Diary</p>
             <h1 style={titleStyle}>Day Shelf</h1>
             <p style={leadStyle}>
@@ -242,10 +242,10 @@ export default function DiaryPage() {
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-            <Link href="/memory" style={moonboxLinkStyle}>Memory</Link>
-            <Link href="/gacha" style={moonboxLinkStyle}>Moonbox</Link>
-          </div>
+          <nav aria-label="Diary navigation" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <Link href="/memory" aria-label="Open memory" style={moonboxLinkStyle}>Memory</Link>
+            <Link href="/gacha" aria-label="Open gacha" style={moonboxLinkStyle}>Moonbox</Link>
+          </nav>
         </header>
 
         <section style={toolbarStyle}>

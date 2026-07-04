@@ -3,7 +3,6 @@
 // C4: 注文完了・状況表示画面
 // リアルタイムで調理状況を表示
 
-import { useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { CustomerLayout } from '@/components/layout/CustomerLayout'
 import { useOrderStatus } from '@/hooks/useRealtime'
@@ -116,9 +115,9 @@ export default function OrderStatusPage() {
                     {item.menu_item.name}
                   </p>
                   {/* オプション */}
-                  {(item.selected_options as any[]).length > 0 && (
+                  {item.selected_options.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {(item.selected_options as any[]).map((opt: any, i: number) => (
+                      {item.selected_options.map((opt, i) => (
                         <span key={i} className="text-xs font-sans text-gray-400">
                           {opt.option_name}
                         </span>

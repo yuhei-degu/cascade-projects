@@ -1,66 +1,33 @@
-"""
-アプリケーション設定管理 — 環境変数 → Pydantic BaseSettings
-"""
 from functools import lru_cache
-from typing import List
+
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
     APP_NAME: str = "Market Discovery AI"
-    APP_VERSION: str = "1.0.0"
+    APP_VERSION: str = "0.2.0"
     DEBUG: bool = False
-    ENVIRONMENT: str = Field(default="development")
+    ENVIRONMENT: str = "development"
 
-    # DB
-    DATABASE_URL: str = Field(
-        default="postgresql+asyncpg://postgres:password@localhost:5432/market_discovery_db"
-    )
+    DATABASE_URL: str = "postgresql+asyncpg://postgres:password@localhost:5432/market_discovery_db"
+    REDIS_URL: str = "redis://localhost:6379/0"
+    ANTHROPIC_API_KEY: str = ""
+    SERPAPI_KEY: str = ""
 
-    # Redis
-    REDIS_URL: str = Field(default="redis://localhost:6379/0")
-    CACHE_TTL_RANKING: int = 3600    # ランキングキャッシュ 1h
-    CACHE_TTL_CATEGORY: int = 21600  # カテゴリキャッシュ 6h
-
-    # Crawler設定
-    CRAWLER_USER_AGENT: str = "MarketDiscoveryAI/1.0 +https://github.com/yourname/market-discovery-ai"
-    CRAWLER_DELAY_SECONDS: float = 3.0   # robots.txt 準拠のウェイト
-    CRAWLER_MAX_PAGES: int = 50          # 1回のクロールで取得する最大ページ数
-
-    # SerpAPI (競合調査 - オプション)
-    SERPAPI_KEY: str = Field(default="", description="SerpAPI キー (競合調査)")
-
-    # Claude API — デイリーブリーフ生成用
-    ANTHROPIC_API_KEY: str = Field(default="", description="Claude API キー")
-
-    # Reddit API (オプション — 未設定時はスキップ)
-    REDDIT_CLIENT_ID: str = Field(default="")
-    REDDIT_CLIENT_SECRET: str = Field(default="")
-    REDDIT_USER_AGENT: str = Field(default="MarketDiscoveryAI/1.0")
-
-    # スコアリング重み
-    WEIGHT_DEMAND: float = 0.40
-    WEIGHT_MONETIZATION: float = 0.30
-    WEIGHT_COMPETITION: float = 0.20
-    WEIGHT_DEV_DIFFICULTY: float = 0.10
-
-    # CORS
-    CORS_ORIGINS: List[str] = ["http://localhost:3000"]
-
-    # スケジューラー
-    SCHEDULER_HOUR: int = Field(default=6, description="毎日実行時刻 JST（0〜23）")
-    FIRST_RUN_COLLECT: bool = Field(default=True, description="起動時に即座にデータ収集を実行するか")
+    CORS_ORIGINS: list[str] = Field(default_factory=lambda: ["http://localhost:3000", "http://localhost:3001"])
 
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
         "case_sensitive": True,
+        "extra": "ignore",
     }
 
 
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
+
 
 settings = get_settings()

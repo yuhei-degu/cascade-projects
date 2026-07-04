@@ -75,3 +75,20 @@ vercel --prod
 
 ---
 _Last updated by: CLAUDE at 2026-03-11 00:00:00_
+
+---
+
+## AI_DEV_OS Onboarding (Docs-Only)
+
+Status: DONE  
+Date: 2026-05-09  
+Agent: CODEX
+
+Change summary:
+- Added repo-level AI Dev OS control docs (no app-code changes).
+- Updated `ai-memory/TASKS.md` and `ai-memory/PROGRESS.md` to reflect onboarding completion.
+
+Log:
+```
+[2026-05-09] CODEX   ai_dev_os_onboarding_docs   DONE (CAH-IMPL-001)
+```

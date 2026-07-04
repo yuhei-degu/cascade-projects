@@ -1,212 +1,192 @@
 "use client";
-import { useState, useTransition } from "react";
+
 import Link from "next/link";
+import { useState, useTransition } from "react";
+
 import { fetchRanking } from "@/lib/api";
 import type { RankingResponse, ThemeRankingItem } from "@/types";
 import {
-  getCompetitionLabel, getCompetitionColor, getCompetitionText,
-  getBusinessIndexColor, getScoreBarColor,
+  getCompetitionColor,
+  getCompetitionLabel,
+  getCompetitionText,
+  getScoreBarColor,
+  getScreeningStatusClass,
+  getScreeningStatusText,
 } from "@/types";
 
-interface Props { initialData: RankingResponse; categories: string[]; }
-
-function ScoreBar({ score, label }: { score: number | null; label: string }) {
-  const pct = score ?? 0;
-  return (
-    <div className="flex items-center gap-1.5 min-w-[90px]">
-      <div className="flex-1 h-1.5 bg-gray-800 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full ${getScoreBarColor(score)}`} style={{ width: `${pct}%` }} />
-      </div>
-      <span className="text-xs tabular-nums text-gray-500 w-7 text-right">{score?.toFixed(0) ?? "—"}</span>
-    </div>
-  );
-}
-
-function CompetitionMeter({ score }: { score: number | null }) {
-  const label = getCompetitionLabel(score);
-  const colorClass = getCompetitionColor(label);
-  // 競合強度メーター: 5段階のセグメント表示
-  const filled = score !== null ? Math.ceil((score / 100) * 5) : 0;
-  return (
-    <div className="flex items-center gap-1.5">
-      <div className="flex gap-0.5">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div
-            key={i}
-            className={`w-2 h-3 rounded-sm ${
-              i <= filled
-                ? score! <= 30 ? "bg-emerald-500" : score! <= 60 ? "bg-yellow-500" : "bg-red-500"
-                : "bg-gray-700"
-            }`}
-          />
-        ))}
-      </div>
-      <span className={`text-xs px-1.5 py-0.5 rounded border font-medium ${colorClass}`}>
-        {getCompetitionText(label)}
-      </span>
-    </div>
-  );
+interface Props {
+  initialData: RankingResponse;
+  categories: string[];
 }
 
 export function RankingBoard({ initialData, categories }: Props) {
   const [data, setData] = useState(initialData);
   const [category, setCategory] = useState("");
-  const [lowCompOnly, setLowCompOnly] = useState(false);
-  const [minIndex, setMinIndex] = useState<number | null>(null);
+  const [lowCompetitionOnly, setLowCompetitionOnly] = useState(false);
+  const [minIndex, setMinIndex] = useState(0);
   const [isPending, startTransition] = useTransition();
 
-  function applyFilters(opts?: { cat?: string; lowComp?: boolean; min?: number | null }) {
-    const cat     = opts?.cat      ?? category;
-    const lowComp = opts?.lowComp  ?? lowCompOnly;
-    const min     = opts?.min      !== undefined ? opts.min : minIndex;
+  function load(next?: { category?: string; lowCompetitionOnly?: boolean; minIndex?: number }) {
+    const nextCategory = next?.category ?? category;
+    const nextLow = next?.lowCompetitionOnly ?? lowCompetitionOnly;
+    const nextMin = next?.minIndex ?? minIndex;
     startTransition(async () => {
-      const res = await fetchRanking({
-        per_page: 20,
-        category: cat || undefined,
-        max_competition: lowComp ? 50 : undefined,
-        min_business_index: min ?? undefined,
-      });
-      setData(res);
+      setData(
+        await fetchRanking({
+          per_page: 20,
+          category: nextCategory || undefined,
+          max_competition: nextLow ? 50 : undefined,
+          min_business_index: nextMin > 0 ? nextMin : undefined,
+        }),
+      );
     });
   }
 
   return (
-    <div className={`transition-opacity ${isPending ? "opacity-50" : "opacity-100"}`}>
-      {/* ── フィルターバー ── */}
-      <div className="flex flex-wrap gap-3 mb-6 items-center bg-gray-900 p-4 rounded-xl border border-gray-800">
-        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">フィルター</span>
-        {/* カテゴリ */}
-        <select
-          value={category}
-          onChange={e => { setCategory(e.target.value); applyFilters({ cat: e.target.value }); }}
-          className="bg-gray-800 border border-gray-700 text-gray-200 text-sm rounded-lg px-3 py-1.5"
-        >
-          <option value="">全カテゴリ</option>
-          {categories.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-        {/* 低競合フィルター */}
-        <button
-          onClick={() => { const v = !lowCompOnly; setLowCompOnly(v); applyFilters({ lowComp: v }); }}
-          className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors ${
-            lowCompOnly
-              ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
-              : "bg-gray-800 text-gray-400 border-gray-700 hover:border-gray-600"
-          }`}
-        >
-          🟢 低競合のみ (競合≤50)
-        </button>
-        {/* 最低ビジネス指数 */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-500">最低指数:</span>
-          <input
-            type="range" min="0" max="80" step="10"
-            value={minIndex ?? 0}
-            onChange={e => { const v = Number(e.target.value) || null; setMinIndex(v); applyFilters({ min: v }); }}
-            className="w-20 accent-violet-500"
-          />
-          <span className="text-xs tabular-nums text-violet-400 w-6">{minIndex ?? 0}</span>
+    <div className={`space-y-3 transition-opacity ${isPending ? "opacity-60" : "opacity-100"}`}>
+      <div className="rounded-lg border border-stone-200 bg-[#fffdfa] p-3 shadow-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={category}
+            onChange={(event) => {
+              setCategory(event.target.value);
+              load({ category: event.target.value });
+            }}
+            className="h-10 rounded-md border border-stone-300 bg-white px-3 text-sm text-stone-900 outline-none focus:border-teal-500"
+          >
+            <option value="">すべてのカテゴリ</option>
+            {categories.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
+          </select>
+
+          <button
+            type="button"
+            onClick={() => {
+              const next = !lowCompetitionOnly;
+              setLowCompetitionOnly(next);
+              load({ lowCompetitionOnly: next });
+            }}
+            className={`h-10 rounded-md border px-3 text-sm font-medium transition ${
+              lowCompetitionOnly
+                ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+                : "border-stone-300 bg-white text-stone-700 hover:border-stone-400"
+            }`}
+          >
+            競合少なめ
+          </button>
+
+          <label className="flex h-10 min-w-[250px] items-center gap-2 rounded-md border border-stone-200 bg-white px-3 text-sm text-stone-600">
+            最低スコア
+            <input
+              type="range"
+              min="0"
+              max="90"
+              step="10"
+              value={minIndex}
+              onChange={(event) => {
+                const next = Number(event.target.value);
+                setMinIndex(next);
+                load({ minIndex: next });
+              }}
+              className="w-28 accent-teal-600"
+            />
+            <span className="w-8 font-semibold text-teal-700">{minIndex}</span>
+          </label>
+
+          <span className="ml-auto rounded-full bg-stone-100 px-3 py-1 text-sm text-stone-600">
+            表示 {data.data.length}件 / 全体 {data.meta.total}件
+          </span>
         </div>
-        <span className="ml-auto text-xs text-gray-600">{data.meta.total}件</span>
       </div>
 
-      {/* ── ランキングカード ── */}
-      <div className="space-y-3">
-        {data.data.length === 0 && (
-          <div className="text-center py-20 text-gray-600">条件に合うテーマが見つかりません</div>
-        )}
-        {data.data.map((theme, i) => (
-          <ThemeCard key={theme.id} theme={theme} rank={(data.meta.page - 1) * data.meta.per_page + i + 1} />
+      <div className="grid gap-3">
+        {data.data.map((theme, index) => (
+          <ThemeCard key={theme.id} theme={theme} rank={index + 1} />
         ))}
-      </div>
-
-      {/* ── ページネーション ── */}
-      <div className="flex justify-between items-center mt-6 text-sm text-gray-500">
-        <span>全 {data.meta.total} テーマ</span>
-        <div className="flex gap-2">
-          <button
-            disabled={data.meta.page <= 1 || isPending}
-            onClick={() => startTransition(async () => {
-              setData(await fetchRanking({ page: data.meta.page - 1, per_page: 20, category: category || undefined }));
-            })}
-            className="px-3 py-1.5 bg-gray-800 rounded-lg disabled:opacity-40 hover:bg-gray-700"
-          >← 前</button>
-          <span className="px-3 py-1.5">{data.meta.page}/{data.meta.total_pages}</span>
-          <button
-            disabled={data.meta.page >= data.meta.total_pages || isPending}
-            onClick={() => startTransition(async () => {
-              setData(await fetchRanking({ page: data.meta.page + 1, per_page: 20, category: category || undefined }));
-            })}
-            className="px-3 py-1.5 bg-gray-800 rounded-lg disabled:opacity-40 hover:bg-gray-700"
-          >次 →</button>
-        </div>
+        {data.data.length === 0 ? (
+          <div className="rounded-lg border border-stone-200 bg-white py-16 text-center text-stone-500">
+            条件に合う候補がありません。
+          </div>
+        ) : null}
       </div>
     </div>
   );
 }
 
 function ThemeCard({ theme, rank }: { theme: ThemeRankingItem; rank: number }) {
-  const compLabel = getCompetitionLabel(theme.competition_score);
   return (
-    <Link href={`/theme/${theme.id}`}>
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 hover:border-violet-500/40 hover:bg-gray-800/60 transition-all cursor-pointer group">
-        <div className="flex items-start justify-between gap-4 mb-3">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <span className="text-2xl font-black text-gray-700 tabular-nums w-8 flex-shrink-0">
-              {rank}
+    <Link
+      href={`/theme/${theme.id}`}
+      className="block rounded-lg border border-stone-200 bg-[#fffdfa] p-4 shadow-sm transition hover:border-teal-300 hover:bg-white"
+    >
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <span className="text-sm font-semibold text-stone-500">#{rank}</span>
+            <span className={`rounded-full border px-2 py-1 text-xs font-medium ${getScreeningStatusClass(theme.screening_status)}`}>
+              {getScreeningStatusText(theme.screening_status)}
             </span>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap mb-1">
-                <span className="text-xs bg-violet-500/20 text-violet-300 border border-violet-500/30 px-2 py-0.5 rounded-full">
-                  {theme.category}
-                </span>
-                {(theme.biz_models ?? []).slice(0, 2).map(m => (
-                  <span key={m} className="text-xs bg-gray-800 text-gray-400 border border-gray-700 px-1.5 py-0.5 rounded">
-                    {m}
-                  </span>
-                ))}
-              </div>
-              <h3 className="font-bold text-gray-100 group-hover:text-violet-300 transition-colors line-clamp-1">
-                {theme.title}
-              </h3>
-            </div>
+            <span className="rounded-full border border-teal-200 bg-teal-50 px-2 py-1 text-xs font-medium text-teal-800">{theme.category}</span>
           </div>
-          <div className="text-right flex-shrink-0">
-            <div className={`text-2xl font-black tabular-nums ${getBusinessIndexColor(theme.business_index)}`}>
-              {theme.business_index?.toFixed(1) ?? "—"}
-            </div>
-            <div className="text-xs text-gray-600">ビジネス指数</div>
-          </div>
+          <h2 className="text-lg font-bold leading-6 text-stone-950">{theme.title}</h2>
+          {theme.description ? <p className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">{theme.description}</p> : null}
+          {theme.screening_reason ? <p className="mt-2 max-w-3xl text-xs leading-5 text-teal-800">判定: {theme.screening_reason}</p> : null}
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div>
-            <div className="text-xs text-gray-500 mb-1">📈 需要</div>
-            <ScoreBar score={theme.demand_score} label="需要" />
-          </div>
-          <div>
-            <div className="text-xs text-gray-500 mb-1">💰 収益化</div>
-            <ScoreBar score={theme.monetization_score} label="収益化" />
-          </div>
-          <div>
-            <div className="text-xs text-gray-500 mb-1">⚔️ 競合強度</div>
-            <CompetitionMeter score={theme.competition_score} />
-          </div>
-          <div>
-            <div className="text-xs text-gray-500 mb-1">🛠 開発難易度</div>
-            <ScoreBar score={theme.dev_difficulty_score} label="難易度" />
-          </div>
+        <div className="shrink-0 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 lg:text-right">
+          <div className="text-3xl font-black tabular-nums text-emerald-700">{theme.business_index?.toFixed(1) ?? "-"}</div>
+          <div className="text-xs text-emerald-900">総合スコア</div>
         </div>
+      </div>
 
-        {theme.top_keywords && theme.top_keywords.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-1">
-            {theme.top_keywords.slice(0, 8).map(kw => (
-              <span key={kw} className="text-xs bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded">
-                {kw}
-              </span>
-            ))}
-          </div>
-        )}
+      <div className="mt-4 grid gap-3 sm:grid-cols-4">
+        <Metric label="需要" score={theme.demand_score} />
+        <Metric label="収益化" score={theme.monetization_score} />
+        <Metric label="根拠" score={theme.evidence_strength ?? null} />
+        <Metric label="日本市場" score={theme.japanese_market_fit ?? null} />
+      </div>
+
+      <div className="mt-3 grid gap-3 sm:grid-cols-4">
+        <div>
+          <div className="mb-1 text-xs text-stone-500">競合</div>
+          <CompetitionBadge score={theme.competition_score} />
+        </div>
+        <Metric label="作りやすさ" score={theme.dev_difficulty_score === null ? null : 100 - theme.dev_difficulty_score} />
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-1.5">
+        {(theme.top_keywords ?? []).slice(0, 7).map((keyword) => (
+          <span key={keyword} className="rounded bg-stone-100 px-2 py-1 text-xs text-stone-600">
+            {keyword}
+          </span>
+        ))}
       </div>
     </Link>
+  );
+}
+
+function CompetitionBadge({ score }: { score: number | null }) {
+  const label = getCompetitionLabel(score);
+  return (
+    <span className={`rounded-full border px-2 py-1 text-xs font-medium ${getCompetitionColor(label)}`}>
+      {getCompetitionText(label)}
+    </span>
+  );
+}
+
+function Metric({ label, score }: { label: string; score: number | null }) {
+  return (
+    <div>
+      <div className="mb-1 text-xs text-stone-500">{label}</div>
+      <div className="flex items-center gap-2">
+        <div className="h-2 w-full overflow-hidden rounded-full bg-stone-200">
+          <div className={`h-full rounded-full ${getScoreBarColor(score)}`} style={{ width: `${score ?? 0}%` }} />
+        </div>
+        <span className="w-8 text-right text-xs tabular-nums text-stone-500">{score?.toFixed(0) ?? "-"}</span>
+      </div>
+    </div>
   );
 }

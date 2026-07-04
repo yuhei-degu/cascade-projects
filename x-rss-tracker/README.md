@@ -5,6 +5,15 @@
 ## 🏗️ アーキテクチャ
 
 ```
+
+## Planning docs (XRSS-AUTO-014)
+
+- `docs/MVP_SLICES.md`
+- `docs/ESTIMATE.md`
+- `docs/VERIFICATION.md`
+- `TASKS.md`
+- `PROGRESS.md`
+- `HANDOFF.md`
 RSSブリッジ (nitter.net / rsshub.app)
         ↓
 RSS取得API (rss-parser)

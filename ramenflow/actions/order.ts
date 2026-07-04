@@ -10,6 +10,11 @@ import type {
   SubmitOrderInput,
 } from '@/lib/types/database'
 
+type PendingOrderItem = {
+  status: 'new' | 'cooking'
+  menu_item: { cooking_time_minutes: number } | { cooking_time_minutes: number }[] | null
+}
+
 /**
  * 注文を送信する（C3 注文確認画面から呼ばれる）
  * - orders + order_items を挿入
@@ -121,11 +126,14 @@ export async function recalculateWaitTime(): Promise<void> {
     if (!settings || !settings.is_open) return
 
     // 3. 計算
-    const items = (pendingItems ?? []).map(i => ({
-      status: i.status as 'new' | 'cooking',
-      cooking_time_minutes: (i.menu_item as { cooking_time_minutes: number } | null)
-        ?.cooking_time_minutes ?? 5,
-    }))
+    const items = ((pendingItems ?? []) as unknown as PendingOrderItem[]).map((i) => {
+      const menuItem = Array.isArray(i.menu_item) ? i.menu_item[0] : i.menu_item
+
+      return {
+        status: i.status,
+        cooking_time_minutes: menuItem?.cooking_time_minutes ?? 5,
+      }
+    })
 
     const minutes = calcWaitMinutes({
       pendingItems: items,

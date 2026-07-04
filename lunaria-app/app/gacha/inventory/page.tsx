@@ -69,13 +69,13 @@ export default function InventoryPage() {
       background: 'radial-gradient(circle at 50% 0%, rgba(127,179,213,0.07), transparent 36%)',
     }}>
       {/* ヘッダー */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
-        <Link href="/gacha" style={{ color: '#888', textDecoration: 'none', fontSize: '14px' }}>← ガチャ</Link>
+      <nav aria-label="Gacha inventory navigation" style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
+        <Link href="/gacha" aria-label="Back to gacha" style={{ color: '#888', textDecoration: 'none', fontSize: '14px' }}>← ガチャ</Link>
         <h1 style={{ flex: 1, textAlign: 'center', fontSize: '18px', fontWeight: 'normal', color: '#ddd5c5' }}>
           月箱の棚
         </h1>
-        <div style={{ width: '60px' }} />
-      </div>
+        <Link href="/" aria-label="Open Lunaria room" style={{ color: '#888', textDecoration: 'none', fontSize: '14px' }}>Home</Link>
+      </nav>
 
       <div style={{
         color: '#7a7060',

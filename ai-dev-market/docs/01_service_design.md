@@ -1,86 +1,90 @@
-# 1. サービス設計 — AI Dev Market
+# 1. Service Design — AI Dev Market
 
-## コンセプト
-「AIで作れるレベルの小規模開発依頼」に特化した副業プラットフォーム。
-個人開発者1名が月5〜20万円を安定収益化できる現実的な設計。
+## Goal
 
----
+Provide a fast, low-friction way to turn an ambiguous “I need a small dev thing” request into:
 
-## 収益モデル
+1) a clear estimate tier and delivery plan, then  
+2) a paid delivery with a clean handoff.
 
-| 項目 | 内容 |
-|------|------|
-| 単価 | ¥10,000〜¥30,000（AIアシスト込み） |
-| 月間目標件数 | 5〜15件 |
-| 月収目標 | ¥50,000〜¥200,000 |
-| 実作業時間/件 | 1〜4時間（AIで大半を生成） |
-| 修正対応 | 1回無料込み |
+The key product bet: **AI can do first-pass triage + prototype planning** well enough that a human reviewer can approve quickly.
 
-## 差別化ポイント
+## Target users
 
-1. **試作プレビュー先出し戦略**
-   - 依頼受信後、AIが即座に簡易プロトタイプ生成
-   - 「この方向で作れます」を先に見せることで受注率向上
-   - 依頼者のイメージとのズレを事前解消
+- **Non-technical operators**: want an internal tool, automation, or integration; can describe outcomes but not implementations.
+- **PMs / founders**: need a quick prototype or scoped feature build.
+- **Developers**: want small, bounded tasks done quickly (less common for MVP focus).
 
-2. **小規模限定による高品質**
-   - ¥1〜3万の案件のみ受付
-   - AIで確実に作れる範囲に絞ることで品質安定
+## Offer (MVP)
 
-3. **AIによる自動化で工数削減**
-   - 審査・プロトタイプ生成・返信文すべてAI自動化
-   - 実質の制作時間は1〜2時間に圧縮
+Request categories (MVP):
+- Script (CLI / data processing / automation)
+- Web mini-tool (single page or small app)
+- API integration (Slack, LINE, Google Sheets, etc.)
+- “Other” (requires clarification; often becomes a prototype plan only)
 
----
+Budget bands (example):
+- **Tier A**: small — fixed band
+- **Tier B**: medium — fixed band
+- **Tier C**: large/unclear — *estimate-only*, requires clarification and/or paid discovery
 
-## ターゲット依頼カテゴリ（受注しやすい順）
+MVP deliverable types:
+- Prototype plan (always available)
+- Prototype artifact (A/B only; when safe)
+- Final delivery (post-payment)
 
-| カテゴリ | 例 | 単価目安 |
-|--------|------|--------|
-| データ処理スクリプト | Excel自動化、CSV変換 | ¥10,000〜 |
-| ミニWebツール | 計算ツール、フォーム | ¥15,000〜 |
-| API連携 | LINE通知、Slack bot | ¥20,000〜 |
-| 自動化スクリプト | スクレイピング、定期処理 | ¥15,000〜 |
-| ダッシュボード | Google Sheets連携 | ¥20,000〜 |
-| 静的サイト | LP、ポートフォリオ | ¥20,000〜 |
+## Marketplace shape (MVP)
 
----
+This MVP is closer to a **managed marketplace** than a fully open two-sided market:
+- Users submit requests.
+- AI generates an estimate + plan.
+- Admin approves and manages delivery.
 
-## 8ステップフロー（詳細）
+Provider matching is deferred; the “provider” can be an internal operator.
 
-```
-① 依頼投稿
-   → フォームで要件・予算・メアド入力
-   → DB保存（status: pending）
+## User journey
 
-② AI一次審査（GPT-4o + Gemini並列）
-   → 難易度A/B/C分類
-   → 見積工数・価格提案
-   → C判定: 自動お断りメール送信
+1. **Submit request**
+   - problem, desired outcome, constraints, deadline, budget band, optional links (repo, docs)
+2. **AI triage**
+   - assigns tier, risk flags, and clarification questions
+3. **Prototype plan**
+   - deliverables, assumptions, timeline, acceptance checks
+4. **Admin review**
+   - edits plan, decides: proceed / ask questions / decline
+5. **User approval**
+   - user confirms plan and scope
+6. **Payment (test mode for now)**
+7. **Delivery + handoff**
+   - links + instructions + revision window
 
-③ 自動振り分け
-   A: 即プロトタイプ生成へ
-   B: 条件付き可能としてプロトタイプ + 条件提示
-   C: 丁寧なお断りメール → 終了
+## Safety boundaries (MVP)
 
-④ 試作プロトタイプ生成（AIコード生成）
-   → Claude API でコード骨格を自動生成
-   → プレビューページで「この方向で作成可能です」
-   → 依頼者確認 → OK/修正/キャンセル
+Hard stops / declines:
+- secrets handling requests (“here’s my prod DB password…”)
+- destructive operations (data deletion, irreversible migrations)
+- illegal or harmful content
+- production deploy requests without rollback plan
 
-⑤ 受注・決済
-   → Stripe Checkout で前払い
-   → 決済完了 → status: building
+Rules of engagement:
+- accept uploads/links as references, but avoid executing untrusted code in production contexts
+- keep deliverables reversible and documented
 
-⑥ 本開発
-   → Claude Code / ChatGPT で仕上げ
-   → 管理画面でビルドログ管理
+## Success metrics (MVP)
 
-⑦ 納品
-   → GitHub / ZIP / デプロイ済みURL で納品
-   → 納品完了メール自動送信
+Operational:
+- median time from submission → estimate plan: < 30 minutes (human time)
+- % requests that reach “approved plan”: > 50% (after clarifications)
 
-⑧ 修正対応
-   → チャット機能で修正依頼受付
-   → 1回無料・2回目〜追加料金
-```
+Quality:
+- plan acceptance rate after admin review: > 70%
+- revision requests per delivery: ≤ 1–2 on average
+
+Business (later):
+- conversion to paid: baseline target 10–20% for early traffic
+
+## Non-goals (for MVP)
+
+- fully automated fulfillment without admin review
+- open provider onboarding, ranking, dispute resolution
+- production-grade billing, tax, compliance

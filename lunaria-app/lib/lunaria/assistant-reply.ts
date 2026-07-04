@@ -20,13 +20,17 @@ export const ASSISTANT_VOICE_TONES = [
   'quiet',
 ] as const
 
+const MAX_NEXT_STEP_CHARS = 160
+const MAX_VISUAL_CUE_CHARS = 48
+
 export const AssistantReplySchema = z.object({
   message: z.string().min(1),
   emotion: z.enum(ASSISTANT_EMOTIONS).optional(),
   expression: z.string().min(1).optional(),
   motion: z.string().min(1).optional(),
   voice_tone: z.enum(ASSISTANT_VOICE_TONES).optional(),
-  topic_tags: z.array(z.string().min(1)).max(12).optional(),
+  topic_tags: z.array(z.string().min(1)).optional(),
+  next_step: z.string().min(1).optional(),
   should_create_memory_candidate: z.boolean().optional(),
   should_create_diary_candidate: z.boolean().optional(),
 })
@@ -39,7 +43,7 @@ export function parseAssistantReply(raw: unknown): AssistantReply {
   if (typeof raw !== 'string') {
     const result = AssistantReplySchema.safeParse(raw)
     if (result.success) return normalizeAssistantReply(result.data)
-    return { message: String(raw ?? '') }
+    return fallbackAssistantReply(raw)
   }
 
   const trimmed = raw.trim()
@@ -49,9 +53,34 @@ export function parseAssistantReply(raw: unknown): AssistantReply {
   if (parsedJson.ok) {
     const result = AssistantReplySchema.safeParse(parsedJson.value)
     if (result.success) return normalizeAssistantReply(result.data)
+    return fallbackAssistantReply(parsedJson.value)
   }
 
   return { message: raw }
+}
+
+function fallbackAssistantReply(raw: unknown): AssistantReply {
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    const replyLike = raw as { message?: unknown; text?: unknown; content?: unknown; reply?: unknown }
+    const message = replyLike.message
+    const text = replyLike.text
+    const content = replyLike.content
+    const reply = replyLike.reply
+    const candidateMessage = typeof message === 'string'
+      ? message
+      : typeof text === 'string'
+        ? text
+        : typeof content === 'string'
+          ? content
+          : typeof reply === 'string'
+            ? reply
+            : undefined
+    if (typeof candidateMessage === 'string') {
+      return normalizeAssistantReply({ message: candidateMessage })
+    }
+  }
+
+  return { message: String(raw ?? '') }
 }
 
 export function stringifyAssistantMessage(reply: AssistantReply): string {
@@ -62,8 +91,37 @@ function normalizeAssistantReply(reply: AssistantReply): AssistantReply {
   return {
     ...reply,
     message: reply.message.trim(),
-    topic_tags: reply.topic_tags?.map(tag => tag.trim()).filter(Boolean).slice(0, 12),
+    expression: normalizeVisualCue(reply.expression),
+    motion: normalizeVisualCue(reply.motion),
+    next_step: normalizeNextStep(reply.next_step),
+    topic_tags: normalizeTopicTags(reply.topic_tags),
   }
+}
+
+function normalizeVisualCue(value: AssistantReply['expression']): string | undefined {
+  const normalized = value?.trim()
+  if (!normalized) return undefined
+  return normalized.length > MAX_VISUAL_CUE_CHARS
+    ? normalized.slice(0, MAX_VISUAL_CUE_CHARS)
+    : normalized
+}
+
+function normalizeNextStep(nextStep: AssistantReply['next_step']): string | undefined {
+  const normalized = nextStep?.replace(/\s+/g, ' ').trim()
+  if (!normalized) return undefined
+  return normalized.length > MAX_NEXT_STEP_CHARS
+    ? `${normalized.slice(0, MAX_NEXT_STEP_CHARS - 3)}...`
+    : normalized
+}
+
+function normalizeTopicTags(tags: AssistantReply['topic_tags']): string[] | undefined {
+  const normalized = Array.from(new Set(
+    (tags ?? [])
+      .map(tag => tag.trim())
+      .filter(Boolean),
+  )).slice(0, 12)
+
+  return normalized.length > 0 ? normalized : undefined
 }
 
 function tryParseJson(value: string): { ok: true; value: unknown } | { ok: false } {

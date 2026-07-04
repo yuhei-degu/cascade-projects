@@ -4,7 +4,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { PublicLayout } from '@/components/layout/PublicLayout'
 import { SoldOutBadge } from '@/components/ui/Badge'
-import { formatPrice } from '@/lib/utils'
+import { cn, formatPrice } from '@/lib/utils'
+import type { MenuCategoryWithItems, MenuItemWithOptions } from '@/lib/types/database'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -36,8 +37,8 @@ export default async function MenuPage() {
           </p>
         </div>
 
-        {categories?.map(cat => {
-          const activeItems = cat.items?.filter((i: any) => i.is_active) ?? []
+        {((categories ?? []) as MenuCategoryWithItems[]).map(cat => {
+          const activeItems = (cat.items ?? []).filter((item: MenuItemWithOptions) => item.is_active)
           if (activeItems.length === 0) return null
 
           return (
@@ -50,7 +51,7 @@ export default async function MenuPage() {
 
               {/* 商品グリッド */}
               <div className="space-y-3">
-                {activeItems.map((item: any) => (
+                {activeItems.map((item: MenuItemWithOptions) => (
                   <div
                     key={item.id}
                     className={cn(
@@ -101,4 +102,3 @@ export default async function MenuPage() {
 }
 
 // cn を使うためインポート
-import { cn } from '@/lib/utils'

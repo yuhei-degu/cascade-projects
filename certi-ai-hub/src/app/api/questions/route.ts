@@ -3,7 +3,21 @@ import { NextRequest, NextResponse } from "next/server"
 import { createServiceClient, createClient } from "@/lib/supabase/server"
 
 const FREE_DAILY_LIMIT = 10
+const MAX_LIMIT = 60
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "").split(",").map(e => e.trim()).filter(Boolean)
+const PUBLIC_QUESTION_COLUMNS = [
+  "id",
+  "module",
+  "category",
+  "difficulty",
+  "question",
+  "options",
+  "code_snippet",
+  "synergy_hint",
+  "hint",
+  "tags",
+  "created_at",
+].join(",")
 
 function shuffleArray<T>(arr: T[]): T[] {
   const a = [...arr]
@@ -19,7 +33,10 @@ export async function GET(req: NextRequest) {
   const module     = searchParams.get("module")
   const category   = searchParams.get("category")
   const difficulty = searchParams.get("difficulty")
-  const limit      = parseInt(searchParams.get("limit") ?? "10")
+  const requestedLimit = parseInt(searchParams.get("limit") ?? "10")
+  const limit = Number.isFinite(requestedLimit)
+    ? Math.min(Math.max(requestedLimit, 1), MAX_LIMIT)
+    : 10
   const shuffle    = searchParams.get("shuffle") === "true"
 
   const db      = createServiceClient()
@@ -81,7 +98,7 @@ export async function GET(req: NextRequest) {
   let pool: Record<string, unknown>[] = []
 
   if (category) {
-    let q = applyFilters(db.from("question_bank").select("*"))
+    let q = applyFilters(db.from("question_bank").select(PUBLIC_QUESTION_COLUMNS))
     q = q.eq("category", category).limit(fetchLimit)
     const { data, error } = await q
     if (error) return NextResponse.json({ data: null, error: error.message }, { status: 500 })
@@ -89,7 +106,7 @@ export async function GET(req: NextRequest) {
   }
 
   if (pool.length < limit) {
-    let q = applyFilters(db.from("question_bank").select("*"))
+    let q = applyFilters(db.from("question_bank").select(PUBLIC_QUESTION_COLUMNS))
     q = q.limit(fetchLimit)
     const { data, error } = await q
     if (error) return NextResponse.json({ data: null, error: error.message }, { status: 500 })

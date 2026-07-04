@@ -1,74 +1,94 @@
 "use client"
-// src/components/layout/Sidebar.tsx
+
 import Link from "next/link"
-import { ChevronLeft } from "lucide-react"
+import {
+  BookOpen,
+  CalendarDays,
+  ChevronLeft,
+  Cloud,
+  Gauge,
+  Layers,
+  PanelLeftClose,
+  ShieldCheck,
+  Shuffle,
+} from "lucide-react"
 import { useSidebar } from "./SidebarContext"
 
+const groups = [
+  {
+    label: "学習",
+    items: [
+      { href: "/sc-module", label: "SC対策", icon: ShieldCheck, tone: "text-sky-700" },
+      { href: "/aws-module", label: "AWS AIF対策", icon: Cloud, tone: "text-orange-700" },
+      { href: "/synergy", label: "SC × AIF 連携", icon: Layers, tone: "text-amber-700" },
+    ],
+  },
+  {
+    label: "試験",
+    items: [
+      { href: "/common/exam?module=MIXED", label: "混合10問", icon: Shuffle, tone: "text-indigo-700" },
+      { href: "/common/exam?module=SC&mode=exam", label: "SC模擬試験", icon: BookOpen, tone: "text-sky-700" },
+      { href: "/common/exam?module=AIF&mode=exam", label: "AIF模擬試験", icon: BookOpen, tone: "text-orange-700" },
+    ],
+  },
+  {
+    label: "管理",
+    items: [
+      { href: "/dashboard", label: "ダッシュボード", icon: Gauge, tone: "text-slate-700" },
+      { href: "/common/calendar", label: "試験日カレンダー", icon: CalendarDays, tone: "text-slate-700" },
+    ],
+  },
+]
+
 export default function Sidebar() {
-  const { open, toggle } = useSidebar()
+  const { open, toggle, close } = useSidebar()
 
   return (
     <>
-      {open && (
-        <div className="fixed inset-0 bg-black/30 z-30 md:hidden" onClick={toggle} />
-      )}
-      <aside className={`
-        fixed top-0 left-0 h-full z-40 bg-slate-50/70 backdrop-blur-2xl border-r border-slate-200/50
-        flex flex-col p-4 transition-all duration-300 ease-in-out overflow-y-auto
-        ${open ? "w-72 translate-x-0" : "w-72 -translate-x-full"}
-        md:relative md:translate-x-0 md:flex
-        ${open ? "md:w-72" : "md:w-0 md:p-0 md:border-0 md:overflow-hidden"}
-      `}>
-        {/* ロゴ */}
-        <Link href="/" className="flex items-center gap-2 font-black text-xl mb-4 shrink-0 tracking-tight">
-          <span className="text-2xl drop-shadow-sm">🎓</span>
-          <span className="whitespace-nowrap text-slate-900">Certi-AI <span className="text-indigo-600">Hub</span></span>
+      {open && <button aria-label="サイドバーを閉じる" className="fixed inset-0 z-30 bg-slate-950/35 md:hidden" onClick={toggle} />}
+      <aside
+        className={`
+          fixed left-0 top-0 z-40 flex h-full flex-col overflow-y-auto border-r border-slate-200 bg-white p-4 shadow-xl transition-all duration-300
+          ${open ? "w-72 translate-x-0" : "w-72 -translate-x-full"}
+          md:relative md:translate-x-0 md:shadow-none
+          ${open ? "md:w-72" : "md:w-0 md:border-0 md:p-0 md:overflow-hidden"}
+        `}
+      >
+        <Link href="/" onClick={close} className="mb-5 flex items-center gap-2 rounded-md px-2 py-1.5 font-black text-slate-950 focus:outline-none focus:ring-2 focus:ring-indigo-200">
+          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-indigo-600 text-sm text-white">AI</span>
+          <span className="whitespace-nowrap">Certi-AI Hub</span>
         </Link>
 
-        {/* ナビ */}
-        <nav className="flex-1 flex flex-col gap-0.5">
-          {/* 学習 */}
-          <p className="text-[10px] font-bold text-slate-400 px-3 pt-2 pb-1 uppercase tracking-wider">学習</p>
-          <Link href="/sc-module"
-            className="flex items-center gap-2 py-2 px-3 rounded-xl hover:bg-sky-100/50 text-sky-700 font-semibold text-sm whitespace-nowrap transition-all focus:outline-none focus:ring-2 focus:ring-sky-200">
-            <span className="text-base">🔒</span> 情報処理安全確保支援士（SC）
-          </Link>
-          <Link href="/aws-module"
-            className="flex items-center gap-2 py-2 px-3 rounded-xl hover:bg-orange-100/50 text-orange-700 font-semibold text-sm whitespace-nowrap transition-all focus:outline-none focus:ring-2 focus:ring-orange-200">
-            <span className="text-base">☁️</span> AWS AI Practitioner（AIF）
-          </Link>
-          <Link href="/synergy"
-            className="flex items-center gap-2 py-2 px-3 rounded-xl hover:bg-amber-100/50 text-amber-700 font-semibold text-sm whitespace-nowrap transition-all focus:outline-none focus:ring-2 focus:ring-amber-200">
-            <span className="text-base">🔗</span> SC×AIFシナジーマップ
-          </Link>
-
-          {/* 試験 */}
-          <p className="text-[10px] font-bold text-slate-400 px-3 pt-4 pb-1 uppercase tracking-wider">模擬試験</p>
-          <Link href="/common/exam?module=SC&mode=exam"
-            className="flex items-center gap-2 py-2 px-3 rounded-xl hover:bg-indigo-50/80 text-indigo-700 font-semibold text-sm whitespace-nowrap transition-all focus:outline-none focus:ring-2 focus:ring-indigo-200">
-            <span className="text-base">📋</span> 模擬試験（SC）
-          </Link>
-          <Link href="/common/exam?module=AIF&mode=exam"
-            className="flex items-center gap-2 py-2 px-3 rounded-xl hover:bg-orange-50/80 text-orange-700 font-semibold text-sm whitespace-nowrap transition-all focus:outline-none focus:ring-2 focus:ring-indigo-200">
-            <span className="text-base">📋</span> 模擬試験（AIF）
-          </Link>
-
-          {/* ツール */}
-          <p className="text-[10px] font-bold text-slate-400 px-3 pt-4 pb-1 uppercase tracking-wider">ツール</p>
-          <Link href="/dashboard"
-            className="flex items-center gap-2 py-2 px-3 rounded-xl hover:bg-slate-200/50 text-slate-700 font-semibold text-sm whitespace-nowrap transition-all focus:outline-none focus:ring-2 focus:ring-slate-200">
-            <span className="text-base">📊</span> ダッシュボード
-          </Link>
-          <Link href="/common/calendar"
-            className="flex items-center gap-2 py-2 px-3 rounded-xl hover:bg-slate-200/50 text-slate-700 font-semibold text-sm whitespace-nowrap transition-all focus:outline-none focus:ring-2 focus:ring-slate-200">
-            <span className="text-base">📅</span> 試験日カレンダー
-          </Link>
+        <nav className="flex flex-1 flex-col gap-5">
+          {groups.map((group) => (
+            <div key={group.label}>
+              <p className="mb-1 px-2 text-xs font-bold uppercase tracking-wide text-slate-400">{group.label}</p>
+              <div className="space-y-1">
+                {group.items.map((item) => {
+                  const Icon = item.icon
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={close}
+                      className="flex items-center gap-2 rounded-md px-2 py-2 text-sm font-bold text-slate-700 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                    >
+                      <Icon size={17} className={item.tone} />
+                      <span className="whitespace-nowrap">{item.label}</span>
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
-        {/* 閉じるボタン */}
-        <button onClick={toggle}
-          className="hidden md:flex items-center justify-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-slate-600 py-2.5 mt-4 hover:bg-slate-200/50 rounded-xl transition-all shrink-0 focus:outline-none focus:ring-2 focus:ring-slate-200">
-          <ChevronLeft size={14} />サイドバーを閉じる
+        <button
+          onClick={toggle}
+          className="mt-5 hidden items-center justify-center gap-2 rounded-md border border-slate-200 px-3 py-2 text-xs font-bold text-slate-500 transition hover:bg-slate-50 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-200 md:flex"
+        >
+          {open ? <ChevronLeft size={14} /> : <PanelLeftClose size={14} />}
+          サイドバーを閉じる
         </button>
       </aside>
     </>
