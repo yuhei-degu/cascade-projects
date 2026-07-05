@@ -230,6 +230,17 @@ export default function LoginPage() {
             {message}
           </p>
         )}
+
+        <nav aria-label="法的文書" style={{
+          display: 'flex',
+          justifyContent: 'center',
+          gap: 16,
+          paddingTop: 4,
+          fontSize: 13,
+        }}>
+          <a href="/terms" style={{ color: '#a89a86', textDecoration: 'none' }}>利用規約</a>
+          <a href="/privacy" style={{ color: '#a89a86', textDecoration: 'none' }}>プライバシーポリシー</a>
+        </nav>
       </form>
     </main>
   )
