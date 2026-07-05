@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_PATHS = new Set(['/login', '/api/health', '/auth/callback'])
+const PUBLIC_PATHS = new Set(['/', '/terms', '/privacy', '/login', '/api/health', '/auth/callback'])
 
 type CookieOptions = Parameters<ReturnType<typeof NextResponse.next>['cookies']['set']>[2]
 type CookieToSet = {
