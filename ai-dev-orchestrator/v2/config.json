@@ -1,0 +1,15 @@
+{
+  "target_repo": "C:/Users/yuuve/CascadeProjects/lunaria-app",
+  "agent_command": [
+    "codex",
+    "exec",
+    "--full-auto",
+    "--cd",
+    "{repo}",
+    "-"
+  ],
+  "verify_command": "npm run build",
+  "max_fix_retries": 1,
+  "prompt_template": "You are working in the Lunaria repo ({repo}). Complete exactly this one task and nothing else. Do not create new tasks, do not refactor unrelated code, do not touch the database directly (write migrations as files only).\n\nTASK: {task}",
+  "auto_commit": true
+}

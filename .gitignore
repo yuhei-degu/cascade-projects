@@ -63,3 +63,10 @@ ai-dev-os/AI_DEV_OS/LOGS/*
 **/.env
 **/.env.local
 **/.env*.local
+
+# AI Company OS v3 (whitelisted 2026-07-05)
+!/ai-dev-orchestrator/
+/ai-dev-orchestrator/*
+!/ai-dev-orchestrator/v2/
+/ai-dev-orchestrator/v2/*.log
+/ai-dev-orchestrator/v2/MEASURE_LOG.md
