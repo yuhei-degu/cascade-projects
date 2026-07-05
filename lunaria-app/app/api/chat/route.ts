@@ -23,6 +23,7 @@ import { parseAssistantReply, stringifyAssistantMessage } from '../../../lib/lun
 import type { AssistantReply } from '../../../lib/lunaria/assistant-reply'
 import { buildGameHandoffResponseHint, getGameHandoffNextStep, withGameHandoffNextStep } from '../../../lib/lunaria/game-handoff'
 import { getAuthenticatedUserId } from '../_auth'
+import { trackEvent } from '../../../lib/track'
 
 const gemini = new OpenAI({
   apiKey: process.env.GEMINI_API_KEY,
@@ -129,6 +130,7 @@ export async function POST(req: NextRequest) {
     if (!rawMessage) {
       return NextResponse.json({ reply: 'メッセージが空みたい', error: true }, { status: 400 })
     }
+    void trackEvent(supabaseAdmin, userId, 'chat_send')
 
     const userMessage: string       = rawMessage.slice(0, MAX_MESSAGE_CHARS)
     const prevScores: number[]      = normalizeScores(payload.prevScores)

@@ -2,6 +2,7 @@
 import { generateDiary } from '../../../lib/lunaria/diary'
 import { updateAffinity } from '../../../lib/lunaria/affinity'
 import { supabaseAdmin } from '../../../lib/supabase'
+import { trackEvent } from '../../../lib/track'
 import { getJstDateString, getJstDayRange } from '../../../lib/lunaria/date'
 import { getAuthenticatedUserId } from '../_auth'
 
@@ -48,6 +49,7 @@ export async function GET(req: NextRequest) {
   const auth = await getAuthenticatedUserId()
   if ('response' in auth) return auth.response
   const { userId } = auth
+  void trackEvent(supabaseAdmin, userId, 'diary_view')
 
   const date = req.nextUrl.searchParams.get('date') ?? getJstDateString()
   const meta = req.nextUrl.searchParams.get('meta') === '1'
