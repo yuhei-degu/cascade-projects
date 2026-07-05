@@ -1,7 +1,6 @@
 import { supabaseAdmin, T } from '../supabase'
 import type { Rarity } from './gacha'
 
-const USER_ID = '00000000-0000-0000-0000-000000000001'
 const PITY_THRESHOLD = 200
 
 type CountMap = Record<string, number>
@@ -59,7 +58,7 @@ function increment(map: CountMap, key: string | null | undefined): void {
   map[safeKey] = (map[safeKey] ?? 0) + 1
 }
 
-export async function getGachaPoolStats(): Promise<GachaPoolStatsReport> {
+export async function getGachaPoolStats(userId: string): Promise<GachaPoolStatsReport> {
   const [poolResult, inventoryResult, historyResult, pityResult] = await Promise.all([
     supabaseAdmin
       .from(T.gachaPool)
@@ -68,7 +67,7 @@ export async function getGachaPoolStats(): Promise<GachaPoolStatsReport> {
     supabaseAdmin
       .from(T.gachaInventory)
       .select('pool:lunaria_gacha_pool(rarity)')
-      .eq('user_id', USER_ID)
+      .eq('user_id', userId)
       .limit(1000),
     supabaseAdmin
       .from(T.gachaHistory)
@@ -79,13 +78,13 @@ export async function getGachaPoolStats(): Promise<GachaPoolStatsReport> {
         coin_earned,
         pool:lunaria_gacha_pool(name, category)
       `)
-      .eq('user_id', USER_ID)
+      .eq('user_id', userId)
       .order('pulled_at', { ascending: false })
       .limit(1000),
     supabaseAdmin
       .from(T.gachaPityState)
       .select('draws_since_urban_legend, lifetime_draws, last_urban_legend_at, updated_at')
-      .eq('user_id', USER_ID)
+      .eq('user_id', userId)
       .maybeSingle(),
   ])
 

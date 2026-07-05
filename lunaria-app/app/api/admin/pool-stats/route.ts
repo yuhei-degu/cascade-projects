@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getGachaPoolStats } from '@/lib/lunaria/gacha-stats'
+import { getAuthenticatedUserId } from '../../_auth'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 10
@@ -19,7 +20,10 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const stats = await getGachaPoolStats()
+    const auth = await getAuthenticatedUserId()
+    if ('response' in auth) return auth.response
+
+    const stats = await getGachaPoolStats(auth.userId)
     return NextResponse.json(stats)
   } catch (error) {
     console.error('[admin/pool-stats]', error)

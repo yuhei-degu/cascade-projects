@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '../../../../lib/supabase'
 import { getJstDateString, getJstMonthRange } from '../../../../lib/lunaria/date'
-
-const USER_ID = '00000000-0000-0000-0000-000000000001'
+import { getAuthenticatedUserId } from '../../_auth'
 
 interface MonthDay {
   date: string
@@ -18,6 +17,10 @@ function increment(map: Map<string, number>, key: string): void {
 }
 
 export async function GET(req: NextRequest) {
+  const auth = await getAuthenticatedUserId()
+  if ('response' in auth) return auth.response
+  const { userId } = auth
+
   const month = req.nextUrl.searchParams.get('month') ?? getJstDateString().slice(0, 7)
 
   let range
@@ -31,21 +34,21 @@ export async function GET(req: NextRequest) {
     supabaseAdmin
       .from('lunaria_diary_logs')
       .select('diary_date, importance, luna_comment')
-      .eq('user_id', USER_ID)
+      .eq('user_id', userId)
       .gte('diary_date', range.startDate)
       .lt('diary_date', range.endDate)
       .order('diary_date', { ascending: false }),
     supabaseAdmin
       .from('lunaria_messages')
       .select('created_at')
-      .eq('user_id', USER_ID)
+      .eq('user_id', userId)
       .gte('created_at', range.startIso)
       .lt('created_at', range.endIso)
       .limit(5000),
     supabaseAdmin
       .from('lunaria_extractions')
       .select('session_date')
-      .eq('user_id', USER_ID)
+      .eq('user_id', userId)
       .gte('session_date', range.startDate)
       .lt('session_date', range.endDate)
       .limit(1000),

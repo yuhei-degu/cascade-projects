@@ -7,7 +7,6 @@
 import { randomBytes } from 'crypto'
 import { supabaseAdmin, T } from '../supabase'
 
-const USER_ID = '00000000-0000-0000-0000-000000000001'
 const PITY_THRESHOLD = 200
 
 // ── 型定義 ───────────────────────────────────────────────────
@@ -74,11 +73,11 @@ function isMissingPityInfrastructure(error: unknown): boolean {
   )
 }
 
-async function fetchTicketCount(): Promise<number> {
+async function fetchTicketCount(userId: string): Promise<number> {
   const { data, error } = await supabaseAdmin
     .from(T.gachaTickets)
     .select('count')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .maybeSingle()
   throwIfSupabaseError('fetch tickets failed', error)
   return data?.count ?? 0
@@ -139,11 +138,11 @@ async function fetchPoolByRarity(rarity: Rarity): Promise<PoolItem[]> {
   return (data ?? []) as PoolItem[]
 }
 
-async function fetchPityState(): Promise<GachaPityState | null> {
+async function fetchPityState(userId: string): Promise<GachaPityState | null> {
   const { data, error } = await supabaseAdmin
     .from(T.gachaPityState)
     .select('draws_since_urban_legend')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .maybeSingle()
 
   if (error) {
@@ -159,8 +158,8 @@ async function fetchPityState(): Promise<GachaPityState | null> {
 }
 
 // ── ガチャ実行（1 連） ─────────────────────────────────────
-export async function drawGacha(): Promise<DrawResult> {
-  const pity = await fetchPityState()
+export async function drawGacha(userId: string): Promise<DrawResult> {
+  const pity = await fetchPityState(userId)
 
   // 1. レアリティ抽選
   const rarity = pity && pity.draws_since_urban_legend >= PITY_THRESHOLD - 1
@@ -175,30 +174,30 @@ export async function drawGacha(): Promise<DrawResult> {
     console.warn(`[gacha] empty pool for rarity=${rarity}, falling back to common_a`)
     const fallback = await fetchPoolByRarity('common_a')
     if (fallback.length === 0) throw new Error('gacha_pool_empty')
-    return await executeDraw(pickItemInRarity(fallback), 'common_a', pity)
+    return await executeDraw(pickItemInRarity(fallback), 'common_a', pity, userId)
   }
   const item = pickItemInRarity(items)
   try {
-    return await executeDraw(item, rarity, pity)
+    return await executeDraw(item, rarity, pity, userId)
   } catch (error) {
     if (!(error instanceof Error) || error.message !== 'pity_required') throw error
     const urbanItems = await fetchPoolByRarity('urban_legend')
     if (urbanItems.length === 0) throw new Error('gacha_pool_empty')
-    return await executeDraw(pickItemInRarity(urbanItems), 'urban_legend', pity)
+    return await executeDraw(pickItemInRarity(urbanItems), 'urban_legend', pity, userId)
   }
 }
 
-async function executeDraw(item: PoolItem, rarity: Rarity, pity: GachaPityState | null): Promise<DrawResult> {
+async function executeDraw(item: PoolItem, rarity: Rarity, pity: GachaPityState | null, userId: string): Promise<DrawResult> {
   // 3. RPC でチケット消費・かぶり判定・コイン変換・履歴記録を 1 トランザクションで
   const rpcName = pity ? 'draw_gacha_v2' : 'draw_gacha'
   const { data, error } = await supabaseAdmin.rpc(rpcName, {
-    p_user_id: USER_ID,
+    p_user_id: userId,
     p_pool_id: item.id,
     p_rarity:  rarity,
   })
   if (error) {
     if (pity && isMissingPityInfrastructure(error)) {
-      return await executeLegacyDraw(item, rarity)
+      return await executeLegacyDraw(item, rarity, userId)
     }
     if (String(error.message ?? '').includes('pity_required')) {
       throw new Error('pity_required')
@@ -232,9 +231,9 @@ async function executeDraw(item: PoolItem, rarity: Rarity, pity: GachaPityState 
   }
 }
 
-async function executeLegacyDraw(item: PoolItem, rarity: Rarity): Promise<DrawResult> {
+async function executeLegacyDraw(item: PoolItem, rarity: Rarity, userId: string): Promise<DrawResult> {
   const { data, error } = await supabaseAdmin.rpc('draw_gacha', {
-    p_user_id: USER_ID,
+    p_user_id: userId,
     p_pool_id: item.id,
     p_rarity:  rarity,
   })
@@ -257,16 +256,16 @@ async function executeLegacyDraw(item: PoolItem, rarity: Rarity): Promise<DrawRe
 }
 
 // ── 状態取得（チケット・コイン・本日獲得済み） ────────────
-export async function getGachaState(): Promise<GachaState> {
+export async function getGachaState(userId: string): Promise<GachaState> {
   const today = new Date().toISOString().slice(0, 10)
   const [tickets, coins, quota, dailyBonus, pity] = await Promise.all([
-    supabaseAdmin.from(T.gachaTickets).select('count').eq('user_id', USER_ID).maybeSingle(),
-    supabaseAdmin.from(T.gachaCoins).select('balance').eq('user_id', USER_ID).maybeSingle(),
+    supabaseAdmin.from(T.gachaTickets).select('count').eq('user_id', userId).maybeSingle(),
+    supabaseAdmin.from(T.gachaCoins).select('balance').eq('user_id', userId).maybeSingle(),
     supabaseAdmin.from(T.gachaDailyQuota).select('earned_today')
-      .eq('user_id', USER_ID).eq('given_date', today).maybeSingle(),
+      .eq('user_id', userId).eq('given_date', today).maybeSingle(),
     supabaseAdmin.from(T.gachaDailyBonus).select('user_id')
-      .eq('user_id', USER_ID).eq('given_date', today).maybeSingle(),
-    fetchPityState(),
+      .eq('user_id', userId).eq('given_date', today).maybeSingle(),
+    fetchPityState(userId),
   ])
   throwIfSupabaseError('fetch ticket state failed', tickets.error)
   throwIfSupabaseError('fetch coin state failed', coins.error)
@@ -287,14 +286,14 @@ export interface InventoryItem extends PoolItem {
   acquired_at: string
 }
 
-export async function getInventory(): Promise<InventoryItem[]> {
+export async function getInventory(userId: string): Promise<InventoryItem[]> {
   const { data, error } = await supabaseAdmin
     .from(T.gachaInventory)
     .select(`
       acquired_at,
       pool:lunaria_gacha_pool(id, name, rarity, category, drop_weight, image_url, description)
     `)
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .order('acquired_at', { ascending: false })
   if (error) throw error
   return (data ?? []).map((row: any) => ({
@@ -304,42 +303,42 @@ export async function getInventory(): Promise<InventoryItem[]> {
 }
 
 // ── デイリーボーナス受取 ──────────────────────────────────
-export async function claimDailyBonus(): Promise<{ granted: boolean; ticket_count: number }> {
+export async function claimDailyBonus(userId: string): Promise<{ granted: boolean; ticket_count: number }> {
   const today = new Date().toISOString().slice(0, 10)
 
   // 既に受取済みかチェック
   const { data: existing, error: existingErr } = await supabaseAdmin
     .from(T.gachaDailyBonus)
     .select('user_id')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .eq('given_date', today)
     .maybeSingle()
   if (existingErr) throw existingErr
   if (existing) {
-    return { granted: false, ticket_count: await fetchTicketCount() }
+    return { granted: false, ticket_count: await fetchTicketCount(userId) }
   }
 
   // 受取記録を先に作り、同時クリックでも1回だけ付与されるようにする
   const { error: bonusErr } = await supabaseAdmin
     .from(T.gachaDailyBonus)
-    .insert({ user_id: USER_ID, given_date: today })
+    .insert({ user_id: userId, given_date: today })
   if (bonusErr) {
     if (bonusErr.code === '23505') {
-      return { granted: false, ticket_count: await fetchTicketCount() }
+      return { granted: false, ticket_count: await fetchTicketCount(userId) }
     }
     throw bonusErr
   }
 
   // チケット +1
   const { data: count, error: rpcErr } = await supabaseAdmin.rpc('grant_gacha_ticket', {
-    p_user_id: USER_ID,
+    p_user_id: userId,
     p_amount:  1,
   })
   if (rpcErr) {
     await supabaseAdmin
       .from(T.gachaDailyBonus)
       .delete()
-      .eq('user_id', USER_ID)
+      .eq('user_id', userId)
       .eq('given_date', today)
     throw rpcErr
   }
@@ -350,31 +349,31 @@ export async function claimDailyBonus(): Promise<{ granted: boolean; ticket_coun
 // 質スコア配布（/api/chat から呼ぶ）
 // score 1-2: 5%, 3-4: 15%, 5+: 30%
 // 1 日上限 5 枚を超えたら配布しない。
-export async function tryGrantTicketByScore(score: number): Promise<{ granted: boolean; ticket_count: number }> {
+export async function tryGrantTicketByScore(score: number, userId: string): Promise<{ granted: boolean; ticket_count: number }> {
   const today = new Date().toISOString().slice(0, 10)
 
   // 本日の獲得数
   const { data: quota, error: quotaErr } = await supabaseAdmin
     .from(T.gachaDailyQuota)
     .select('earned_today')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .eq('given_date', today)
     .maybeSingle()
   throwIfSupabaseError('fetch daily quota failed', quotaErr)
   const earned = quota?.earned_today ?? 0
   if (earned >= 5) {
-    return { granted: false, ticket_count: await fetchTicketCount() }
+    return { granted: false, ticket_count: await fetchTicketCount(userId) }
   }
 
   // 確率判定
   const probability = score >= 5 ? 0.30 : score >= 3 ? 0.15 : 0.05
   if (secureRandom() >= probability) {
-    return { granted: false, ticket_count: await fetchTicketCount() }
+    return { granted: false, ticket_count: await fetchTicketCount(userId) }
   }
 
   // チケット +1
   const { data: count, error: rpcErr } = await supabaseAdmin.rpc('grant_gacha_ticket', {
-    p_user_id: USER_ID,
+    p_user_id: userId,
     p_amount:  1,
   })
   if (rpcErr) throw rpcErr
@@ -383,7 +382,7 @@ export async function tryGrantTicketByScore(score: number): Promise<{ granted: b
   const { error: updateQuotaErr } = await supabaseAdmin
     .from(T.gachaDailyQuota)
     .upsert({
-      user_id: USER_ID,
+      user_id: userId,
       given_date: today,
       earned_today: earned + 1,
     }, { onConflict: 'user_id,given_date' })

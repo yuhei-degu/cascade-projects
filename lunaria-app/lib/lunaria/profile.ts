@@ -1,7 +1,5 @@
 import { supabaseAdmin } from '../supabase'
 
-const USER_ID = '00000000-0000-0000-0000-000000000001'
-
 export type ProfileField =
   | 'gender'
   | 'age'
@@ -28,19 +26,19 @@ export interface PendingUpdate {
 }
 
 // ── 取得 ─────────────────────────────────────────────────────
-export async function getProfile(): Promise<ProfileEntry[]> {
+export async function getProfile(userId: string): Promise<ProfileEntry[]> {
   const { data } = await supabaseAdmin
     .from('lunaria_user_profile')
     .select('field, value, source')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
   return (data ?? []) as ProfileEntry[]
 }
 
-export async function getPendingUpdates(): Promise<PendingUpdate[]> {
+export async function getPendingUpdates(userId: string): Promise<PendingUpdate[]> {
   const { data } = await supabaseAdmin
     .from('lunaria_pending_profile_updates')
     .select('field, detected_value, trigger_message')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
   return (data ?? []) as PendingUpdate[]
 }
 
@@ -48,25 +46,26 @@ export async function getPendingUpdates(): Promise<PendingUpdate[]> {
 export async function setProfile(
   field: ProfileField,
   value: string,
+  userId: string,
   source: 'setting' | 'confirmed' = 'setting',
 ): Promise<void> {
   // 既存値をアーカイブ
   const { data: existing } = await supabaseAdmin
     .from('lunaria_user_profile')
     .select('value')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .eq('field', field)
     .single()
 
   if (existing?.value && existing.value !== value) {
     await supabaseAdmin.from('lunaria_profile_archive').insert({
-      user_id: USER_ID, field,
+      user_id: userId, field,
       old_value: existing.value, new_value: value,
     })
   }
 
   await supabaseAdmin.from('lunaria_user_profile').upsert({
-    user_id: USER_ID, field, value, source,
+    user_id: userId, field, value, source,
     updated_at: new Date().toISOString(),
   }, { onConflict: 'user_id,field' })
 }
@@ -76,17 +75,18 @@ export async function savePendingUpdate(
   field: ProfileField,
   detected_value: string,
   trigger_message: string,
+  userId: string,
 ): Promise<void> {
   await supabaseAdmin.from('lunaria_pending_profile_updates').upsert({
-    user_id: USER_ID, field, detected_value, trigger_message,
+    user_id: userId, field, detected_value, trigger_message,
     created_at: new Date().toISOString(),
   }, { onConflict: 'user_id,field' })
 }
 
-export async function clearPendingUpdate(field: ProfileField): Promise<void> {
+export async function clearPendingUpdate(field: ProfileField, userId: string): Promise<void> {
   await supabaseAdmin.from('lunaria_pending_profile_updates')
     .delete()
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .eq('field', field)
 }
 

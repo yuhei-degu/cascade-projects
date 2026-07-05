@@ -1,7 +1,6 @@
 import { supabaseAdmin } from '../supabase'
 import { saveCoreMemory } from './memory'
 
-const USER_ID = '00000000-0000-0000-0000-000000000001'
 const T = { candidates: 'lunaria_memory_candidates' } as const
 
 export type MemoryCandidateType = 'value' | 'pattern' | 'goal' | 'trigger' | 'mid' | 'name' | 'other'
@@ -44,6 +43,7 @@ function coreMemoryTypeForCandidate(type: MemoryCandidateType): 'value' | 'patte
 export async function saveMemoryCandidate(
   type: string,
   content: string,
+  userId: string,
   options: SaveMemoryCandidateOptions = {},
 ): Promise<{ saved: boolean; fallback: boolean }> {
   const normalized = (content ?? '').trim()
@@ -51,7 +51,7 @@ export async function saveMemoryCandidate(
 
   const candidateType = normalizeType(type)
   const payload = {
-    user_id: USER_ID,
+    user_id: userId,
     candidate_type: candidateType,
     content: normalized,
     source_type: options.sourceType ?? 'conversation',
@@ -73,7 +73,7 @@ export async function saveMemoryCandidate(
   if (!isMissingCandidateTable(error)) throw error
 
   if (options.legacyFallbackToCoreMemory !== false && candidateType !== 'name') {
-    await saveCoreMemory(coreMemoryTypeForCandidate(candidateType) ?? 'mid', normalized, {
+    await saveCoreMemory(coreMemoryTypeForCandidate(candidateType) ?? 'mid', normalized, userId, {
       sourceDate: options.sourceDate,
       confidence: options.confidence,
       status: 'candidate',

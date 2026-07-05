@@ -1,7 +1,5 @@
 ﻿import { supabaseAdmin, T } from '../supabase'
 
-const USER_ID = '00000000-0000-0000-0000-000000000001'
-
 export type CharacterItemCategory =
   | 'outfit'
   | 'accessory'
@@ -162,7 +160,7 @@ function flavorFor(rarity: CharacterItemRarity): string {
   return 'The kind of thing that belongs on a desk corner.'
 }
 
-export async function getItemsOverview(): Promise<ItemsOverview> {
+export async function getItemsOverview(userId: string): Promise<ItemsOverview> {
   const poolResult = await supabaseAdmin
     .from(T.gachaPool)
     .select('id, name, rarity, category, description, image_url')
@@ -182,7 +180,7 @@ export async function getItemsOverview(): Promise<ItemsOverview> {
   const userItemsResult = await supabaseAdmin
     .from(T.userItems)
     .select('pool_id, duplicate_count, obtained_at, last_obtained_at')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .is('deleted_at', null)
     .limit(5000)
 
@@ -218,7 +216,7 @@ export async function getItemsOverview(): Promise<ItemsOverview> {
   const inventoryResult = await supabaseAdmin
     .from(T.gachaInventory)
     .select('pool_id, acquired_at')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .limit(5000)
 
   if (inventoryResult.error) {
@@ -256,13 +254,13 @@ export async function getItemsOverview(): Promise<ItemsOverview> {
   }
 }
 
-export async function getCharacterStateOverview(): Promise<CharacterStateView> {
+export async function getCharacterStateOverview(userId: string): Promise<CharacterStateView> {
   const [itemsOverview, stateResult] = await Promise.all([
-    getItemsOverview(),
+    getItemsOverview(userId),
     supabaseAdmin
       .from(T.characterStates)
       .select('character_profile_id, current_outfit_pool_id, current_background_pool_id, current_expression, current_motion, affinity_level, affinity_streak_days, unlocked_expressions, unlocked_motions, last_interaction_at')
-      .eq('user_id', USER_ID)
+      .eq('user_id', userId)
       .eq('character_profile_id', 'lunaria')
       .maybeSingle(),
   ])
@@ -319,4 +317,3 @@ export async function getCharacterStateOverview(): Promise<CharacterStateView> {
       : 'No character state row yet; using mock character state.',
   }
 }
-

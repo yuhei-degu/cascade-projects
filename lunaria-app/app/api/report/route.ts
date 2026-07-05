@@ -1,16 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin, T } from '../../../lib/supabase'
-
-const USER_ID = '00000000-0000-0000-0000-000000000001'
+import { getAuthenticatedUserId } from '../_auth'
 
 export async function GET(req: NextRequest) {
+  const auth = await getAuthenticatedUserId()
+  if ('response' in auth) return auth.response
+  const { userId } = auth
+
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
   const { data: logs } = await supabaseAdmin
     .from(T.routingLog)
     .select(`id, route_type, msg_score, win_score, model_used, selected_template_id, response_latency_ms, created_at,
              lunaria_routing_review(manual_flag_reason, user_followup_sentiment, route_mismatch_suspected, character_break_suspected, auto_flags)`)
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .gte('created_at', since)
     .order('created_at', { ascending: false })
 

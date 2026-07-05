@@ -4,7 +4,6 @@ import { supabaseAdmin } from '../supabase'
 import { getJstDayRange } from './date'
 
 
-const USER_ID = '00000000-0000-0000-0000-000000000001'
 const T = {
   extractions: 'lunaria_extractions',
   diary:       'lunaria_diary_logs',
@@ -78,9 +77,9 @@ function isMissingDiaryV1Column(error: any): boolean {
   return error?.code === 'PGRST204' || /title|talked_about|memory_changes|source_message_count|generated_at/i.test(message)
 }
 
-async function saveDiary(date: string, diary: Diary): Promise<void> {
+async function saveDiary(date: string, diary: Diary, userId: string): Promise<void> {
   const v1Payload = {
-    user_id:              USER_ID,
+    user_id:              userId,
     diary_date:           date,
     title:                diary.title,
     summary:              diary.summary,
@@ -105,7 +104,7 @@ async function saveDiary(date: string, diary: Diary): Promise<void> {
 
   console.warn('[diary] v1 columns unavailable; retrying legacy diary upsert')
   const { error: legacyError } = await supabaseAdmin.from(T.diary).upsert({
-    user_id:           USER_ID,
+    user_id:           userId,
     diary_date:        date,
     summary:           diary.summary,
     events:            diary.events,
@@ -119,23 +118,23 @@ async function saveDiary(date: string, diary: Diary): Promise<void> {
   if (legacyError) throw legacyError
 }
 
-async function fetchSourceMessageCount(date: string): Promise<number> {
+async function fetchSourceMessageCount(date: string, userId: string): Promise<number> {
   const range = getJstDayRange(date)
   const { count } = await supabaseAdmin
     .from('lunaria_messages')
     .select('id', { count: 'exact', head: true })
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .gte('created_at', range.startIso)
     .lt('created_at', range.endIso)
 
   return count ?? 0
 }
 
-async function buildDiarySource(date: string): Promise<DiarySource | null> {
+async function buildDiarySource(date: string, userId: string): Promise<DiarySource | null> {
   const { data: extractions } = await supabaseAdmin
     .from(T.extractions)
     .select('*')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .eq('session_date', date)
     .order('created_at', { ascending: true })
 
@@ -158,7 +157,7 @@ async function buildDiarySource(date: string): Promise<DiarySource | null> {
       return {
         sourceText,
         importance,
-        sourceMessageCount: await fetchSourceMessageCount(date),
+        sourceMessageCount: await fetchSourceMessageCount(date, userId),
       }
     }
   }
@@ -167,7 +166,7 @@ async function buildDiarySource(date: string): Promise<DiarySource | null> {
   const { data: messages } = await supabaseAdmin
     .from('lunaria_messages')
     .select('role, content, created_at')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .gte('created_at', range.startIso)
     .lt('created_at', range.endIso)
     .order('created_at', { ascending: true })
@@ -277,8 +276,8 @@ JSON形式:
   }
 }
 
-export async function generateDiary(date: string): Promise<Diary | null> {
-  const source = await buildDiarySource(date)
+export async function generateDiary(date: string, userId: string): Promise<Diary | null> {
+  const source = await buildDiarySource(date, userId)
   if (!source) return null
 
   const prompt = `あなたは Lunaria のルナです。以下は ${date} の会話または抽出メモです。
@@ -317,25 +316,25 @@ JSON形式:
   try {
     const parsed = parseGeneratedDiary(raw, source)
 
-    await saveDiary(date, parsed)
+    await saveDiary(date, parsed, userId)
 
     return parsed
   } catch (error) {
     console.warn('[diary] parse failed; retrying compact diary generation', error)
     const repaired = await repairDiaryGeneration(source)
     if (repaired) {
-      await saveDiary(date, repaired)
+      await saveDiary(date, repaired, userId)
       return repaired
     }
 
     console.warn('[diary] saving fallback diary')
     const fallback = buildFallbackDiary(source)
-    await saveDiary(date, fallback)
+    await saveDiary(date, fallback, userId)
     return fallback
   }
 }
 
-export async function getMorningOpening(): Promise<string | null> {
+export async function getMorningOpening(userId: string): Promise<string | null> {
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
   const date = new Date(yesterday.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10)
@@ -343,7 +342,7 @@ export async function getMorningOpening(): Promise<string | null> {
   const { data } = await supabaseAdmin
     .from(T.diary)
     .select('unresolved_issues, next_topics, luna_comment, importance')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .eq('diary_date', date)
     .maybeSingle()
 

@@ -2,7 +2,6 @@ import type { Emotion } from './types'
 import { DEFAULT_EMOTION } from './types'
 import { supabaseAdmin } from '../supabase'
 
-const USER_ID = '00000000-0000-0000-0000-000000000001'
 const T = { emotion: 'lunaria_emotion_state' } as const
 
 // 軸ごとの減衰率（睡眠トリガー時に適用）
@@ -22,11 +21,11 @@ const BASELINE: Emotion = {
 }
 
 // 日付を跨いだ場合に感情を平熱方向へ減衰させる
-export async function applySleepDecay(): Promise<void> {
+export async function applySleepDecay(userId: string): Promise<void> {
   const { data } = await supabaseAdmin
     .from(T.emotion)
     .select('*')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .single()
 
   if (!data) return
@@ -44,13 +43,13 @@ export async function applySleepDecay(): Promise<void> {
 
   await supabaseAdmin.from(T.emotion).update({
     ...next, updated_at: new Date().toISOString(),
-  }).eq('user_id', USER_ID)
+  }).eq('user_id', userId)
 }
 
 // 抽出結果の感情値でDBを更新（会話ごと）
-export async function updateEmotion(extracted: Emotion): Promise<void> {
+export async function updateEmotion(extracted: Emotion, userId: string): Promise<void> {
   const { data } = await supabaseAdmin
-    .from(T.emotion).select('*').eq('user_id', USER_ID).single()
+    .from(T.emotion).select('*').eq('user_id', userId).single()
 
   const current: Emotion = data ?? DEFAULT_EMOTION
 
@@ -61,12 +60,12 @@ export async function updateEmotion(extracted: Emotion): Promise<void> {
   }
 
   await supabaseAdmin.from(T.emotion).upsert({
-    user_id: USER_ID, ...next, updated_at: new Date().toISOString(),
+    user_id: userId, ...next, updated_at: new Date().toISOString(),
   }, { onConflict: 'user_id' })
 }
 
-export async function getEmotion(): Promise<Emotion> {
+export async function getEmotion(userId: string): Promise<Emotion> {
   const { data } = await supabaseAdmin
-    .from(T.emotion).select('*').eq('user_id', USER_ID).single()
+    .from(T.emotion).select('*').eq('user_id', userId).single()
   return data ?? DEFAULT_EMOTION
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { drawGacha } from '../../../../lib/lunaria/gacha'
 import { generateGachaReaction } from '../../../../lib/lunaria/gacha-reaction'
+import { getAuthenticatedUserId } from '../../_auth'
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : ''
@@ -8,7 +9,10 @@ function errorMessage(error: unknown): string {
 
 export async function POST() {
   try {
-    const draw = await drawGacha()
+    const auth = await getAuthenticatedUserId()
+    if ('response' in auth) return auth.response
+
+    const draw = await drawGacha(auth.userId)
 
     // ルナのリアクション生成（取得直後のみの「受け取り演出」）
     // 会話履歴・core_memory・profile には絶対に保存しない（文脈汚染防止）

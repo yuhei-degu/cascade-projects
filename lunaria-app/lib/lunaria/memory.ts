@@ -2,7 +2,6 @@ import { supabaseAdmin } from '../supabase'
 import { setProfile } from './profile'
 import { debugLog, warnLog } from './logger'
 
-const USER_ID = '00000000-0000-0000-0000-000000000001'
 const T = { coreMem: 'lunaria_core_memory' } as const
 
 export type CoreMemoryStatus = 'candidate' | 'active' | 'confirmed' | 'archived' | 'deleted'
@@ -84,6 +83,7 @@ export function detectNameFromMessage(message: string): string | null {
 export async function saveCoreMemory(
   type: string,
   content: string,
+  userId: string,
   options: SaveCoreMemoryOptions = {},
 ): Promise<void> {
   const normalized = (content ?? '').trim()
@@ -95,7 +95,7 @@ export async function saveCoreMemory(
   // name はプロフィール層へリダイレクト
   if (type === 'name') {
     try {
-      await setProfile('name', normalized, 'setting')
+      await setProfile('name', normalized, userId, 'setting')
       debugLog('[saveCoreMemory] redirected type=name to user_profile:', normalized)
     } catch (e) {
       warnLog('[saveCoreMemory] name redirect failed:', e)
@@ -113,7 +113,7 @@ export async function saveCoreMemory(
   const { data: existing } = await supabaseAdmin
     .from(T.coreMem)
     .select('id')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .eq('type', type)
     .eq('content', normalized)
     .maybeSingle()
@@ -138,7 +138,7 @@ export async function saveCoreMemory(
     debugLog('[saveCoreMemory] updated:', type, normalized)
   } else {
     const insertPayload = {
-      user_id: USER_ID,
+      user_id: userId,
       type,
       content: normalized,
       score: 5,
@@ -151,7 +151,7 @@ export async function saveCoreMemory(
     if (error) {
       if (!isMissingProvenanceColumn(error)) throw error
       await supabaseAdmin.from(T.coreMem)
-        .insert({ user_id: USER_ID, type, content: normalized, score: 5, hit_count: 1 })
+        .insert({ user_id: userId, type, content: normalized, score: 5, hit_count: 1 })
     }
     debugLog('[saveCoreMemory] inserted:', type, normalized)
   }
@@ -174,11 +174,11 @@ export type PickedMemory = {
   notes: string | null
 }
 
-export async function pickMemories(limit: number = 1): Promise<PickedMemory[]> {
+export async function pickMemories(userId: string, limit: number = 1): Promise<PickedMemory[]> {
   const query = supabaseAdmin
     .from(T.coreMem)
     .select('id, type, content, score, last_seen, memory_category, source_date, source_message_id, confidence, status, last_confirmed_at, created_by, notes')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .or('memory_category.is.null,memory_category.neq.profile')
     .in('status', ['active', 'confirmed'])
     .order('score', { ascending: false })
@@ -191,7 +191,7 @@ export async function pickMemories(limit: number = 1): Promise<PickedMemory[]> {
     const legacy = await supabaseAdmin
       .from(T.coreMem)
       .select('id, type, content, score, last_seen, memory_category')
-      .eq('user_id', USER_ID)
+      .eq('user_id', userId)
       .or('memory_category.is.null,memory_category.neq.profile')
       .order('score', { ascending: false })
       .order('last_seen', { ascending: true })
@@ -211,12 +211,12 @@ export async function pickMemories(limit: number = 1): Promise<PickedMemory[]> {
 // ユーザー名だけ取得（devパネル表示用）。
 // 4/18 以降、user_profile が真実権限。core_memory に user_name が残っている
 // ケース（レガシー）にも一応フォールバックする。
-export async function getUserName(): Promise<string | null> {
+export async function getUserName(userId: string): Promise<string | null> {
   // 1) まず user_profile を優先
   const { data: prof } = await supabaseAdmin
     .from('lunaria_user_profile')
     .select('value')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .eq('field', 'name')
     .maybeSingle()
   if (prof?.value) return prof.value
@@ -225,18 +225,18 @@ export async function getUserName(): Promise<string | null> {
   const { data } = await supabaseAdmin
     .from(T.coreMem)
     .select('content')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .eq('memory_key', 'user_name')
     .maybeSingle()
   return data?.content ?? null
 }
 
-export async function getCoreMemoryContext(): Promise<string> {
+export async function getCoreMemoryContext(userId: string): Promise<string> {
   // memory_category='profile' は除外（Profile 層で注入済み／二重注入防止）
   const query = supabaseAdmin
     .from(T.coreMem)
     .select('type, content, memory_key, memory_category, status')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .or('memory_category.is.null,memory_category.neq.profile')
     .in('status', ['active', 'confirmed'])
     .order('score', { ascending: false })
@@ -248,7 +248,7 @@ export async function getCoreMemoryContext(): Promise<string> {
     const legacy = await supabaseAdmin
       .from(T.coreMem)
       .select('type, content, memory_key, memory_category')
-      .eq('user_id', USER_ID)
+      .eq('user_id', userId)
       .or('memory_category.is.null,memory_category.neq.profile')
       .order('score', { ascending: false })
       .limit(5)
@@ -275,6 +275,7 @@ export async function getCoreMemoryContext(): Promise<string> {
 // - 重要度4以上
 // - 3日以上前
 export async function getContextualMemory(
+  userId: string,
   currentTopic: string,
 ): Promise<string | null> {
   const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
@@ -282,7 +283,7 @@ export async function getContextualMemory(
   const { data } = await supabaseAdmin
     .from('lunaria_extractions')
     .select('summary, unresolved_issues, created_at')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .gte('importance_score', 4)
     .lte('created_at', threeDaysAgo)
     .order('created_at', { ascending: false })
@@ -315,13 +316,13 @@ export async function getContextualMemory(
 
 // ── light_probe 時の伏線回収用 ────────────────────────────────
 // 7日以上前の重要な未解決トピックを1件返す
-export async function getMemoryForProbe(): Promise<string | null> {
+export async function getMemoryForProbe(userId: string): Promise<string | null> {
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
   const { data } = await supabaseAdmin
     .from('lunaria_extractions')
     .select('unresolved_issues, summary, created_at')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .gte('importance_score', 3)
     .lte('created_at', sevenDaysAgo)
     .order('importance_score', { ascending: false })

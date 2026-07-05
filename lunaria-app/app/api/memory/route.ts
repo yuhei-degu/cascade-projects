@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '../../../lib/supabase'
-
-const USER_ID = '00000000-0000-0000-0000-000000000001'
+import { getAuthenticatedUserId } from '../_auth'
 const ACTIVE_STATUSES = ['candidate', 'active', 'confirmed']
 const MEMORY_SELECT =
   'id, type, content, score, hit_count, last_seen, created_at, updated_at, memory_key, memory_category, source_date, source_message_id, confidence, status, last_confirmed_at, created_by, notes'
@@ -62,6 +61,10 @@ function toMemory(row: any) {
 }
 
 export async function GET(req: NextRequest) {
+  const auth = await getAuthenticatedUserId()
+  if ('response' in auth) return auth.response
+  const { userId } = auth
+
   const date = req.nextUrl.searchParams.get('date')
   const status = normalizeStatus(req.nextUrl.searchParams.get('status'))
   const includeProfile = req.nextUrl.searchParams.get('profile') === '1'
@@ -70,7 +73,7 @@ export async function GET(req: NextRequest) {
   let query = supabaseAdmin
     .from('lunaria_core_memory')
     .select(MEMORY_SELECT)
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .order('source_date', { ascending: false, nullsFirst: false })
     .order('last_seen', { ascending: false })
     .limit(limit)
@@ -86,7 +89,7 @@ export async function GET(req: NextRequest) {
     let legacy = supabaseAdmin
       .from('lunaria_core_memory')
       .select('id, type, content, score, hit_count, last_seen, created_at, updated_at, memory_key, memory_category')
-      .eq('user_id', USER_ID)
+      .eq('user_id', userId)
       .order('last_seen', { ascending: false })
       .limit(limit)
 
@@ -115,6 +118,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const auth = await getAuthenticatedUserId()
+  if ('response' in auth) return auth.response
+  const { userId } = auth
+
   let body: any
   try {
     body = await req.json()
@@ -132,7 +139,7 @@ export async function PATCH(req: NextRequest) {
     .from('lunaria_core_memory')
     .select(MEMORY_SELECT)
     .eq('id', id)
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .maybeSingle()
 
   if (findError && isMissingProvenanceColumn(findError)) {
@@ -187,7 +194,7 @@ export async function PATCH(req: NextRequest) {
     .from('lunaria_core_memory')
     .update(patch)
     .eq('id', id)
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .select(MEMORY_SELECT)
     .maybeSingle()
 

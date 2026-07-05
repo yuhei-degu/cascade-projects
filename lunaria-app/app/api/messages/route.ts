@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '../../../lib/supabase'
 import { getJstDayRange } from '../../../lib/lunaria/date'
-
-const USER_ID = '00000000-0000-0000-0000-000000000001'
+import { getAuthenticatedUserId } from '../_auth'
 
 export async function GET(req: NextRequest) {
+  const auth = await getAuthenticatedUserId()
+  if ('response' in auth) return auth.response
+  const { userId } = auth
+
   const date = req.nextUrl.searchParams.get('date')
   const limitParam = Number(req.nextUrl.searchParams.get('limit') ?? '60')
   const limit = Number.isFinite(limitParam) ? Math.min(Math.max(Math.floor(limitParam), 1), 500) : 60
@@ -12,7 +15,7 @@ export async function GET(req: NextRequest) {
   let query = supabaseAdmin
     .from('lunaria_messages')
     .select('role, content, created_at')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(date ? 500 : limit)
 

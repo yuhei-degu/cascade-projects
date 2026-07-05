@@ -22,13 +22,13 @@ import { getJstDateString } from '../../../lib/lunaria/date'
 import { parseAssistantReply, stringifyAssistantMessage } from '../../../lib/lunaria/assistant-reply'
 import type { AssistantReply } from '../../../lib/lunaria/assistant-reply'
 import { buildGameHandoffResponseHint, getGameHandoffNextStep, withGameHandoffNextStep } from '../../../lib/lunaria/game-handoff'
+import { getAuthenticatedUserId } from '../_auth'
 
 const gemini = new OpenAI({
   apiKey: process.env.GEMINI_API_KEY,
   baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/',
 })
 
-const USER_ID = '00000000-0000-0000-0000-000000000001'
 const T = {
   messages:    'lunaria_messages',
   routingLog:  'lunaria_routing_log',
@@ -115,6 +115,10 @@ function truncateAtSentence(text: string, maxChars: number): string {
 
 export async function POST(req: NextRequest) {
   try {
+    const auth = await getAuthenticatedUserId()
+    if ('response' in auth) return auth.response
+    const { userId } = auth
+
     const body = await req.json().catch(() => null)
     if (!body || typeof body !== 'object') {
       return NextResponse.json({ reply: 'メッセージの形が読めなかったみたい', error: true }, { status: 400 })
@@ -143,29 +147,29 @@ export async function POST(req: NextRequest) {
     const sourceDate = getJstDateString()
     if (detectedName) {
       console.log('[memory] name detected:', detectedName)
-      saveCoreMemory('name', detectedName, { sourceDate, confidence: 1, status: 'confirmed', lastConfirmedAt: new Date().toISOString() }).catch(e => console.warn('[memory]', e))
+      saveCoreMemory('name', detectedName, userId, { sourceDate, confidence: 1, status: 'confirmed', lastConfirmedAt: new Date().toISOString() }).catch(e => console.warn('[memory]', e))
     }
 
     // 1. 睡眠トリガー（日付変更で感情減衰）
-    await applySleepDecay()
+    await applySleepDecay(userId)
 
     // 2. ルーティング判定
     const route = calcRoute(userMessage, prevScores, prevHeavy, lastSeriousAt)
 
     // 3. 感情・親密度・話題転換を並列取得
     const [emotion, affinity, morningMsg, topicResult, coreMemCtx, profile, pendingUpdates, userName] = await Promise.all([
-      getEmotion(),
-      getAffinity(),
-      history.length === 0 ? getMorningOpening() : Promise.resolve(null),
+      getEmotion(userId),
+      getAffinity(userId),
+      history.length === 0 ? getMorningOpening(userId) : Promise.resolve(null),
       extractTurnTopic(userMessage, history.slice(-4)),
-      getCoreMemoryContext(),
-      getProfile(),
-      getPendingUpdates(),
-      getUserName(),
+      getCoreMemoryContext(userId),
+      getProfile(userId),
+      getPendingUpdates(userId),
+      getUserName(userId),
     ])
 
     // 関連する過去記憶を条件付きで取得
-    const contextualMem = await getContextualMemory(topicResult.current_topic)
+    const contextualMem = await getContextualMemory(userId, topicResult.current_topic)
 
     const newCoverage = updateCoverage(coverage, topicResult)
     const sameTopic = topicResult.current_topic === lastTopic && topicResult.subtopic === lastSubtopic
@@ -189,12 +193,12 @@ export async function POST(req: NextRequest) {
       const affirm = /(?:そう|うん|はい|yes|そうだよ|そうです|合ってる|正しい|だよ|です|だね)/i.test(userMessage)
       const deny   = /(?:違う|いや|いいえ|no|違います|そうじゃない|女性|女だ|女です)/i.test(userMessage)
       if (affirm) {
-        await setProfile(pending.field as ProfileField, pending.detected_value, 'confirmed')
-        await clearPendingUpdate(pending.field as ProfileField)
+        await setProfile(pending.field as ProfileField, pending.detected_value, userId, 'confirmed')
+        await clearPendingUpdate(pending.field as ProfileField, userId)
         const fieldLabel: Record<string, string> = { gender: '性別', age: '年齢', marital_status: '婚姻状況', occupation: '職業', living_situation: '居住状況', name: '名前' }
         profileConfirmReply = `了解！${fieldLabel[pending.field] ?? pending.field}を「${pending.detected_value}」に更新したよ。`
       } else if (deny) {
-        await clearPendingUpdate(pending.field as ProfileField)
+        await clearPendingUpdate(pending.field as ProfileField, userId)
         profileConfirmReply = `わかった、変えないでおくね！`
       }
     }
@@ -202,11 +206,11 @@ export async function POST(req: NextRequest) {
     // 矛盾検出（pending に追加）
     const conflicts = detectProfileConflicts(userMessage, profile)
     for (const c of conflicts) {
-      await savePendingUpdate(c.field as ProfileField, c.detected, userMessage)
+      await savePendingUpdate(c.field as ProfileField, c.detected, userMessage, userId)
     }
 
     // フリープラン記憶減衰（fire-and-forget）
-    applyFreeMemoryDecay().catch(e => console.warn('[subscription] decay error:', e))
+    applyFreeMemoryDecay(userId).catch(e => console.warn('[subscription] decay error:', e))
 
     // ── 4. 応答生成（NDJSON ストリーミング）─────────────────────────
     // 即時生成可能な応答（probe テンプレ / 聞き返し / morning）を先に決定
@@ -218,7 +222,7 @@ export async function POST(req: NextRequest) {
       const shouldSurfaceMemory = Date.now() - lastMemorySurfacedAt > SEVEN_DAYS_MS
       if (shouldSurfaceMemory && !morningMsg) {
         try {
-          const probeMemory = await getMemoryForProbe()
+          const probeMemory = await getMemoryForProbe(userId)
           if (probeMemory) {
             precomputedReply = buildMemorySurfaceReply(probeMemory)
             newLastMemorySurfacedAt = Date.now()
@@ -348,7 +352,7 @@ export async function POST(req: NextRequest) {
           // フリープラン記憶フェードヒント（light_normal / light_probe のみ、低確率付加）
           if (route.routeType !== 'claude_serious') {
             try {
-              const fadeHint = await getMemoryFadeHint()
+              const fadeHint = await getMemoryFadeHint(userId)
               if (fadeHint && Math.random() < 0.15) {
                 const tail = `\n\n${fadeHint}`
                 reply = `${reply}${tail}`
@@ -375,13 +379,13 @@ export async function POST(req: NextRequest) {
           // 5. メッセージ保存（fire-and-forget）
           const now = Date.now()
           supabaseAdmin.from(T.messages).insert([
-            { user_id: USER_ID, role: 'user',      content: userMessage, created_at: new Date(now).toISOString() },
-            { user_id: USER_ID, role: 'assistant', content: reply, route_type: route.routeType, created_at: new Date(now + 1).toISOString() },
+            { user_id: userId, role: 'user',      content: userMessage, created_at: new Date(now).toISOString() },
+            { user_id: userId, role: 'assistant', content: reply, route_type: route.routeType, created_at: new Date(now + 1).toISOString() },
           ]).then(() => {})
 
           // 6. routing_log 保存
           supabaseAdmin.from(T.routingLog).insert({
-            user_id:    USER_ID, route_type: route.routeType,
+            user_id:    userId, route_type: route.routeType,
             user_message: userMessage,
             msg_score:  route.msgScore, win_score: route.windowScore,
             heavy_signal_count: route.heavyCount,
@@ -403,7 +407,7 @@ export async function POST(req: NextRequest) {
                   { role: 'ai'   as const, content: reply },
                 ]
                 const extraction = await extractConversation(recentMsgs, { knownName: userName ?? undefined })
-                await updateEm(extraction.emotions)
+                await updateEm(extraction.emotions, userId)
 
                 if (extraction.long_term_candidate?.type && extraction.long_term_candidate?.content) {
                   console.log('[memory-candidate] saving:', extraction.long_term_candidate)
@@ -411,6 +415,7 @@ export async function POST(req: NextRequest) {
                   const saved = await saveMemoryCandidate(
                     extraction.long_term_candidate.type,
                     extraction.long_term_candidate.content,
+                    userId,
                     {
                       sourceType: 'conversation',
                       sourceDate,
@@ -423,7 +428,7 @@ export async function POST(req: NextRequest) {
                   console.log('[memory] no candidate in extraction:', extraction.summary)
                 }
                 await supabaseAdmin.from(T.extractions).insert({
-                  user_id: USER_ID,
+                  user_id: userId,
                   session_date: new Date().toISOString().split('T')[0],
                   summary:              extraction.summary,
                   emotions:             extraction.emotions,
@@ -443,7 +448,7 @@ export async function POST(req: NextRequest) {
           let ticketGranted = false
           let ticketTotal = 0
           try {
-            const grant = await tryGrantTicketByScore(route.msgScore)
+            const grant = await tryGrantTicketByScore(route.msgScore, userId)
             ticketGranted = grant.granted
             ticketTotal   = grant.ticket_count
           } catch (e) {

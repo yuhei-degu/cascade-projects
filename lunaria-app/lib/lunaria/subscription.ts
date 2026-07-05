@@ -3,13 +3,11 @@ import { debugLog } from './logger'
 
 export type Plan = 'free' | 'premium'
 
-const USER_ID = '00000000-0000-0000-0000-000000000001'
-
 /** フリープランで記憶を保持する日数 */
 const FREE_MEMORY_DAYS = 7
 
 // ── プラン取得 ────────────────────────────────────────────────
-export async function getUserPlan(userId: string = USER_ID): Promise<Plan> {
+export async function getUserPlan(userId: string): Promise<Plan> {
   const { data } = await supabaseAdmin
     .from('lunaria_users')
     .select('plan')
@@ -22,7 +20,7 @@ export async function getUserPlan(userId: string = USER_ID): Promise<Plan> {
 // ── フリープラン記憶スコア減衰 ────────────────────────────────
 // 7日以上前に最後に参照された core_memory のスコアを -1 する（最小1）
 // profile 系（user_name / user_gender など）はスコア変動対象外
-export async function applyFreeMemoryDecay(userId: string = USER_ID): Promise<void> {
+export async function applyFreeMemoryDecay(userId: string): Promise<void> {
   const plan = await getUserPlan(userId)
   if (plan === 'premium') return
 
@@ -59,7 +57,7 @@ const FADE_HINTS = [
   'あれ、最近の話ってどんな感じだったっけ…なんか霞んでる気がして。',
 ]
 
-export async function getMemoryFadeHint(userId: string = USER_ID): Promise<string | null> {
+export async function getMemoryFadeHint(userId: string): Promise<string | null> {
   const plan = await getUserPlan(userId)
   if (plan === 'premium') return null
 

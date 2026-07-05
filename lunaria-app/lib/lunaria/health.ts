@@ -1,7 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
 
-const USER_ID = '00000000-0000-0000-0000-000000000001'
-
 type Check =
   | { ok: true; latency_ms?: number; [key: string]: unknown }
   | { ok: false; error: string; latency_ms?: number; [key: string]: unknown }
@@ -53,7 +51,7 @@ function byRarity(rows: Array<{ rarity: string | null }>): Record<string, number
   }, {})
 }
 
-export async function getHealthReport(): Promise<HealthReport> {
+export async function getHealthReport(userId: string): Promise<HealthReport> {
   const checks: HealthReport['checks'] = {
     env: envCheck(),
     supabase: { ok: false, error: 'not_checked' },
@@ -99,15 +97,15 @@ export async function getHealthReport(): Promise<HealthReport> {
     const { data, error } = await supabase
       .from('lunaria_users')
       .select('id')
-      .eq('id', USER_ID)
+      .eq('id', userId)
       .maybeSingle()
 
     if (error) {
       checks.default_user = { ok: false, error: error.message, latency_ms: elapsedMs(userStart) }
     } else if (data) {
-      checks.default_user = { ok: true, id: USER_ID, latency_ms: elapsedMs(userStart) }
+      checks.default_user = { ok: true, id: userId, latency_ms: elapsedMs(userStart) }
     } else {
-      checks.default_user = { ok: false, error: 'missing_default_user', id: USER_ID, latency_ms: elapsedMs(userStart) }
+      checks.default_user = { ok: false, error: 'missing_user', id: userId, latency_ms: elapsedMs(userStart) }
     }
   } catch (error) {
     checks.default_user = {

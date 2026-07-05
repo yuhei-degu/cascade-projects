@@ -3,8 +3,7 @@ import { supabaseAdmin } from '../../../../lib/supabase'
 import { saveCoreMemory } from '../../../../lib/lunaria/memory'
 import { saveMemoryCandidate } from '../../../../lib/lunaria/memory-candidates'
 import { getJstDateString } from '../../../../lib/lunaria/date'
-
-const USER_ID = '00000000-0000-0000-0000-000000000001'
+import { getAuthenticatedUserId } from '../../_auth'
 const MAX_CANDIDATE_CONTENT_CHARS = 500
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
@@ -99,6 +98,9 @@ function normalizeUuidOrNull(value: unknown): string | null {
 
 export async function GET(req: NextRequest) {
   if (!canAccessCandidateApi(req)) return forbiddenCandidateApiResponse()
+  const auth = await getAuthenticatedUserId()
+  if ('response' in auth) return auth.response
+  const { userId } = auth
 
   const date = req.nextUrl.searchParams.get('date')
   const status = normalizeStatus(req.nextUrl.searchParams.get('status'))
@@ -107,7 +109,7 @@ export async function GET(req: NextRequest) {
   let query = supabaseAdmin
     .from('lunaria_memory_candidates')
     .select('id, candidate_type, content, source_type, source_id, source_date, source_message_ids, confidence, status, reason, created_by, reviewed_at, reviewed_by, created_at, updated_at')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
     .limit(limit)
@@ -140,6 +142,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   if (!canAccessCandidateApi(req)) return forbiddenCandidateApiResponse()
+  const auth = await getAuthenticatedUserId()
+  if ('response' in auth) return auth.response
+  const { userId } = auth
 
   let body: any
   try {
@@ -160,6 +165,7 @@ export async function POST(req: NextRequest) {
     const result = await saveMemoryCandidate(
       normalizeCandidateType(body?.candidate_type),
       content,
+      userId,
       {
         sourceType: normalizeSourceType(body?.source_type),
         sourceId: normalizeUuidOrNull(body?.source_id),
@@ -187,6 +193,9 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   if (!canAccessCandidateApi(req)) return forbiddenCandidateApiResponse()
+  const auth = await getAuthenticatedUserId()
+  if ('response' in auth) return auth.response
+  const { userId } = auth
 
   let body: any
   try {
@@ -206,7 +215,7 @@ export async function PATCH(req: NextRequest) {
     .from('lunaria_memory_candidates')
     .select('id, candidate_type, content, source_type, source_id, source_date, source_message_ids, confidence, status, reason, created_by, reviewed_at, reviewed_by, created_at, updated_at')
     .eq('id', id)
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .is('deleted_at', null)
     .maybeSingle()
 
@@ -238,7 +247,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     try {
-      await saveCoreMemory(coreMemoryType, row.content ?? '', {
+      await saveCoreMemory(coreMemoryType, row.content ?? '', userId, {
         sourceDate: row.source_date ?? null,
         sourceMessageId: Array.isArray(row.source_message_ids) ? row.source_message_ids[0] ?? null : null,
         confidence: row.confidence ?? null,
@@ -262,10 +271,10 @@ export async function PATCH(req: NextRequest) {
       .update({
         status: 'merged',
         reviewed_at: reviewedAt,
-        reviewed_by: USER_ID,
+        reviewed_by: userId,
       })
       .eq('id', id)
-      .eq('user_id', USER_ID)
+      .eq('user_id', userId)
       .select('id, candidate_type, content, source_type, source_id, source_date, source_message_ids, confidence, status, reason, created_by, reviewed_at, reviewed_by, created_at, updated_at')
       .maybeSingle()
 
@@ -281,10 +290,10 @@ export async function PATCH(req: NextRequest) {
     .update({
       status: statusForAction(action),
       reviewed_at: action === 'pending' ? null : reviewedAt,
-      reviewed_by: action === 'pending' ? null : USER_ID,
+      reviewed_by: action === 'pending' ? null : userId,
     })
     .eq('id', id)
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId)
     .select('id, candidate_type, content, source_type, source_id, source_date, source_message_ids, confidence, status, reason, created_by, reviewed_at, reviewed_by, created_at, updated_at')
     .maybeSingle()
 
