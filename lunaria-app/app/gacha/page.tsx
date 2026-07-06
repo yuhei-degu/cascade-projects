@@ -1,10 +1,21 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import Link from 'next/link'
 import { LunariaPortrait } from '@/components/lunaria/LunariaPortrait'
 import { getGachaDrawCopy, pickDailyBonusCopy, pickNoTicketCopy } from '@/lib/lunaria/gacha-copy'
 import { getReactionForContext } from '@/lib/lunaria/reactions'
+
+type Rarity = 'common_a' | 'common_b' | 'rare_a' | 'rare_b' | 'epic' | 'legendary' | 'urban_legend'
+type Category = 'furniture' | 'small_item' | 'accessory' | 'urban_legend'
+type Phase = 'idle' | 'charge' | 'flash' | 'flip' | 'result'
+type ViewMode = 'draw' | 'collection'
+
+interface GachaPityState {
+  draws_since_urban_legend: number
+  threshold: number
+  triggered: boolean
+}
 
 interface GachaState {
   ticket_count: number
@@ -17,10 +28,14 @@ interface GachaState {
 interface PoolItem {
   id: string
   name: string
-  rarity: string
-  category: string
+  rarity: Rarity
+  category: Category
   image_url: string | null
   description: string | null
+}
+
+interface InventoryItem extends PoolItem {
+  acquired_at: string
 }
 
 interface DrawResult {
@@ -34,71 +49,86 @@ interface DrawResult {
   pity: GachaPityState | null
 }
 
-interface GachaPityState {
-  draws_since_urban_legend: number
-  threshold: number
-  triggered: boolean
+const RARITY_META: Record<Rarity, { label: string; short: string; color: string; glow: string; flash: string }> = {
+  common_a: { label: 'N', short: 'N', color: '#f2f3f0', glow: 'rgba(242,243,240,0.55)', flash: '#ffffff' },
+  common_b: { label: 'N', short: 'N', color: '#f2f3f0', glow: 'rgba(242,243,240,0.55)', flash: '#ffffff' },
+  rare_a: { label: 'R', short: 'R', color: '#62a8ff', glow: 'rgba(98,168,255,0.65)', flash: '#4ba0ff' },
+  rare_b: { label: 'R', short: 'R', color: '#62a8ff', glow: 'rgba(98,168,255,0.65)', flash: '#4ba0ff' },
+  epic: { label: 'SR', short: 'SR', color: '#f4c542', glow: 'rgba(244,197,66,0.78)', flash: '#ffd84d' },
+  legendary: { label: 'SSR', short: 'SSR', color: '#ff8f52', glow: 'rgba(255,143,82,0.82)', flash: '#ffb15f' },
+  urban_legend: { label: 'UR', short: 'UR', color: '#ff5f86', glow: 'rgba(255,95,134,0.88)', flash: '#ff4f8f' },
 }
 
-// レアリティごとの表示色とラベル
-const RARITY_META: Record<string, { label: string; color: string; glow: string }> = {
-  common_a:     { label: 'コモン',       color: '#9fb1b3', glow: 'rgba(159,177,179,0.4)' },
-  common_b:     { label: 'コモン',       color: '#9fb1b3', glow: 'rgba(159,177,179,0.4)' },
-  rare_a:       { label: 'レア',         color: '#7fb3d5', glow: 'rgba(127,179,213,0.6)' },
-  rare_b:       { label: 'レア',         color: '#7fb3d5', glow: 'rgba(127,179,213,0.6)' },
-  epic:         { label: 'エピック',     color: '#c39bd3', glow: 'rgba(195,155,211,0.8)' },
-  legendary:    { label: 'レジェンド',   color: '#f7ca18', glow: 'rgba(247,202,24,1)' },
-  urban_legend: { label: '都市伝説',     color: '#ff6b6b', glow: 'rgba(255,107,107,1)' },
+const CATEGORY_LABEL: Record<Category, string> = {
+  furniture: '家具',
+  small_item: '小物',
+  accessory: 'アクセサリ',
+  urban_legend: '都市伝説',
 }
 
-const CATEGORY_GLYPH: Record<string, string> = {
-  furniture: '▣',
-  small_item: '✧',
-  accessory: '◇',
+const CATEGORY_GLYPH: Record<Category, string> = {
+  furniture: '◇',
+  small_item: '✦',
+  accessory: '○',
   urban_legend: '☾',
 }
 
-const PHASE_COPY: Record<Exclude<Phase, 'idle' | 'result'>, string> = {
-  stage1: 'ふたを開けるよ',
-  stage2: '月明かりに、かざして…',
-  reveal: 'そっと受け取って',
+const RARITY_NOTE: Record<Rarity, string> = {
+  common_a: '静かな部屋にすっとなじむ、やさしい一品。',
+  common_b: '身につけたり眺めたりしたくなる、小さな収集品。',
+  rare_a: '空気が少し変わる、印象的なアイテム。',
+  rare_b: '光を拾ってきらりと残る、特別なアクセサリ。',
+  epic: '棚に並べたくなる、存在感のある逸品。',
+  legendary: '今日の月箱にだけ訪れた、まばゆい宝物。',
+  urban_legend: '見つけた人だけが知る、ひそかな伝説。',
 }
 
-const RARITY_NOTE: Record<string, string> = {
-  common_a: '日常に置いておきたい、ささやかなもの。',
-  common_b: 'いつもの時間に少しだけ光を足すもの。',
-  rare_a: '部屋の空気がふっと変わる、ちょっと特別なもの。',
-  rare_b: '身につけたくなる、小さな物語つきのもの。',
-  epic: 'ルナも少し声を弾ませる、めずらしい贈り物。',
-  legendary: '今日は覚えておきたくなる夜かもしれない。',
-  urban_legend: '見つけた人だけが知っている、静かな噂。',
+function itemGlyph(item: Pick<PoolItem, 'rarity' | 'category'>): string {
+  if (item.rarity === 'urban_legend') return CATEGORY_GLYPH.urban_legend
+  return CATEGORY_GLYPH[item.category] ?? '✦'
 }
 
 function moonFullnessCopy(pity: GachaPityState | null): string | null {
   if (!pity) return null
   const remaining = Math.max(pity.threshold - pity.draws_since_urban_legend, 0)
-  if (pity.triggered) return '月が満ちた。今日は奥の箱まで手が届いた。'
-  if (remaining <= 20) return '奥の棚が、少し明るい。'
-  return '月明かりが少しずつ溜まっている。'
+  if (pity.triggered) return '月が満ちました。特別な光が箱に届いています。'
+  if (remaining <= 20) return '月の光がかなり満ちてきました。'
+  return '月の光が少しずつ満ちています。'
 }
 
-function itemGlyph(item: PoolItem): string {
-  if (item.rarity === 'urban_legend') return '☾'
-  return CATEGORY_GLYPH[item.category] ?? '✦'
+function sortByRarityAndName(a: PoolItem, b: PoolItem): number {
+  const order: Rarity[] = ['urban_legend', 'legendary', 'epic', 'rare_b', 'rare_a', 'common_b', 'common_a']
+  return order.indexOf(a.rarity) - order.indexOf(b.rarity) || a.name.localeCompare(b.name, 'ja')
 }
 
-// 演出フェーズ
-type Phase = 'idle' | 'stage1' | 'stage2' | 'reveal' | 'result'
+function useTimeouts() {
+  const timeouts = useRef<number[]>([])
+  const clear = useCallback(() => {
+    timeouts.current.forEach(window.clearTimeout)
+    timeouts.current = []
+  }, [])
+  const schedule = useCallback((callback: () => void, delay: number) => {
+    const id = window.setTimeout(callback, delay)
+    timeouts.current.push(id)
+  }, [])
+
+  useEffect(() => clear, [clear])
+  return { clear, schedule }
+}
 
 export default function GachaPage() {
   const [state, setState] = useState<GachaState | null>(null)
-  const [drawing, setDrawing] = useState(false)
+  const [pool, setPool] = useState<PoolItem[]>([])
+  const [inventory, setInventory] = useState<InventoryItem[]>([])
+  const [viewMode, setViewMode] = useState<ViewMode>('draw')
   const [phase, setPhase] = useState<Phase>('idle')
+  const [drawing, setDrawing] = useState(false)
   const [drawResult, setDrawResult] = useState<DrawResult | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [noticeMsg, setNoticeMsg] = useState<string | null>(null)
+  const skipRequested = useRef(false)
+  const { clear, schedule } = useTimeouts()
 
-  // 状態取得
   const refreshState = useCallback(async () => {
     try {
       const res = await fetch('/api/gacha/state')
@@ -108,37 +138,90 @@ export default function GachaPage() {
     }
   }, [])
 
-  useEffect(() => { refreshState() }, [refreshState])
+  const refreshCollection = useCallback(async () => {
+    try {
+      const [poolRes, inventoryRes] = await Promise.all([
+        fetch('/api/gacha/pool'),
+        fetch('/api/gacha/inventory'),
+      ])
+      if (poolRes.ok) {
+        const data = await poolRes.json()
+        setPool((data.items ?? []).sort(sortByRarityAndName))
+      }
+      if (inventoryRes.ok) {
+        const data = await inventoryRes.json()
+        setInventory(data.items ?? [])
+      }
+    } catch (e) {
+      console.warn('[gacha] collection fetch failed', e)
+    }
+  }, [])
 
-  // デイリーボーナス受取
+  useEffect(() => {
+    refreshState()
+    refreshCollection()
+  }, [refreshState, refreshCollection])
+
+  const ownedIds = useMemo(() => new Set(inventory.map(item => item.id)), [inventory])
+  const ownedCount = useMemo(() => pool.filter(item => ownedIds.has(item.id)).length, [pool, ownedIds])
+  const collectionRate = pool.length > 0 ? Math.round((ownedCount / pool.length) * 100) : 0
+  const activeMeta = drawResult ? RARITY_META[drawResult.result.rarity] : RARITY_META.common_a
+  const drawCopy = drawResult ? getGachaDrawCopy(drawResult.production_seed, drawResult.result.rarity) : null
+  const resultPortraitReaction = drawResult && ['epic', 'legendary', 'urban_legend'].includes(drawResult.result.rarity)
+    ? getReactionForContext('gacha_high_rarity')
+    : getReactionForContext('gacha_result')
+
+  const finishAnimation = useCallback(() => {
+    clear()
+    if (drawResult) {
+      setPhase('result')
+      setDrawing(false)
+    } else {
+      skipRequested.current = true
+    }
+  }, [clear, drawResult])
+
   const claimDaily = async () => {
     const res = await fetch('/api/gacha/daily', { method: 'POST' })
     if (res.ok) {
       await refreshState()
       setNoticeMsg(pickDailyBonusCopy())
-      setTimeout(() => setNoticeMsg(null), 2400)
+      window.setTimeout(() => setNoticeMsg(null), 2400)
     }
   }
 
-  // ガチャ実行
   const doDraw = async () => {
     if (drawing) return
     if (!state || state.ticket_count < 1) {
       setNoticeMsg(pickNoTicketCopy())
-      setTimeout(() => setNoticeMsg(null), 2400)
+      window.setTimeout(() => setNoticeMsg(null), 2400)
       return
     }
+
+    clear()
     setDrawing(true)
+    setDrawResult(null)
+    skipRequested.current = false
     setErrorMsg(null)
     setNoticeMsg(null)
+    setPhase('charge')
 
-    const data: DrawResult | { error: string } = await fetch('/api/gacha/draw', { method: 'POST' }).then(r => r.json())
+    let data: DrawResult | { error: string }
+    try {
+      data = await fetch('/api/gacha/draw', { method: 'POST' }).then(r => r.json())
+    } catch {
+      setErrorMsg('抽選に失敗しました。時間をおいてもう一度お試しください。')
+      setPhase('idle')
+      setDrawing(false)
+      return
+    }
+
     if ('error' in data) {
       if (data.error === 'no_ticket') {
         setNoticeMsg(pickNoTicketCopy())
-        setTimeout(() => setNoticeMsg(null), 2400)
+        window.setTimeout(() => setNoticeMsg(null), 2400)
       } else {
-        setErrorMsg('エラーだ…')
+        setErrorMsg('抽選に失敗しました。時間をおいてもう一度お試しください。')
       }
       setPhase('idle')
       setDrawing(false)
@@ -146,329 +229,245 @@ export default function GachaPage() {
     }
 
     setDrawResult(data)
-    setPhase('stage1')
-    await new Promise(r => setTimeout(r, 1500))
-    setPhase('stage2')
-    await new Promise(r => setTimeout(r, 1500))
-    setPhase('reveal')
-    await new Promise(r => setTimeout(r, 600))
-    setPhase('result')
-    setDrawing(false)
-
-    // 状態更新（API が返した値で上書き）
-    setState(s => s ? {
-      ...s,
+    setState(current => current ? {
+      ...current,
       ticket_count: data.ticket_remaining,
       coin_balance: data.coin_balance,
-      pity: data.pity ?? s.pity,
-    } : s)
+      pity: data.pity ?? current.pity,
+    } : current)
+    setInventory(current => current.some(item => item.id === data.result.id)
+      ? current
+      : [{ ...data.result, acquired_at: new Date().toISOString() }, ...current])
+
+    if (skipRequested.current) {
+      setPhase('result')
+      setDrawing(false)
+      return
+    }
+
+    schedule(() => setPhase('flash'), 650)
+    schedule(() => setPhase('flip'), 1050)
+    schedule(() => {
+      setPhase('result')
+      setDrawing(false)
+    }, 1800)
   }
 
   const closeResult = () => {
+    clear()
+    skipRequested.current = false
     setPhase('idle')
+    setDrawing(false)
     setDrawResult(null)
   }
 
-  const meta = drawResult ? RARITY_META[drawResult.result.rarity] : RARITY_META.common_a
-  const drawCopy = drawResult
-    ? getGachaDrawCopy(drawResult.production_seed, drawResult.result.rarity)
-    : null
-  const resultPortraitReaction = drawResult?.result.rarity === 'epic'
-    || drawResult?.result.rarity === 'legendary'
-    || drawResult?.result.rarity === 'urban_legend'
-    ? getReactionForContext('gacha_high_rarity')
-    : getReactionForContext('gacha_result')
-
   return (
-    <div style={{
-      height: '100dvh', display: 'flex', flexDirection: 'column',
-      padding: '20px', maxWidth: '480px', margin: '0 auto',
-      background: 'radial-gradient(circle at 50% 10%, rgba(127,179,213,0.08), transparent 38%)',
-    }}>
-      {/* ヘッダー */}
-      <nav aria-label="Gacha navigation" style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
-        <Link href="/" aria-label="Back to Lunaria room" style={{ color: '#888', textDecoration: 'none', fontSize: '14px' }}>← 戻る</Link>
-        <h1 style={{ flex: 1, textAlign: 'center', fontSize: '18px', fontWeight: 'normal', color: '#ddd5c5' }}>
-          月箱
-        </h1>
-        <Link href="/gacha/inventory" aria-label="Open gacha inventory" style={{ color: '#888', textDecoration: 'none', fontSize: '14px' }}>
-          所持品 →
-        </Link>
+    <main className="gacha-shell">
+      <nav className="gacha-nav" aria-label="Gacha navigation">
+        <Link href="/" aria-label="Back to Lunaria room">← ルーム</Link>
+        <h1>月箱</h1>
+        <Link href="/gacha/inventory" aria-label="Open gacha inventory">所持品</Link>
       </nav>
 
-      {/* 状態表示 */}
-      {state && (
-        <div style={{
-          background: 'linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025))',
-          border: '1px solid rgba(255,255,255,0.08)',
-          borderRadius: '16px', padding: '16px',
-          marginBottom: '12px', display: 'flex', justifyContent: 'space-around',
-          boxShadow: '0 18px 50px rgba(0,0,0,0.22)',
-        }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '11px', color: '#888' }}>チケット</div>
-            <div style={{ fontSize: '24px', color: '#ddd5c5' }}>{state.ticket_count}<span style={{ fontSize: '12px', color: '#666' }}>/50</span></div>
-          </div>
-          <div style={{ width: '1px', background: 'rgba(255,255,255,0.08)' }} />
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '11px', color: '#888' }}>コイン</div>
-            <div style={{ fontSize: '24px', color: '#ddd5c5' }}>{state.coin_balance}</div>
-          </div>
-        </div>
-      )}
-
-      {state?.pity && (
-        <div style={{
-          background: 'rgba(127,179,213,0.045)',
-          border: '1px solid rgba(127,179,213,0.14)',
-          borderRadius: 14,
-          padding: '10px 12px',
-          marginBottom: '12px',
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', color: '#8ca7b8', fontSize: 11, marginBottom: 8 }}>
-            <span>月が満ちるまで</span>
-            <span>{state.pity.draws_since_urban_legend}/{state.pity.threshold}</span>
-          </div>
-          <div style={{ height: 5, background: 'rgba(255,255,255,0.08)', borderRadius: 999, overflow: 'hidden', marginBottom: 8 }}>
-            <div style={{
-              width: `${Math.min((state.pity.draws_since_urban_legend / state.pity.threshold) * 100, 100)}%`,
-              height: '100%',
-              background: 'linear-gradient(90deg, rgba(127,179,213,0.45), rgba(221,213,197,0.8))',
-              borderRadius: 999,
-            }} />
-          </div>
-          <div style={{ color: '#7a7060', fontSize: 11, textAlign: 'center' }}>
-            {moonFullnessCopy(state.pity)}
-          </div>
-        </div>
-      )}
-
-      <div style={{
-        color: '#7a7060', fontSize: 12, lineHeight: 1.7,
-        textAlign: 'center', marginBottom: '18px',
-      }}>
-        ルナがときどき持ってくる、ちいさな月箱。思い出とは混ぜず、ここだけでそっと楽しむ。
+      <div className="gacha-tabs" role="tablist" aria-label="Gacha views">
+        <button type="button" className={viewMode === 'draw' ? 'active' : ''} onClick={() => setViewMode('draw')}>抽選</button>
+        <button type="button" className={viewMode === 'collection' ? 'active' : ''} onClick={() => setViewMode('collection')}>図鑑</button>
       </div>
 
-      {/* デイリーボーナス */}
-      {state?.daily_bonus_available && (
-        <button
-          onClick={claimDaily}
-          style={{
-            background: 'linear-gradient(180deg, #2d3a44 0%, #1f2930 100%)',
-            color: '#ddd5c5', border: '1px solid rgba(127,179,213,0.3)', borderRadius: '8px',
-            padding: '10px', fontSize: '13px', cursor: 'pointer', marginBottom: '16px',
-          }}
-        >
-          今日の月箱チケットを受け取る
-        </button>
+      {viewMode === 'draw' ? (
+        <>
+          {state && (
+            <section className="gacha-status" aria-label="Gacha resources">
+              <div>
+                <span>チケット</span>
+                <strong>{state.ticket_count}<small>/50</small></strong>
+              </div>
+              <div aria-hidden="true" className="gacha-divider" />
+              <div>
+                <span>コイン</span>
+                <strong>{state.coin_balance}</strong>
+              </div>
+            </section>
+          )}
+
+          {state?.pity && (
+            <section className="moon-meter" aria-label="Moon meter">
+              <div className="moon-meter-row">
+                <span>月光ゲージ</span>
+                <span>{state.pity.draws_since_urban_legend}/{state.pity.threshold}</span>
+              </div>
+              <div className="moon-meter-track">
+                <div style={{ width: `${Math.min((state.pity.draws_since_urban_legend / state.pity.threshold) * 100, 100)}%` }} />
+              </div>
+              <p>{moonFullnessCopy(state.pity)}</p>
+            </section>
+          )}
+
+          <p className="gacha-lead">月箱を開けて、家具・小物・アクセサリを集めよう。光の色が、手に入るレアリティを告げます。</p>
+
+          {state?.daily_bonus_available && (
+            <button type="button" className="daily-button" onClick={claimDaily}>今日のチケットを受け取る</button>
+          )}
+
+          <section className="summon-stage" aria-label="Draw stage">
+            <button
+              type="button"
+              className="summon-button"
+              onClick={doDraw}
+              disabled={drawing || !state}
+              aria-busy={drawing}
+            >
+              <span>{drawing ? '抽選中' : !state ? '読込中' : state.ticket_count < 1 ? 'チケット不足' : '月箱を開ける'}</span>
+            </button>
+          </section>
+
+          {errorMsg && <p className="gacha-message error">{errorMsg}</p>}
+          {noticeMsg && <p className="gacha-message">{noticeMsg}</p>}
+
+          <p className="gacha-quota">本日の獲得チケット {state?.earned_today ?? 0}/5</p>
+        </>
+      ) : (
+        <CollectionView
+          pool={pool}
+          ownedIds={ownedIds}
+          collectionRate={collectionRate}
+          ownedCount={ownedCount}
+        />
       )}
 
-      {/* メインボタン */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <button
-          onClick={doDraw}
-          disabled={drawing || !state}
-          style={{
-            width: '180px', height: '180px', borderRadius: '50%',
-            background: drawing
-              ? '#1a1a1a'
-              : 'radial-gradient(circle at 30% 28%, rgba(127,179,213,0.42) 0%, #202b30 34%, #11100e 72%)',
-            color: '#ddd5c5', border: '1px solid rgba(221,213,197,0.18)',
-            fontSize: '20px', cursor: drawing || !state ? 'not-allowed' : 'pointer',
-            transition: 'transform 0.2s, box-shadow 0.2s, opacity 0.2s',
-            opacity: drawing || !state ? 0.4 : ((state.ticket_count ?? 0) < 1 ? 0.35 : 1),
-            boxShadow: drawing ? 'none' : '0 0 42px rgba(127,179,213,0.18), inset 0 0 32px rgba(255,255,255,0.04)',
-          }}
-          onMouseDown={e => { if (!drawing) e.currentTarget.style.transform = 'scale(0.95)' }}
-          onMouseUp={e => e.currentTarget.style.transform = 'scale(1)'}
-          onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-        >
-          {drawing ? '…' : !state ? '読み込み中' : state.ticket_count < 1 ? 'またあとで' : '受け取る'}
-        </button>
-      </div>
-
-      {errorMsg && (
-        <div style={{
-          textAlign: 'center', color: '#ff8888', fontSize: '13px', marginBottom: '12px',
-        }}>{errorMsg}</div>
-      )}
-      {noticeMsg && (
-        <div style={{
-          textAlign: 'center', color: '#ddd5c5', fontSize: '13px', marginBottom: '12px',
-        }}>{noticeMsg}</div>
-      )}
-
-      <div style={{ textAlign: 'center', fontSize: '11px', color: '#666', marginBottom: '8px' }}>
-        会話から届いたチケット {state?.earned_today ?? 0}/5
-      </div>
-
-      {/* 演出オーバーレイ */}
       {phase !== 'idle' && phase !== 'result' && (
-        <div style={{
-          position: 'fixed', inset: 0, background: '#000',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 100,
-        }}>
-          {phase === 'stage1' && (
-            <div style={{ textAlign: 'center' }}>
-              <div style={{
-                width: '60vw', maxWidth: '300px', aspectRatio: '1',
-                borderRadius: '50%',
-                background: `radial-gradient(circle, ${meta.glow} 0%, transparent 70%)`,
-                animation: 'orbPulse 1.5s ease-in-out',
-              }} />
-              <div style={{ color: '#7a7060', fontSize: 13, marginTop: 22, letterSpacing: '.06em' }}>
-                {drawCopy?.stage1 ?? PHASE_COPY.stage1}
+        <button
+          type="button"
+          className={`gacha-production phase-${phase}`}
+          style={{
+            '--rarity-color': activeMeta.color,
+            '--rarity-glow': activeMeta.glow,
+            '--rarity-flash': activeMeta.flash,
+          } as CSSProperties}
+          onClick={finishAnimation}
+          aria-label="Skip gacha animation"
+        >
+          <div className="production-core">
+            {phase === 'charge' && (
+              <>
+                <div className="production-orb" />
+                <p>{drawCopy?.stage1 ?? '月箱に光が集まる'}</p>
+              </>
+            )}
+            {phase === 'flash' && (
+              <>
+                <div className="rarity-flash-text">{activeMeta.label}</div>
+                <p>{drawCopy?.stage2 ?? '光が弾ける'}</p>
+              </>
+            )}
+            {phase === 'flip' && drawResult && (
+              <div className="flip-card-wrap">
+                <div className="flip-card">
+                  <div className="flip-card-face flip-card-back">月箱</div>
+                  <div className="flip-card-face flip-card-front">
+                    <span className="result-badge">{activeMeta.label}</span>
+                    <strong>{itemGlyph(drawResult.result)}</strong>
+                  </div>
+                </div>
+                <p>{drawCopy?.reveal ?? 'カードが反転する'}</p>
               </div>
-            </div>
-          )}
-          {phase === 'stage2' && (
-            <div style={{ textAlign: 'center' }}>
-              <div style={{
-                fontSize: '60px', color: meta.color,
-                textShadow: `0 0 30px ${meta.glow}, 0 0 60px ${meta.glow}`,
-                animation: 'fadeUp 0.6s ease-out',
-              }}>
-                ✦
-              </div>
-              <div style={{ color: '#7a7060', fontSize: 13, marginTop: 18, letterSpacing: '.06em' }}>
-                {drawCopy?.stage2 ?? PHASE_COPY.stage2}
-              </div>
-            </div>
-          )}
-          {phase === 'reveal' && (
-            <div style={{ textAlign: 'center', animation: 'fadeUp 0.6s ease-out' }}>
-              <div style={{
-                fontSize: '24px', color: meta.color,
-                textShadow: `0 0 20px ${meta.glow}`,
-                marginBottom: 10,
-              }}>
-                {meta.label}
-              </div>
-              <div style={{ color: '#7a7060', fontSize: 13, letterSpacing: '.06em' }}>
-                {drawCopy?.reveal ?? PHASE_COPY.reveal}
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+          <span className="skip-copy">タップでスキップ</span>
+        </button>
       )}
 
-      {/* 結果モーダル */}
       {phase === 'result' && drawResult && (
-        <div
-          onClick={closeResult}
-          style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 100, padding: '20px',
-          }}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
+        <div className="result-overlay" onClick={closeResult}>
+          <section
+            className="result-panel"
             style={{
-              background: '#1a1a1a', borderRadius: '16px', padding: '32px 24px',
-              maxWidth: '320px', width: '100%', textAlign: 'center',
-              border: `2px solid ${meta.color}`,
-              boxShadow: `0 0 40px ${meta.glow}`,
-              animation: 'fadeUp 0.5s ease-out',
-            }}
+              '--rarity-color': activeMeta.color,
+              '--rarity-glow': activeMeta.glow,
+            } as CSSProperties}
+            onClick={e => e.stopPropagation()}
+            aria-label="Gacha result"
           >
-            <div style={{
-              fontSize: '12px', color: meta.color, letterSpacing: '0.2em',
-              marginBottom: '16px',
-            }}>
-              LUNA'S SMALL GIFT / {drawCopy?.heading ?? meta.label}
+            <div className="result-heading">
+              <span>{activeMeta.label}</span>
+              <p>{drawCopy?.heading ?? '新しいコレクション'}</p>
             </div>
             <LunariaPortrait
               reaction={resultPortraitReaction}
-              size={132}
+              size={124}
               label="Luna presenting the moon box result"
-              style={{ margin: '0 auto 16px' }}
+              style={{ margin: '0 auto 14px' }}
             />
-            <div style={{
-              width: '120px', height: '120px', margin: '0 auto 16px',
-              background: `radial-gradient(circle at 50% 35%, ${meta.glow}, rgba(255,255,255,0.04) 62%)`,
-              border: `1px solid ${meta.color}55`,
-              borderRadius: '18px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '48px',
-            }}>
-              <span aria-hidden="true" style={{ color: meta.color, textShadow: `0 0 22px ${meta.glow}` }}>
-                {itemGlyph(drawResult.result)}
-              </span>
+            <div className="result-item-art">
+              <span aria-hidden="true">{itemGlyph(drawResult.result)}</span>
             </div>
-            <div style={{ fontSize: '18px', color: '#ddd5c5', marginBottom: '8px' }}>
-              {drawResult.result.name}
-            </div>
-            {drawResult.result.description && (
-              <div style={{ fontSize: '12px', color: '#888', marginBottom: '16px' }}>
-                {drawResult.result.description}
-              </div>
-            )}
-            <div style={{
-              fontSize: '12px',
-              color: '#7a7060',
-              lineHeight: 1.6,
-              marginBottom: '16px',
-            }}>
-              {RARITY_NOTE[drawResult.result.rarity] ?? 'ルナが選んだ、今日だけの小さなもの。'}
-            </div>
+            <h2>{drawResult.result.name}</h2>
+            <p className="result-description">{drawResult.result.description}</p>
+            <p className="result-note">{RARITY_NOTE[drawResult.result.rarity]}</p>
+
             {drawResult.was_duplicate && (
-              <div style={{
-                fontSize: '13px', color: '#f7ca18',
-                background: 'rgba(247,202,24,0.1)', borderRadius: '6px',
-                padding: '8px', marginBottom: '12px',
-              }}>
-                かぶり！ コイン +{drawResult.coin_earned}
-              </div>
+              <div className="duplicate-note">かぶりボーナス コイン +{drawResult.coin_earned}</div>
             )}
             {drawResult.pity?.triggered && (
-              <div style={{
-                fontSize: '13px',
-                color: '#ddd5c5',
-                background: 'rgba(127,179,213,0.08)',
-                border: '1px solid rgba(127,179,213,0.2)',
-                borderRadius: '8px',
-                padding: '9px',
-                marginBottom: '12px',
-              }}>
-                月が満ちた。今日は奥の箱まで手が届いた。
-              </div>
+              <div className="duplicate-note special">月光ゲージ達成。特別な光が届きました。</div>
             )}
-            {/* ルナのリアクション（取得直後のみの受け取り演出。会話履歴には残らない） */}
-            {drawResult.reaction && (
-              <div style={{
-                display: 'flex', alignItems: 'flex-start', gap: 8,
-                background: 'rgba(127,179,213,0.06)',
-                border: '1px solid rgba(127,179,213,0.2)',
-                borderRadius: 12,
-                padding: '10px 12px',
-                marginBottom: '16px',
-                textAlign: 'left',
-              }}>
-                <div className="orb-anim" style={{
-                  width: 8, height: 8, borderRadius: '50%',
-                  background: '#7fb3d5', flexShrink: 0, marginTop: 6,
-                }} />
-                <div style={{ fontSize: 13, color: '#ddd5c5', lineHeight: 1.5 }}>
-                  {drawResult.reaction}
-                </div>
-              </div>
-            )}
-            <button
-              onClick={closeResult}
-              style={{
-                background: 'transparent', color: '#ddd5c5',
-                border: '1px solid rgba(255,255,255,0.2)', borderRadius: '6px',
-                padding: '10px 24px', cursor: 'pointer', fontSize: '14px',
-              }}
-            >
-              閉じる
-            </button>
-          </div>
+            {drawResult.reaction && <p className="luna-reaction">{drawResult.reaction}</p>}
+
+            <button type="button" onClick={closeResult}>閉じる</button>
+          </section>
         </div>
       )}
-    </div>
+    </main>
+  )
+}
+
+function CollectionView({
+  pool,
+  ownedIds,
+  collectionRate,
+  ownedCount,
+}: {
+  pool: PoolItem[]
+  ownedIds: Set<string>
+  collectionRate: number
+  ownedCount: number
+}) {
+  return (
+    <section className="collection-panel" aria-label="Collection encyclopedia">
+      <div className="collection-summary">
+        <div>
+          <span>所持率</span>
+          <strong>{collectionRate}%</strong>
+        </div>
+        <p>{ownedCount}/{pool.length} アイテム</p>
+      </div>
+
+      <div className="collection-grid scroll-thin">
+        {pool.length === 0 ? (
+          <p className="collection-empty">図鑑を読込中...</p>
+        ) : (
+          pool.map(item => {
+            const owned = ownedIds.has(item.id)
+            const meta = RARITY_META[item.rarity]
+            return (
+              <article
+                key={item.id}
+                className={`collection-card ${owned ? 'owned' : 'locked'}`}
+                style={{
+                  '--rarity-color': meta.color,
+                  '--rarity-glow': meta.glow,
+                } as CSSProperties}
+                title={owned ? item.description ?? item.name : '未所持'}
+              >
+                <span className="collection-badge">{meta.short}</span>
+                <div className="collection-art" aria-hidden="true">{itemGlyph(item)}</div>
+                <h2>{owned ? item.name : '???'}</h2>
+                <p>{owned ? CATEGORY_LABEL[item.category] : '未所持'}</p>
+              </article>
+            )
+          })
+        )}
+      </div>
+    </section>
   )
 }
