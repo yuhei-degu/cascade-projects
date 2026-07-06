@@ -4,6 +4,15 @@ import { getStripeBillingStatus } from '@/lib/stripe/billing'
 
 export const dynamic = 'force-dynamic'
 
+function billingReasonLabel(reason: string): string {
+  const labels: Record<string, string> = {
+    feature_disabled: '機能が無効です',
+    missing_env: '環境変数が不足しています',
+    not_configured: '未設定です',
+  }
+  return labels[reason] ?? reason
+}
+
 export default async function PricingPage({
   searchParams,
 }: {
@@ -25,7 +34,7 @@ export default async function PricingPage({
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
           <div>
             <p style={{ color: '#8f8372', fontSize: 12, letterSpacing: '.12em', textTransform: 'uppercase' }}>
-              Lunaria Premium
+              Lunaria プレミアム
             </p>
             <h1 style={{ marginTop: 8, color: '#f0dfbd', fontSize: 28, fontWeight: 700 }}>
               料金プラン
@@ -46,7 +55,7 @@ export default async function PricingPage({
             fontSize: 13,
             lineHeight: 1.7,
           }}>
-            Checkoutから戻りました。課金反映はまだ有効化していません。
+            チェックアウトから戻りました。課金反映はまだ有効化していません。
           </div>
         )}
 
@@ -60,7 +69,7 @@ export default async function PricingPage({
             fontSize: 13,
             lineHeight: 1.7,
           }}>
-            Checkoutをキャンセルしました。
+            チェックアウトをキャンセルしました。
           </div>
         )}
 
@@ -74,15 +83,15 @@ export default async function PricingPage({
         }}>
           <div style={{ display: 'grid', gap: 8 }}>
             <h2 style={{ color: '#f0dfbd', fontSize: 20, fontWeight: 700 }}>
-              Premium
+              プレミアム
             </h2>
             <p style={{ color: '#a99d8c', fontSize: 14, lineHeight: 1.8 }}>
-              長く使う人向けのサブスクリプション枠です。現在は準備中のため、実際の課金導線は停止しています。
+              長く使う方向けのサブスクリプション枠です。現在は準備中のため、実際の課金導線は停止しています。
             </p>
           </div>
 
           <div style={{ display: 'grid', gap: 8, color: '#c9bfae', fontSize: 14, lineHeight: 1.8 }}>
-            <div>・記憶保持まわりのPremium枠</div>
+            <div>・記憶保持まわりのプレミアム枠</div>
             <div>・将来のサブスクリプション管理に接続予定</div>
             <div>・有効化時期は人間が判断</div>
           </div>
@@ -95,7 +104,7 @@ export default async function PricingPage({
           }}>
             <CheckoutButton disabled={!billing.enabled} />
             <p style={{ color: '#7f7568', fontSize: 12, lineHeight: 1.7 }}>
-              Status: {billing.enabled ? 'ready' : billing.reason}
+              状態: {billing.enabled ? '準備完了' : billingReasonLabel(billing.reason)}
               {billing.missing.length > 0 ? ` (${billing.missing.join(', ')})` : ''}
             </p>
           </div>

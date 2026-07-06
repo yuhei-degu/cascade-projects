@@ -29,9 +29,9 @@ const MOTIONS: LunariaMotion[] = ['idle', 'tilt_head', 'nod', 'shake_head', 'loo
 const FALLBACK_STATE: CharacterStateResponse = {
   character_profile_id: 'lunaria',
   current_outfit_id: 'outfit_default',
-  current_outfit_name: 'Moonlit Uniform',
+  current_outfit_name: '月明かりの制服',
   current_background_id: 'bg_window_night',
-  current_background_name: 'Night Window',
+  current_background_name: '夜の窓辺',
   current_expression: 'gentle_smile',
   current_motion: 'idle',
   affinity_level: 47,
@@ -43,7 +43,40 @@ const FALLBACK_STATE: CharacterStateResponse = {
   last_interaction_at: null,
   source: 'mock',
   db_ready: false,
-  note: 'mock fallback',
+  note: '代替データ',
+}
+
+const EXPRESSION_LABELS: Record<string, string> = {
+  normal: '通常',
+  smile: '笑顔',
+  gentle_smile: 'やさしい笑顔',
+  teasing: 'からかい',
+  surprised: '驚き',
+  thinking: '考え中',
+  sad: '悲しみ',
+  serious: '真剣',
+  embarrassed: '照れ',
+  sleepy: '眠そう',
+  excited: 'うれしそう',
+  relieved: 'ほっとした',
+}
+
+const MOTION_LABELS: Record<string, string> = {
+  idle: '待機',
+  tilt_head: '首をかしげる',
+  nod: 'うなずく',
+  shake_head: '首を振る',
+  look_away: '目をそらす',
+  lean_forward: '身を乗り出す',
+  close_eyes: '目を閉じる',
+  small_wave: '小さく手を振る',
+  arms_crossed: '腕を組む',
+  soft_laugh: 'やわらかく笑う',
+}
+
+const SOURCE_LABELS: Record<CharacterStateResponse['source'], string> = {
+  character_states: '姿状態DB',
+  mock: '代替データ',
 }
 
 const PAGE_BG = '#0e0d0b'
@@ -74,7 +107,7 @@ export default function CharacterPage() {
       })
       .catch(error => {
         if (!alive) return
-        setState({ ...FALLBACK_STATE, note: `mock fallback: ${error.message}` })
+        setState({ ...FALLBACK_STATE, note: `代替データ: ${error.message}` })
       })
       .finally(() => {
         if (alive) setLoading(false)
@@ -86,11 +119,11 @@ export default function CharacterPage() {
   }, [])
 
   const affinityStage = useMemo(() => {
-    if (state.affinity_level >= 80) return 'Co-conspirator'
-    if (state.affinity_level >= 60) return 'Close'
-    if (state.affinity_level >= 40) return 'Friend'
-    if (state.affinity_level >= 20) return 'Familiar'
-    return 'First Meeting'
+    if (state.affinity_level >= 80) return '共犯者'
+    if (state.affinity_level >= 60) return '近しい相手'
+    if (state.affinity_level >= 40) return '友だち'
+    if (state.affinity_level >= 20) return '顔なじみ'
+    return '初対面'
   }, [state.affinity_level])
 
   const expressionOptions = EXPRESSIONS.filter(item => state.unlocked_expressions.includes(item))
@@ -100,10 +133,10 @@ export default function CharacterPage() {
   return (
     <main style={{ minHeight: '100vh', background: PAGE_BG, color: TEXT_MAIN, padding: '40px 20px' }}>
       <div style={{ maxWidth: 1120, margin: '0 auto' }}>
-        <nav aria-label="Character navigation" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
-          <Link href="/" aria-label="Back to Lunaria room" style={navLinkStyle}>Back to Room</Link>
-          <Link href="/items" aria-label="Open items" style={navLinkStyle}>Items</Link>
-          <Link href="/gacha" aria-label="Open gacha" style={navLinkStyle}>Moonbox</Link>
+        <nav aria-label="姿のナビゲーション" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
+          <Link href="/" aria-label="Lunariaの部屋に戻る" style={navLinkStyle}>部屋に戻る</Link>
+          <Link href="/items" aria-label="品を開く" style={navLinkStyle}>品</Link>
+          <Link href="/gacha" aria-label="ガチャを開く" style={navLinkStyle}>月箱</Link>
         </nav>
 
         <section style={heroGridStyle}>
@@ -112,55 +145,57 @@ export default function CharacterPage() {
           </div>
 
           <div style={{ ...panelStyle, minHeight: '100%' }}>
-            <p style={{ color: '#B99B6B', letterSpacing: '0.18em', textTransform: 'uppercase', margin: 0, fontSize: 12 }}>Character State Preview</p>
-            <h1 style={{ fontSize: 'clamp(2.1rem, 6vw, 4.5rem)', lineHeight: 0.95, margin: '12px 0 16px' }}>Lunaria State</h1>
+            <p style={{ color: '#B99B6B', letterSpacing: '0.18em', textTransform: 'uppercase', margin: 0, fontSize: 12 }}>姿の状態プレビュー</p>
+            <h1 style={{ fontSize: 'clamp(2.1rem, 6vw, 4.5rem)', lineHeight: 0.95, margin: '12px 0 16px' }}>Lunariaの状態</h1>
             <p style={{ color: TEXT_SUB, lineHeight: 1.8, margin: 0 }}>
-              A DB-aware preview for outfits, expression unlocks, motion unlocks, and affinity. It uses the
-              character_states table when migration 021 is ready, and stays safe with a mock fallback before then.
+              衣装、表情解放、動きの解放、親密度を確認するプレビューです。migration 021が準備できている場合は
+              姿状態テーブルを使い、それまでは安全な代替データで表示します。
             </p>
             <SourceBanner
               ready={state.db_ready}
               loading={loading}
-              title={state.db_ready ? 'DB character state is active' : 'Mock character state is active'}
-              note={loading ? 'Loading character state...' : state.note}
+              title={state.db_ready ? 'DBの姿状態が有効です' : '代替の姿状態が有効です'}
+              note={loading ? '姿の状態を読み込んでいます...' : state.note}
               detail={
                 state.db_ready
-                  ? 'This preview reflects the durable character state layer.'
-                  : 'Safe preview mode. Expression and motion controls are local-only until migration 021 is applied.'
+                  ? 'このプレビューは永続化された姿状態レイヤーを反映しています。'
+                  : '安全なプレビューモードです。migration 021が適用されるまで、表情と動きの操作はこの画面内だけに反映されます。'
               }
             />
           </div>
         </section>
 
         <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginTop: 18 }}>
-          <InfoCard label="Affinity" value={`${state.affinity_level}/100`} detail={`${affinityStage} / streak ${state.affinity_streak_days} days`} />
-          <InfoCard label="Current Look" value={state.current_outfit_name} detail={state.current_background_name} />
-          <InfoCard label="Item Progress" value={`${state.total_items_owned}/${state.total_items_pool}`} detail={`${itemProgress}% unlocked`} />
-          <InfoCard label="Source" value={state.source} detail={state.db_ready ? 'DB ready' : 'fallback mode'} />
+          <InfoCard label="親密度" value={`${state.affinity_level}/100`} detail={`${affinityStage} / 連続 ${state.affinity_streak_days}日`} />
+          <InfoCard label="現在の装い" value={state.current_outfit_name} detail={state.current_background_name} />
+          <InfoCard label="品の進捗" value={`${state.total_items_owned}/${state.total_items_pool}`} detail={`${itemProgress}% 解放済み`} />
+          <InfoCard label="取得元" value={SOURCE_LABELS[state.source]} detail={state.db_ready ? 'DB準備済み' : '代替モード'} />
         </section>
 
         <section style={{ ...panelStyle, marginTop: 18 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start' }}>
             <div>
-              <h2 style={{ margin: '0 0 8px' }}>Expression / Motion Preview</h2>
+              <h2 style={{ margin: '0 0 8px' }}>表情・動きプレビュー</h2>
               <p style={{ color: TEXT_SUB, margin: 0, lineHeight: 1.7 }}>
-                This keeps the visual layer separate from chat logic. Later, AssistantReply can set expression and motion tags directly.
+                表示レイヤーをチャット処理から分けて確認できます。将来的にはAssistantReplyが表情と動きのタグを直接設定できます。
               </p>
             </div>
-            <div style={{ color: TEXT_DIM, fontSize: 13 }}>Profile: {state.character_profile_id}</div>
+            <div style={{ color: TEXT_DIM, fontSize: 13 }}>プロフィール: {state.character_profile_id}</div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 18, marginTop: 20 }}>
             <ControlGroup
-              title="Expressions"
+              title="表情"
               items={expressionOptions}
               active={expression}
+              labels={EXPRESSION_LABELS}
               onSelect={value => setExpression(value as LunariaExpression)}
             />
             <ControlGroup
-              title="Motions"
+              title="動き"
               items={motionOptions}
               active={motion}
+              labels={MOTION_LABELS}
               onSelect={value => setMotion(value as LunariaMotion)}
             />
           </div>
@@ -190,7 +225,7 @@ function SourceBanner({ ready, loading, title, note, detail }: { ready: boolean;
       background: ready ? 'rgba(143,209,158,0.08)' : 'rgba(215,181,109,0.08)',
     }}>
       <div style={{ color: ready ? '#8fd19e' : '#d7b56d', fontSize: 13, fontWeight: 700 }}>
-        {loading ? 'Checking character source...' : title}
+        {loading ? '姿の取得元を確認しています...' : title}
       </div>
       <div style={{ color: TEXT_SUB, fontSize: 13, lineHeight: 1.7, marginTop: 4 }}>{note}</div>
       <div style={{ color: TEXT_DIM, fontSize: 12, lineHeight: 1.6, marginTop: 4 }}>{detail}</div>
@@ -198,7 +233,7 @@ function SourceBanner({ ready, loading, title, note, detail }: { ready: boolean;
   )
 }
 
-function ControlGroup({ title, items, active, onSelect }: { title: string; items: string[]; active: string; onSelect: (value: string) => void }) {
+function ControlGroup({ title, items, active, labels, onSelect }: { title: string; items: string[]; active: string; labels: Record<string, string>; onSelect: (value: string) => void }) {
   return (
     <div>
       <h3 style={{ margin: '0 0 12px' }}>{title}</h3>
@@ -210,7 +245,7 @@ function ControlGroup({ title, items, active, onSelect }: { title: string; items
             onClick={() => onSelect(item)}
             style={item === active ? activeButtonStyle : buttonStyle}
           >
-            {item.replaceAll('_', ' ')}
+            {labels[item] ?? item}
           </button>
         ))}
       </div>

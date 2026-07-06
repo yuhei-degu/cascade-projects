@@ -263,13 +263,13 @@ export default function GachaPage() {
 
   return (
     <main className="gacha-shell">
-      <nav className="gacha-nav" aria-label="Gacha navigation">
-        <Link href="/" aria-label="Back to Lunaria room">← ルーム</Link>
+      <nav className="gacha-nav" aria-label="ガチャのナビゲーション">
+        <Link href="/" aria-label="Lunariaの部屋に戻る">← ルーム</Link>
         <h1>月箱</h1>
-        <Link href="/gacha/inventory" aria-label="Open gacha inventory">所持品</Link>
+        <Link href="/gacha/inventory" aria-label="ガチャ所持品を開く">所持品</Link>
       </nav>
 
-      <div className="gacha-tabs" role="tablist" aria-label="Gacha views">
+      <div className="gacha-tabs" role="tablist" aria-label="ガチャの表示切り替え">
         <button type="button" className={viewMode === 'draw' ? 'active' : ''} onClick={() => setViewMode('draw')}>抽選</button>
         <button type="button" className={viewMode === 'collection' ? 'active' : ''} onClick={() => setViewMode('collection')}>図鑑</button>
       </div>
@@ -277,7 +277,7 @@ export default function GachaPage() {
       {viewMode === 'draw' ? (
         <>
           {state && (
-            <section className="gacha-status" aria-label="Gacha resources">
+            <section className="gacha-status" aria-label="ガチャの所持リソース">
               <div>
                 <span>チケット</span>
                 <strong>{state.ticket_count}<small>/50</small></strong>
@@ -291,7 +291,7 @@ export default function GachaPage() {
           )}
 
           {state?.pity && (
-            <section className="moon-meter" aria-label="Moon meter">
+            <section className="moon-meter" aria-label="月光ゲージ">
               <div className="moon-meter-row">
                 <span>月光ゲージ</span>
                 <span>{state.pity.draws_since_urban_legend}/{state.pity.threshold}</span>
@@ -345,7 +345,7 @@ export default function GachaPage() {
             '--rarity-flash': activeMeta.flash,
           } as CSSProperties}
           onClick={finishAnimation}
-          aria-label="Skip gacha animation"
+          aria-label="ガチャ演出をスキップ"
         >
           <div className="production-core">
             {phase === 'charge' && (
@@ -386,7 +386,7 @@ export default function GachaPage() {
               '--rarity-glow': activeMeta.glow,
             } as CSSProperties}
             onClick={e => e.stopPropagation()}
-            aria-label="Gacha result"
+            aria-label="ガチャ結果"
           >
             <div className="result-heading">
               <span>{activeMeta.label}</span>
@@ -395,7 +395,7 @@ export default function GachaPage() {
             <LunariaPortrait
               reaction={resultPortraitReaction}
               size={124}
-              label="Luna presenting the moon box result"
+              label="ルナが月箱の結果を見せている"
               style={{ margin: '0 auto 14px' }}
             />
             <div className="result-item-art">
@@ -433,7 +433,7 @@ function CollectionView({
   ownedCount: number
 }) {
   return (
-    <section className="collection-panel" aria-label="Collection encyclopedia">
+    <section className="collection-panel" aria-label="コレクション図鑑">
       <div className="collection-summary">
         <div>
           <span>所持率</span>

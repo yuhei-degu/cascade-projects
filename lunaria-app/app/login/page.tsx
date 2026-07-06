@@ -179,7 +179,7 @@ export default function LoginPage() {
             onChange={(event) => setEmail(event.target.value)}
             required
             autoComplete="email"
-            placeholder="you@example.com"
+            placeholder="メールアドレス"
             disabled={status === 'sending'}
             style={inputStyle}
           />

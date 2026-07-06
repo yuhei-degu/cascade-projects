@@ -76,13 +76,26 @@ export function LunariaPortrait({
 }
 
 function PortraitPlaceholder({ reaction }: { reaction: LunariaReactionId }) {
+  const reactionLabel: Record<LunariaReactionId, string> = {
+    normal_idle: '通常',
+    gentle_idle: 'やさしく待機',
+    smile_nod: '笑顔でうなずく',
+    small_wave: '小さく手を振る',
+    teasing_tilt: 'からかって首をかしげる',
+    serious_forward: '真剣に身を乗り出す',
+    thinking_pose: '考え中',
+    sad_lookdown: '悲しげに目を伏せる',
+    surprised_react: '驚き',
+    presenting_item: '品を見せる',
+  }
+
   return (
     <div style={placeholderStyle}>
       <div style={moonHaloStyle} />
       <div style={silhouetteStyle}>
-        <span style={initialStyle}>L</span>
+        <span style={initialStyle}>月</span>
       </div>
-      <div style={reactionStyle}>{reaction.replaceAll('_', ' ')}</div>
+      <div style={reactionStyle}>{reactionLabel[reaction] ?? reaction}</div>
     </div>
   )
 }

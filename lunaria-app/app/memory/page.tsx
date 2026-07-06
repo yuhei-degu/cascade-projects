@@ -58,28 +58,36 @@ type CandidateAction = 'approve' | 'reject' | 'archive' | 'pending'
 type MemoryAction = 'archive' | 'restore' | 'confirm' | 'edit'
 
 const statusLabels: Record<string, string> = {
-  active: 'Active memory',
-  candidate: 'Candidate',
-  confirmed: 'Confirmed',
-  archived: 'Archived',
-  deleted: 'Deleted',
+  active: '有効な記憶',
+  candidate: '候補',
+  confirmed: '確認済み',
+  archived: 'アーカイブ済み',
+  deleted: '削除済み',
 }
 
 const typeLabels: Record<string, string> = {
-  value: 'Value',
-  pattern: 'Pattern',
-  goal: 'Goal',
-  trigger: 'Trigger',
-  mid: 'Mid-term note',
-  other: 'Memo',
+  value: '価値観',
+  pattern: '傾向',
+  goal: '目標',
+  trigger: 'きっかけ',
+  mid: '中期メモ',
+  other: 'メモ',
 }
 
 const sourceTypeLabels: Record<string, string> = {
-  conversation: 'Conversation',
-  diary: 'Diary',
-  profile: 'Profile',
-  manual: 'Manual note',
-  game: 'Game carryover',
+  conversation: '会話',
+  diary: '日記',
+  profile: 'プロフィール',
+  manual: '手動メモ',
+  game: 'ゲーム引き継ぎ',
+}
+
+const candidateStatusLabels: Record<string, string> = {
+  pending: '確認待ち',
+  archived: 'あとで確認',
+  rejected: '外した候補',
+  merged: '記憶済み',
+  all: 'すべて',
 }
 
 function todayJst(): string {
@@ -92,9 +100,9 @@ function todayJst(): string {
 }
 
 function formatDate(value: string | null): string {
-  if (!value) return 'No date'
+  if (!value) return '日付なし'
   const date = new Date(`${value}T12:00:00+09:00`)
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat('ja-JP', {
     timeZone: 'Asia/Tokyo',
     month: 'long',
     day: 'numeric',
@@ -104,7 +112,7 @@ function formatDate(value: string | null): string {
 
 function formatTime(value: string | null): string {
   if (!value) return '-'
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat('ja-JP', {
     timeZone: 'Asia/Tokyo',
     month: '2-digit',
     day: '2-digit',
@@ -114,7 +122,7 @@ function formatTime(value: string | null): string {
 }
 
 function confidenceLabel(value: number | null): string {
-  if (typeof value !== 'number') return 'Unset'
+  if (typeof value !== 'number') return '未設定'
   return `${Math.round(value * 100)}%`
 }
 
@@ -123,7 +131,7 @@ function sourceTypeLabel(value: string): string {
 }
 
 function sourceDateLabel(value: string): string {
-  return value === 'game' ? 'game day' : 'diary'
+  return value === 'game' ? 'ゲームの日' : '日記'
 }
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
@@ -164,20 +172,20 @@ function MemoryCard({
           <span style={statusBadgeStyle}>{statusLabels[memory.status] ?? memory.status}</span>
           {memory.source_date && (
             <Link href={`/diary?date=${encodeURIComponent(memory.source_date)}`} style={dateBadgeStyle}>
-              {formatDate(memory.source_date)} diary
+              {formatDate(memory.source_date)}の日記
             </Link>
           )}
         </div>
-        <span style={{ color: '#c8a060', fontSize: 12, whiteSpace: 'nowrap' }}>score {memory.score ?? '-'}</span>
+        <span style={{ color: '#c8a060', fontSize: 12, whiteSpace: 'nowrap' }}>スコア {memory.score ?? '-'}</span>
       </div>
 
       <p style={memoryContentStyle}>{memory.content}</p>
 
       <div style={memoryMetaGridStyle}>
-        <Stat label="Confidence" value={confidenceLabel(memory.confidence)} />
-        <Stat label="Seen" value={memory.hit_count ?? '-'} />
-        <Stat label="Last seen" value={formatTime(memory.last_seen)} />
-        <Stat label="Created by" value={memory.created_by} />
+        <Stat label="確信度" value={confidenceLabel(memory.confidence)} />
+        <Stat label="参照回数" value={memory.hit_count ?? '-'} />
+        <Stat label="最後の参照" value={formatTime(memory.last_seen)} />
+        <Stat label="作成者" value={memory.created_by} />
       </div>
 
       {memory.notes && <p style={notesStyle}>{memory.notes}</p>}
@@ -186,21 +194,21 @@ function MemoryCard({
         <div style={candidateActionRowStyle}>
           {!isArchived && memory.status !== 'confirmed' && (
             <button type="button" onClick={() => onAction(memory, 'confirm')} disabled={busy} style={primaryActionButtonStyle}>
-              {busy ? 'Saving...' : 'Confirm memory'}
+              {busy ? '保存中...' : '記憶を確認'}
             </button>
           )}
           {!isArchived && (
             <button type="button" onClick={() => onAction(memory, 'archive')} disabled={busy} style={secondaryActionButtonStyle}>
-              {busy ? 'Saving...' : 'Archive'}
+              {busy ? '保存中...' : 'アーカイブ'}
             </button>
           )}
           {isArchived && (
             <button type="button" onClick={() => onAction(memory, 'restore')} disabled={busy} style={secondaryActionButtonStyle}>
-              {busy ? 'Restoring...' : 'Restore'}
+              {busy ? '復元中...' : '復元'}
             </button>
           )}
           <button type="button" onClick={() => onAction(memory, 'edit')} disabled={busy} style={quietActionButtonStyle}>
-            Edit text
+            文面を編集
           </button>
         </div>
       )}
@@ -225,7 +233,7 @@ function CandidateCard({
     <article style={candidateCardStyle}>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
         <span style={typeBadgeStyle}>{typeLabels[candidate.candidate_type] ?? candidate.candidate_type}</span>
-        <span style={candidateBadgeStyle}>{candidate.status === 'pending' ? 'Needs review' : candidate.status}</span>
+        <span style={candidateBadgeStyle}>{candidate.status === 'pending' ? '確認待ち' : (statusLabels[candidate.status] ?? candidate.status)}</span>
         {candidate.source_date && (
           <Link href={`/diary?date=${encodeURIComponent(candidate.source_date)}`} style={dateBadgeStyle}>
             {formatDate(candidate.source_date)} {sourceDateLabel(candidate.source_type)}
@@ -233,40 +241,40 @@ function CandidateCard({
         )}
       </div>
       <p style={memoryContentStyle}>{candidate.content}</p>
-      {candidate.reason && <p style={notesStyle}>Why Luna noticed it: {candidate.reason}</p>}
+      {candidate.reason && <p style={notesStyle}>ルナが気づいた理由: {candidate.reason}</p>}
       <div style={memoryMetaGridStyle}>
-        <Stat label="Confidence" value={confidenceLabel(candidate.confidence)} />
-        <Stat label="Source" value={sourceTypeLabel(candidate.source_type)} />
-        <Stat label="Created by" value={candidate.created_by} />
-        <Stat label="Created" value={formatTime(candidate.created_at)} />
+        <Stat label="確信度" value={confidenceLabel(candidate.confidence)} />
+        <Stat label="出典" value={sourceTypeLabel(candidate.source_type)} />
+        <Stat label="作成者" value={candidate.created_by} />
+        <Stat label="作成日時" value={formatTime(candidate.created_at)} />
       </div>
       {(isPending || canRestore) && (
         <div style={candidateActionRowStyle}>
           {isPending && (
             <>
               <button type="button" onClick={() => onAction(candidate.id, 'approve')} disabled={busy} style={primaryActionButtonStyle}>
-                {busy ? 'Saving...' : 'Remember this'}
+                {busy ? '保存中...' : 'これを覚える'}
               </button>
               <button type="button" onClick={() => onAction(candidate.id, 'archive')} disabled={busy} style={secondaryActionButtonStyle}>
-                Review later
+                あとで確認
               </button>
               <button type="button" onClick={() => onAction(candidate.id, 'reject')} disabled={busy} style={quietActionButtonStyle}>
-                Remove from shelf
+                棚から外す
               </button>
             </>
           )}
           {canRestore && (
             <button type="button" onClick={() => onAction(candidate.id, 'pending')} disabled={busy} style={secondaryActionButtonStyle}>
-              {busy ? 'Restoring...' : 'Restore to review'}
+              {busy ? '復元中...' : '確認待ちに戻す'}
             </button>
           )}
         </div>
       )}
       {isGameCandidate && (
         <div aria-label="Game carryover return" style={gameCarryoverReturnStyle}>
-          <span>After approval, return to the room and ask Luna to use this result.</span>
-          <Link href="/" aria-label="Return to Lunaria room with approved game carryover" style={returnRoomLinkStyle}>
-            Room
+          <span>承認後、部屋に戻ってこの結果を使うようルナに話しかけてください。</span>
+          <Link href="/" aria-label="承認したゲーム引き継ぎを持ってLunariaの部屋に戻る" style={returnRoomLinkStyle}>
+            部屋へ
           </Link>
         </div>
       )}
@@ -311,7 +319,7 @@ export default function MemoryPage() {
       setCandidates(Array.isArray(candidateData.candidates) ? candidateData.candidates : [])
       setCandidateStats(candidateData.stats)
     } catch {
-      setError('The memory shelf could not be opened. Please wait a moment and try again.')
+      setError('記憶の棚を開けませんでした。少し待ってからもう一度お試しください。')
       setMemories([])
       setStats(null)
       setCandidateTableReady(false)
@@ -339,7 +347,7 @@ export default function MemoryPage() {
       if (!res.ok || !data?.ok) throw new Error(data?.error ?? 'review_failed')
       await loadMemories()
     } catch {
-      setError('The memory candidate could not be updated. Please wait a moment and try again.')
+      setError('記憶候補を更新できませんでした。少し待ってからもう一度お試しください。')
     } finally {
       setCandidateBusyId(null)
     }
@@ -351,7 +359,7 @@ export default function MemoryPage() {
 
     let content: string | undefined
     if (action === 'edit') {
-      const nextContent = window.prompt('Edit memory text', memory.content)
+      const nextContent = window.prompt('記憶の文面を編集', memory.content)
       if (nextContent === null) {
         setMemoryBusyId(null)
         return
@@ -373,7 +381,7 @@ export default function MemoryPage() {
       if (!res.ok || !data?.ok) throw new Error(data?.error ?? 'memory_update_failed')
       await loadMemories()
     } catch {
-      setError('The memory could not be updated. Please wait a moment and try again.')
+      setError('記憶を更新できませんでした。少し待ってからもう一度お試しください。')
     } finally {
       setMemoryBusyId(null)
     }
@@ -382,7 +390,7 @@ export default function MemoryPage() {
   const grouped = useMemo(() => {
     const map = new Map<string, MemoryItem[]>()
     for (const memory of memories) {
-      const key = memory.source_date ?? 'No date'
+      const key = memory.source_date ?? '日付なし'
       map.set(key, [...(map.get(key) ?? []), memory])
     }
     return Array.from(map.entries()).sort(([a], [b]) => b.localeCompare(a))
@@ -394,17 +402,17 @@ export default function MemoryPage() {
       <div style={{ maxWidth: 1080, margin: '0 auto' }}>
         <header style={headerStyle}>
           <div>
-            <Link href="/" aria-label="Back to Lunaria room" style={backLinkStyle}>Back to Luna's room</Link>
-            <p style={eyebrowStyle}>Lunaria Memory</p>
-            <h1 style={titleStyle}>Memory Shelf</h1>
+            <Link href="/" aria-label="Lunariaの部屋に戻る" style={backLinkStyle}>ルナの部屋に戻る</Link>
+            <p style={eyebrowStyle}>Lunaria 記憶</p>
+            <h1 style={titleStyle}>記憶の棚</h1>
             <p style={leadStyle}>
-              A place to review what Luna may carry forward. Diary entries remember the day; memories are the small lights Luna may reference later.
+              ルナが次へ持っていくかもしれないことを確認する場所です。日記は一日を、記憶はあとで参照できる小さな灯りを残します。
             </p>
           </div>
-          <nav aria-label="Memory navigation" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-            <Link href="/diary" aria-label="Open diary" style={pillLinkStyle}>Diary</Link>
-            <Link href="/games" aria-label="Open games" style={pillLinkStyle}>Games</Link>
-            <Link href="/gacha" aria-label="Open gacha" style={pillLinkStyle}>Moonbox</Link>
+          <nav aria-label="記憶のナビゲーション" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <Link href="/diary" aria-label="日記を開く" style={pillLinkStyle}>日記</Link>
+            <Link href="/games" aria-label="ゲームを開く" style={pillLinkStyle}>ゲーム</Link>
+            <Link href="/gacha" aria-label="ガチャを開く" style={pillLinkStyle}>月箱</Link>
           </nav>
         </header>
 
@@ -414,27 +422,27 @@ export default function MemoryPage() {
             value={date}
             onChange={event => setDate(event.target.value)}
             style={dateInputStyle}
-            aria-label="Memory source date"
+            aria-label="記憶の元日付"
           />
-          <button onClick={() => setDate(todayJst())} style={navButtonStyle}>Today</button>
-          <button onClick={() => setDate('')} style={navButtonStyle}>All dates</button>
-          <select value={status} onChange={event => setStatus(event.target.value)} style={selectStyle} aria-label="Memory status">
-            <option value="active">Active memories</option>
-            <option value="candidate">Candidates</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="archived">Archived</option>
-            <option value="all">All statuses</option>
+          <button onClick={() => setDate(todayJst())} style={navButtonStyle}>今日</button>
+          <button onClick={() => setDate('')} style={navButtonStyle}>すべての日付</button>
+          <select value={status} onChange={event => setStatus(event.target.value)} style={selectStyle} aria-label="記憶の状態">
+            <option value="active">有効な記憶</option>
+            <option value="candidate">候補</option>
+            <option value="confirmed">確認済み</option>
+            <option value="archived">アーカイブ済み</option>
+            <option value="all">すべての状態</option>
           </select>
           <label style={checkLabelStyle}>
             <input type="checkbox" checked={includeProfile} onChange={event => setIncludeProfile(event.target.checked)} />
-            Include profile-like memories
+            プロフィールに近い記憶も含める
           </label>
-          <select value={candidateStatus} onChange={event => setCandidateStatus(event.target.value)} style={selectStyle} aria-label="Candidate status">
-            <option value="pending">Pending candidates</option>
-            <option value="archived">Review later shelf</option>
-            <option value="rejected">Removed candidates</option>
-            <option value="merged">Remembered candidates</option>
-            <option value="all">All candidates</option>
+          <select value={candidateStatus} onChange={event => setCandidateStatus(event.target.value)} style={selectStyle} aria-label="候補の状態">
+            <option value="pending">確認待ちの候補</option>
+            <option value="archived">あとで確認する棚</option>
+            <option value="rejected">外した候補</option>
+            <option value="merged">記憶済みの候補</option>
+            <option value="all">すべての候補</option>
           </select>
         </section>
 
@@ -442,19 +450,19 @@ export default function MemoryPage() {
 
         <div style={contentGridStyle}>
           <div style={{ display: 'grid', gap: 16 }}>
-            <Section title={date ? `${formatDate(date)} memories` : 'All memories'}>
+            <Section title={date ? `${formatDate(date)}の記憶` : 'すべての記憶'}>
               {loading ? (
-                <p style={mutedTextStyle}>Opening the memory shelf...</p>
+                <p style={mutedTextStyle}>記憶の棚を開いています...</p>
               ) : grouped.length === 0 ? (
                 <div>
-                  <p style={emptyTitleStyle}>No memories match this filter yet.</p>
-                  <p style={mutedTextStyle}>Try removing the date filter or switching to another status.</p>
+                  <p style={emptyTitleStyle}>この条件に合う記憶はまだありません。</p>
+                  <p style={mutedTextStyle}>日付条件を外すか、別の状態に切り替えてみてください。</p>
                 </div>
               ) : (
                 <div style={{ display: 'grid', gap: 18 }}>
                   {grouped.map(([groupDate, items]) => (
                     <div key={groupDate} style={{ display: 'grid', gap: 10 }}>
-                      <h3 style={groupTitleStyle}>{groupDate === 'No date' ? groupDate : formatDate(groupDate)}</h3>
+                      <h3 style={groupTitleStyle}>{groupDate === '日付なし' ? groupDate : formatDate(groupDate)}</h3>
                       {items.map(memory => (
                         <MemoryCard
                           key={memory.id}
@@ -471,16 +479,16 @@ export default function MemoryPage() {
           </div>
 
           <aside style={{ display: 'grid', gap: 16, alignContent: 'start' }}>
-            <Section title="Memory candidates">
+            <Section title="記憶候補">
               {loading ? (
-                <p style={mutedTextStyle}>Opening candidate shelf...</p>
+                <p style={mutedTextStyle}>候補の棚を開いています...</p>
               ) : !candidateTableReady ? (
                 <div>
-                  <p style={emptyTitleStyle}>Candidate shelf is not ready yet.</p>
-                  <p style={mutedTextStyle}>Apply `019_memory_candidates.sql` to review memory candidates here.</p>
+                  <p style={emptyTitleStyle}>候補の棚はまだ準備できていません。</p>
+                  <p style={mutedTextStyle}>ここで記憶候補を確認するには `019_memory_candidates.sql` を適用してください。</p>
                 </div>
               ) : candidates.length === 0 ? (
-                <p style={mutedTextStyle}>No memory candidates match this filter right now.</p>
+                <p style={mutedTextStyle}>現在この条件に合う記憶候補はありません。</p>
               ) : (
                 <div style={{ display: 'grid', gap: 10 }}>
                   {candidates.slice(0, 5).map(candidate => (
@@ -495,24 +503,24 @@ export default function MemoryPage() {
               )}
             </Section>
 
-            <Section title="Shelf status">
+            <Section title="棚の状態">
               <div style={{ display: 'grid', gap: 10, fontSize: 13 }}>
-                <Stat label="Shown" value={stats?.total ?? memories.length} />
-                <Stat label="With source date" value={stats?.with_source_date ?? 0} />
-                <Stat label="Candidates" value={stats?.by_status?.candidate ?? 0} />
-                <Stat label="Active" value={stats?.by_status?.active ?? 0} />
-                <Stat label="Confirmed" value={stats?.by_status?.confirmed ?? 0} />
-                <Stat label="Candidate filter" value={candidateStatus} />
-                <Stat label="Candidate rows" value={candidateTableReady ? (candidateStats?.total ?? candidates.length) : 'not applied'} />
-                <Stat label="Game carryovers" value={candidateTableReady ? gameCandidateCount : 'not applied'} />
+                <Stat label="表示数" value={stats?.total ?? memories.length} />
+                <Stat label="元日付あり" value={stats?.with_source_date ?? 0} />
+                <Stat label="候補" value={stats?.by_status?.candidate ?? 0} />
+                <Stat label="有効" value={stats?.by_status?.active ?? 0} />
+                <Stat label="確認済み" value={stats?.by_status?.confirmed ?? 0} />
+                <Stat label="候補フィルター" value={candidateStatusLabels[candidateStatus] ?? candidateStatus} />
+                <Stat label="候補行数" value={candidateTableReady ? (candidateStats?.total ?? candidates.length) : '未適用'} />
+                <Stat label="ゲーム引き継ぎ" value={candidateTableReady ? gameCandidateCount : '未適用'} />
               </div>
             </Section>
 
-            <Section title="How to read this">
+            <Section title="見方">
               <div style={{ display: 'grid', gap: 10 }}>
-                <p style={mutedTextStyle}>Diary is a record of a day. Memory is what Luna may use later.</p>
-                <p style={mutedTextStyle}>Candidates are suggestions. They only become durable memory when you approve them.</p>
-                <p style={mutedTextStyle}>Profile-like memories are hidden by default so stable settings do not get mixed with everyday memories.</p>
+                <p style={mutedTextStyle}>日記は一日の記録です。記憶はルナがあとで使うかもしれない内容です。</p>
+                <p style={mutedTextStyle}>候補は提案です。あなたが承認したときだけ、長く残る記憶になります。</p>
+                <p style={mutedTextStyle}>プロフィールに近い記憶は、日々の記憶と混ざらないよう初期状態では非表示です。</p>
               </div>
             </Section>
           </aside>

@@ -44,18 +44,18 @@ interface MonthDay {
 }
 
 const emotionLabels: Record<string, string> = {
-  joy: 'Joy',
-  anger: 'Anger',
-  sadness: 'Sadness',
-  shyness: 'Shyness',
-  loneliness: 'Loneliness',
-  anxiety: 'Anxiety',
+  joy: '喜び',
+  anger: '怒り',
+  sadness: '悲しみ',
+  shyness: '照れ',
+  loneliness: '寂しさ',
+  anxiety: '不安',
 }
 
 const memoryActionLabels: Record<string, string> = {
-  candidate: 'Candidate',
-  saved: 'Saved',
-  confirmed: 'Confirmed',
+  candidate: '候補',
+  saved: '保存済み',
+  confirmed: '確認済み',
 }
 
 function todayJst(): string {
@@ -92,7 +92,7 @@ function shiftDate(date: string, days: number): string {
 
 function formatDateLabel(date: string): string {
   const [year, month, day] = date.split('-').map(Number)
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat('ja-JP', {
     timeZone: 'Asia/Tokyo',
     month: 'long',
     day: 'numeric',
@@ -101,7 +101,7 @@ function formatDateLabel(date: string): string {
 }
 
 function formatTime(ts: number): string {
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat('ja-JP', {
     timeZone: 'Asia/Tokyo',
     hour: '2-digit',
     minute: '2-digit',
@@ -180,7 +180,7 @@ export default function DiaryPage() {
       const messageData = await messagesRes.json()
       setMessages(Array.isArray(messageData.messages) ? messageData.messages : [])
     } catch {
-      setError('The diary shelf could not be opened. Please wait a moment and try again.')
+      setError('日記の棚を開けませんでした。少し待ってからもう一度お試しください。')
       setDiary(null)
       setMessages([])
       setSourceCounts({ extraction_count: 0, message_count: 0 })
@@ -209,13 +209,13 @@ export default function DiaryPage() {
       const data = await res.json()
       if (!res.ok || !data.ok) {
         setError(data.reason === 'no_source'
-          ? 'There is not enough conversation from this day to write a diary yet.'
-          : 'Luna found the day, but could not weave it into a diary this time. Please try again.')
+          ? 'この日の会話がまだ少ないため、日記を書けません。'
+          : 'ルナはこの日を見つけましたが、今回は日記にまとめられませんでした。もう一度お試しください。')
       }
       await loadDay(date)
       await loadMonth(date)
     } catch {
-      setError('Moonlight slipped while writing the diary. Please try again.')
+      setError('日記を書いている途中で失敗しました。もう一度お試しください。')
     } finally {
       setGenerating(false)
     }
@@ -234,30 +234,30 @@ export default function DiaryPage() {
       <div style={{ maxWidth: 1060, margin: '0 auto' }}>
         <header style={headerStyle}>
           <div>
-            <Link href="/" aria-label="Back to Lunaria room" style={backLinkStyle}>Back to Luna's room</Link>
-            <p style={eyebrowStyle}>Lunaria Diary</p>
-            <h1 style={titleStyle}>Day Shelf</h1>
+            <Link href="/" aria-label="Lunariaの部屋に戻る" style={backLinkStyle}>ルナの部屋に戻る</Link>
+            <p style={eyebrowStyle}>Lunaria 日記</p>
+            <h1 style={titleStyle}>日々の棚</h1>
             <p style={leadStyle}>
-              A quiet place where Luna gathers what you talked about, what lingered, and what might be worth carrying forward.
+              ルナが話したこと、心に残ったこと、次へ持っていきたいことをそっと集める場所です。
             </p>
           </div>
 
-          <nav aria-label="Diary navigation" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-            <Link href="/memory" aria-label="Open memory" style={moonboxLinkStyle}>Memory</Link>
-            <Link href="/gacha" aria-label="Open gacha" style={moonboxLinkStyle}>Moonbox</Link>
+          <nav aria-label="日記のナビゲーション" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <Link href="/memory" aria-label="記憶を開く" style={moonboxLinkStyle}>記憶</Link>
+            <Link href="/gacha" aria-label="ガチャを開く" style={moonboxLinkStyle}>月箱</Link>
           </nav>
         </header>
 
         <section style={toolbarStyle}>
-          <button onClick={() => setDate(shiftDate(date, -1))} style={navButtonStyle}>Previous day</button>
+          <button onClick={() => setDate(shiftDate(date, -1))} style={navButtonStyle}>前の日</button>
           <input
             type="date"
             value={date}
             onChange={event => setDate(event.target.value || todayJst())}
             style={dateInputStyle}
           />
-          <button onClick={() => setDate(shiftDate(date, 1))} style={navButtonStyle}>Next day</button>
-          <button onClick={() => setDate(todayJst())} style={navButtonStyle}>Today</button>
+          <button onClick={() => setDate(shiftDate(date, 1))} style={navButtonStyle}>次の日</button>
+          <button onClick={() => setDate(todayJst())} style={navButtonStyle}>今日</button>
           <button onClick={generateDiary} disabled={generating} style={{
             ...navButtonStyle,
             marginLeft: 'auto',
@@ -266,63 +266,63 @@ export default function DiaryPage() {
             borderColor: 'rgba(200,160,96,.5)',
             fontWeight: 700,
           }}>
-            {generating ? 'Weaving diary...' : 'Write this day'}
+            {generating ? '日記を書いています...' : 'この日を書く'}
           </button>
         </section>
 
         {error && <div style={errorStyle}>{error}</div>}
 
         {loading ? (
-          <div style={loadingStyle}>Opening the shelf...</div>
+          <div style={loadingStyle}>棚を開いています...</div>
         ) : (
           <div style={contentGridStyle}>
             <div style={{ display: 'grid', gap: 16 }}>
-              <Section title={hasDiary ? `${formatDateLabel(date)} Diary` : `${formatDateLabel(date)} Empty Shelf`} accent="rgba(200,160,96,.18)">
+              <Section title={hasDiary ? `${formatDateLabel(date)}の日記` : `${formatDateLabel(date)}の空の棚`} accent="rgba(200,160,96,.18)">
                 {hasDiary ? (
                   <div>
                     <div style={datePillStyle}>{date}</div>
                     {diary?.title && <h2 style={diaryTitleStyle}>{diary.title}</h2>}
                     <p style={lunaCommentStyle}>
-                      {diary?.luna_comment || 'A few quiet words are still resting here.'}
+                      {diary?.luna_comment || '静かな言葉が、まだここで休んでいます。'}
                     </p>
                     <p style={summaryStyle}>
-                      {diary?.summary || 'This day has not found its full shape yet.'}
+                      {diary?.summary || 'この日は、まだはっきりした形になっていません。'}
                     </p>
-                    <div style={softStatusStyle}>{hasDiary ? 'Diary available' : 'Not generated yet'}</div>
+                    <div style={softStatusStyle}>{hasDiary ? '日記あり' : '未生成'}</div>
                   </div>
                 ) : (
                   <div>
-                    <p style={summaryStyle}>Luna has not placed a diary on this shelf yet.</p>
-                    <p style={mutedTextStyle}>If there is conversation from this day, use "Write this day" to generate one.</p>
+                    <p style={summaryStyle}>ルナはまだこの棚に日記を置いていません。</p>
+                    <p style={mutedTextStyle}>この日の会話がある場合は「この日を書く」から生成できます。</p>
                   </div>
                 )}
               </Section>
 
-              <Section title="What happened" accent="rgba(127,179,213,.16)">
-                <ListBlock items={asList(diary?.events)} empty="No events have settled into words yet." />
+              <Section title="起きたこと" accent="rgba(127,179,213,.16)">
+                <ListBlock items={asList(diary?.events)} empty="まだ言葉になった出来事はありません。" />
               </Section>
 
               {talkedAbout.length > 0 && (
-                <Section title="Talked about" accent="rgba(159,207,189,.15)">
+                <Section title="話したこと" accent="rgba(159,207,189,.15)">
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {talkedAbout.map(topic => <span key={topic} style={topicPillStyle}>{topic}</span>)}
                   </div>
                 </Section>
               )}
 
-              <Section title="Still open" accent="rgba(230,165,141,.13)">
-                <ListBlock items={asList(diary?.unresolved_issues)} empty="No unresolved threads are calling for attention right now." />
+              <Section title="まだ開いていること" accent="rgba(230,165,141,.13)">
+                <ListBlock items={asList(diary?.unresolved_issues)} empty="今すぐ気にかける未解決の話題はありません。" />
               </Section>
 
-              <Section title="Next time" accent="rgba(200,160,96,.15)">
-                <ListBlock items={asList(diary?.next_topics)} empty="Luna has not found a next topic yet." />
+              <Section title="次に話すこと" accent="rgba(200,160,96,.15)">
+                <ListBlock items={asList(diary?.next_topics)} empty="ルナはまだ次の話題を見つけていません。" />
               </Section>
 
               {memoryChanges.length > 0 && (
-                <Section title="Memory candidates" accent="rgba(159,207,189,.14)">
+                <Section title="記憶候補" accent="rgba(159,207,189,.14)">
                   <details style={detailsStyle}>
-                    <summary style={summaryToggleStyle}>Things Luna may remember ({memoryChanges.length})</summary>
-                    <p style={mutedTextStyle}>These are reviewable candidates, not final facts. You stay in control of what becomes memory.</p>
+                    <summary style={summaryToggleStyle}>ルナが覚えるかもしれないこと ({memoryChanges.length})</summary>
+                    <p style={mutedTextStyle}>これは確認用の候補で、確定した事実ではありません。何を記憶にするかはあなたが決められます。</p>
                     <div style={{ display: 'grid', gap: 8, marginTop: 10 }}>
                       {memoryChanges.map((item, index) => (
                         <div key={`${item.content}-${index}`} style={memoryCardStyle}>
@@ -335,12 +335,12 @@ export default function DiaryPage() {
                 </Section>
               )}
 
-              <Section title="Source conversation" accent="rgba(230,165,141,.1)">
+              <Section title="元の会話" accent="rgba(230,165,141,.1)">
                 <details style={detailsStyle}>
-                  <summary style={summaryToggleStyle}>Source conversation for this day ({messages.length})</summary>
+                  <summary style={summaryToggleStyle}>この日の元会話 ({messages.length})</summary>
                   <div style={messageListStyle} className="scroll-thin">
                     {messages.length === 0 ? (
-                      <p style={mutedTextStyle}>No source conversation was found for this day.</p>
+                      <p style={mutedTextStyle}>この日の元会話は見つかりませんでした。</p>
                     ) : messages.map((message, index) => (
                       <div key={`${message.ts}-${index}`} style={{
                         border: '1px solid rgba(255,255,255,.07)',
@@ -349,7 +349,7 @@ export default function DiaryPage() {
                         background: message.role === 'assistant' ? 'rgba(127,179,213,.06)' : 'rgba(200,160,96,.06)',
                       }}>
                         <div style={{ color: '#766d60', fontSize: 11, marginBottom: 5 }}>
-                          {message.role === 'assistant' ? 'Luna' : 'You'} / {formatTime(message.ts)}
+                          {message.role === 'assistant' ? 'ルナ' : 'あなた'} / {formatTime(message.ts)}
                         </div>
                         <div style={{ color: '#d8cebd', fontSize: 13, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{message.content}</div>
                       </div>
@@ -360,9 +360,9 @@ export default function DiaryPage() {
             </div>
 
             <aside style={{ display: 'grid', gap: 16, alignContent: 'start' }}>
-              <Section title="Month shelf" accent="rgba(200,160,96,.13)">
+              <Section title="月の棚" accent="rgba(200,160,96,.13)">
                 {monthDays.length === 0 ? (
-                  <p style={mutedTextStyle}>No days are lined up for this month yet.</p>
+                  <p style={mutedTextStyle}>この月にはまだ日が並んでいません。</p>
                 ) : (
                   <div style={{ display: 'grid', gap: 8 }}>
                     {monthDays.map(day => (
@@ -377,7 +377,7 @@ export default function DiaryPage() {
                       >
                         <span style={{ color: '#ddd5c5', fontSize: 13 }}>{day.date.slice(5)}</span>
                         <span style={{ color: day.generated ? '#9fcfbd' : '#8f8372', fontSize: 11 }}>
-                          {day.generated ? 'diary' : 'talk'} / {day.message_count}
+                          {day.generated ? '日記' : '会話'} / {day.message_count}
                         </span>
                       </button>
                     ))}
@@ -385,9 +385,9 @@ export default function DiaryPage() {
                 )}
               </Section>
 
-              <Section title="Emotion trace" accent="rgba(159,207,189,.12)">
+              <Section title="感情のあと" accent="rgba(159,207,189,.12)">
                 {emotionEntries.length === 0 ? (
-                  <p style={mutedTextStyle}>No strong emotion trace yet.</p>
+                  <p style={mutedTextStyle}>強い感情のあとがまだありません。</p>
                 ) : (
                   <div style={{ display: 'grid', gap: 10 }}>
                     {emotionEntries.map(([key, value]) => (
@@ -405,15 +405,15 @@ export default function DiaryPage() {
                 )}
               </Section>
 
-              <Section title="Diary source details" accent="rgba(127,179,213,.13)">
+              <Section title="日記の元データ" accent="rgba(127,179,213,.13)">
                 <details style={detailsStyle}>
-                  <summary style={summaryToggleStyle}>Technical details</summary>
+                  <summary style={summaryToggleStyle}>技術的な詳細</summary>
                   <div style={{ display: 'grid', gap: 10, color: '#b8ad9c', fontSize: 13, marginTop: 10 }}>
-                    <Stat label="Messages" value={sourceCounts.message_count} />
-                    <Stat label="Extractions" value={sourceCounts.extraction_count} />
-                    <Stat label="Importance" value={diary?.importance ?? '-'} />
-                    <Stat label="Source messages" value={diary?.source_message_count ?? '-'} />
-                    <Stat label="Generated at" value={diary?.generated_at ? formatTime(Date.parse(diary.generated_at)) : '-'} />
+                    <Stat label="メッセージ数" value={sourceCounts.message_count} />
+                    <Stat label="抽出数" value={sourceCounts.extraction_count} />
+                    <Stat label="重要度" value={diary?.importance ?? '-'} />
+                    <Stat label="元メッセージ数" value={diary?.source_message_count ?? '-'} />
+                    <Stat label="生成日時" value={diary?.generated_at ? formatTime(Date.parse(diary.generated_at)) : '-'} />
                   </div>
                 </details>
               </Section>

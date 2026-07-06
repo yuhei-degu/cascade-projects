@@ -74,7 +74,7 @@ export default function LunariaPortrait({
       <div className={className} style={wrapperStyle} data-expression={expression} data-motion={motion} data-outfit={outfit}>
         <img
           src={imageUrl}
-          alt={`Lunaria (${expression})`}
+          alt={`Lunaria（表情: ${expression}）`}
           className={motionClass}
           style={{ width: '100%', height: '100%', objectFit: 'contain' }}
         />
@@ -100,7 +100,7 @@ export default function LunariaPortrait({
         width={px}
         height={px}
         className={motionClass}
-        aria-label={`Lunaria portrait (expression=${expression}, motion=${motion})`}
+        aria-label={`Lunariaの立ち絵（表情=${expression}, 動き=${motion}）`}
         role="img"
       >
         <defs>

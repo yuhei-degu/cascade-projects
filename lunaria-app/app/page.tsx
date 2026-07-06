@@ -117,7 +117,7 @@ function LandingPage() {
                   <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: '#d5a45f' }} />
                   <span style={{ color: '#ddd5c5', fontSize: 14, fontWeight: 600 }}>Lunaria</span>
                 </div>
-                <span style={{ color: '#716656', fontSize: 12 }}>conversation</span>
+                <span style={{ color: '#716656', fontSize: 12 }}>会話</span>
               </div>
               <div style={{ display: 'grid', gap: 16, padding: 20 }}>
                 <div style={{

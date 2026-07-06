@@ -56,7 +56,7 @@ export default function CheckoutButton({ disabled }: CheckoutButtonProps) {
           opacity: loading ? .75 : 1,
         }}
       >
-        {loading ? '接続中...' : disabled ? '現在は受付停止中' : 'Checkoutへ進む'}
+        {loading ? '接続中...' : disabled ? '現在は受付停止中' : 'チェックアウトへ進む'}
       </button>
       {error && (
         <p role="alert" style={{ color: '#d59a83', fontSize: 12, lineHeight: 1.6 }}>

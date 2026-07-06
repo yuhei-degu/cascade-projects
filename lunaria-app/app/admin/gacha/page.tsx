@@ -98,13 +98,13 @@ export default function AdminGachaPage() {
       const body = await response.json()
       if (!response.ok) {
         setStats(null)
-        setError(body?.error === 'unauthorized' ? 'Admin token is required in production.' : 'Failed to load gacha stats.')
+        setError(body?.error === 'unauthorized' ? '本番環境では管理トークンが必要です。' : 'ガチャ統計を読み込めませんでした。')
         return
       }
       setStats(body)
     } catch {
       setStats(null)
-      setError('Failed to load gacha stats.')
+      setError('ガチャ統計を読み込めませんでした。')
     } finally {
       setLoading(false)
     }
@@ -130,7 +130,7 @@ export default function AdminGachaPage() {
     }}>
       <main style={{ maxWidth: 920, margin: '0 auto', paddingBottom: 40 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-          <Link href="/gacha" style={{ color: '#888', textDecoration: 'none', fontSize: 14 }}>← Gacha</Link>
+          <Link href="/gacha" style={{ color: '#888', textDecoration: 'none', fontSize: 14 }}>← ガチャ</Link>
           <div style={{ flex: 1 }} />
           <button
             onClick={() => loadStats()}
@@ -143,19 +143,19 @@ export default function AdminGachaPage() {
               cursor: 'pointer',
             }}
           >
-            Refresh
+            更新
           </button>
         </div>
 
         <section style={{ marginBottom: 24 }}>
           <div style={{ color: '#7fb3d5', fontSize: 12, letterSpacing: '.16em', marginBottom: 8 }}>
-            LUNARIA OPERATIONS
+            LUNARIA 運用
           </div>
           <h1 style={{ color: '#ddd5c5', fontSize: 30, fontWeight: 400, marginBottom: 8 }}>
-            Gacha Observatory
+            ガチャ観測所
           </h1>
           <p style={{ color: '#7a7060', fontSize: 13, lineHeight: 1.7 }}>
-            Read-only dashboard for the moon box pool, inventory, and recent draw history.
+            月箱の排出プール、所持品、最近の抽選履歴を確認する読み取り専用ダッシュボードです。
           </p>
         </section>
 
@@ -195,13 +195,13 @@ export default function AdminGachaPage() {
                   cursor: 'pointer',
                 }}
               >
-                Save token
+                トークンを保存
               </button>
             </div>
           </section>
         )}
 
-        {loading && <div style={{ color: '#888', padding: 24 }}>Loading gacha stats...</div>}
+        {loading && <div style={{ color: '#888', padding: 24 }}>ガチャ統計を読み込んでいます...</div>}
 
         {stats && (
           <>
@@ -211,14 +211,14 @@ export default function AdminGachaPage() {
               gap: 12,
               marginBottom: 20,
             }}>
-              <StatCard label="ACTIVE POOL" value={`${stats.pool.active}/${stats.pool.total}`} sub={`${stats.pool.inactive} inactive`} />
-              <StatCard label="INVENTORY" value={`${stats.inventory.total_unique_items}/${stats.pool.active}`} sub={completionRate} />
-              <StatCard label="DRAWS" value={stats.history.total_draws} sub={`${duplicateRate} duplicate`} />
-              <StatCard label="COINS EARNED" value={stats.history.coin_earned_total} sub="from duplicates" />
+              <StatCard label="有効プール" value={`${stats.pool.active}/${stats.pool.total}`} sub={`${stats.pool.inactive}件 無効`} />
+              <StatCard label="所持品" value={`${stats.inventory.total_unique_items}/${stats.pool.active}`} sub={completionRate} />
+              <StatCard label="抽選数" value={stats.history.total_draws} sub={`${duplicateRate} 重複`} />
+              <StatCard label="獲得コイン" value={stats.history.coin_earned_total} sub="重複分" />
               <StatCard
-                label="MOON FULLNESS"
-                value={stats.pity.available ? `${stats.pity.draws_since_urban_legend ?? 0}/${stats.pity.threshold ?? 100}` : 'off'}
-                sub={stats.pity.available ? `${stats.pity.lifetime_draws ?? 0} lifetime draws` : 'migration pending'}
+                label="月光ゲージ"
+                value={stats.pity.available ? `${stats.pity.draws_since_urban_legend ?? 0}/${stats.pity.threshold ?? 100}` : '無効'}
+                sub={stats.pity.available ? `累計 ${stats.pity.lifetime_draws ?? 0}回` : 'migration未適用'}
               />
             </section>
 
@@ -229,16 +229,16 @@ export default function AdminGachaPage() {
               padding: 18,
               marginBottom: 20,
             }}>
-              <h2 style={{ fontSize: 16, fontWeight: 400, color: '#ddd5c5', marginBottom: 14 }}>Pool Shape</h2>
+              <h2 style={{ fontSize: 16, fontWeight: 400, color: '#ddd5c5', marginBottom: 14 }}>プール構成</h2>
               <div style={{ color: '#888', fontSize: 13, lineHeight: 1.8 }}>
-                <div>Rarity: {formatMap(stats.pool.active_by_rarity)}</div>
-                <div>Category: {formatMap(stats.pool.active_by_category)}</div>
-                <div>Inventory: {formatMap(stats.inventory.by_rarity)}</div>
-                <div>History: {formatMap(stats.history.by_rarity)}</div>
+                <div>レアリティ: {formatMap(stats.pool.active_by_rarity)}</div>
+                <div>カテゴリ: {formatMap(stats.pool.active_by_category)}</div>
+                <div>所持品: {formatMap(stats.inventory.by_rarity)}</div>
+                <div>履歴: {formatMap(stats.history.by_rarity)}</div>
                 <div>
-                  Pity: {stats.pity.available
-                    ? `last urban_legend=${stats.pity.last_urban_legend_at ? new Date(stats.pity.last_urban_legend_at).toLocaleString('ja-JP') : 'none'}`
-                    : `not available (${stats.pity.reason ?? 'migration pending'})`}
+                  天井: {stats.pity.available
+                    ? `最後の都市伝説=${stats.pity.last_urban_legend_at ? new Date(stats.pity.last_urban_legend_at).toLocaleString('ja-JP') : 'なし'}`
+                    : `利用不可 (${stats.pity.reason ?? 'migration未適用'})`}
                 </div>
               </div>
             </section>
@@ -249,9 +249,9 @@ export default function AdminGachaPage() {
               borderRadius: 18,
               padding: 18,
             }}>
-              <h2 style={{ fontSize: 16, fontWeight: 400, color: '#ddd5c5', marginBottom: 14 }}>Recent Draws</h2>
+              <h2 style={{ fontSize: 16, fontWeight: 400, color: '#ddd5c5', marginBottom: 14 }}>最近の抽選</h2>
               {stats.history.recent.length === 0 ? (
-                <div style={{ color: '#888', fontSize: 13 }}>No draws yet.</div>
+                <div style={{ color: '#888', fontSize: 13 }}>抽選履歴はまだありません。</div>
               ) : (
                 <div style={{ display: 'grid', gap: 8 }}>
                   {stats.history.recent.map((row, index) => (
@@ -269,12 +269,12 @@ export default function AdminGachaPage() {
                       }}
                     >
                       <div>
-                        <div>{row.item?.name ?? 'unknown item'}</div>
+                        <div>{row.item?.name ?? '不明な品'}</div>
                         <div style={{ color: '#666', fontSize: 11 }}>{new Date(row.pulled_at).toLocaleString('ja-JP')}</div>
                       </div>
                       <div style={{ color: '#7fb3d5' }}>{row.rarity}</div>
                       <div style={{ color: row.was_duplicate ? '#f7ca18' : '#888', textAlign: 'right' }}>
-                        {row.was_duplicate ? `+${row.coin_earned}` : 'new'}
+                        {row.was_duplicate ? `+${row.coin_earned}` : '新規'}
                       </div>
                     </div>
                   ))}
@@ -283,7 +283,7 @@ export default function AdminGachaPage() {
             </section>
 
             <div style={{ color: '#666', fontSize: 11, marginTop: 16 }}>
-              Last updated: {new Date(stats.timestamp).toLocaleString('ja-JP')}
+              最終更新: {new Date(stats.timestamp).toLocaleString('ja-JP')}
             </div>
           </>
         )}

@@ -41,12 +41,12 @@ type ItemsResponse = {
 const FALLBACK_ITEMS: ItemView[] = [
   {
     id: 'outfit_default',
-    name: 'Moonlit Uniform',
+    name: '月明かりの制服',
     category: 'outfit',
     rarity: 'common',
-    description: 'Lunaria default outfit for quiet night conversations.',
-    effect: 'default outfit',
-    flavor_text: 'An ordinary night, an ordinary me.',
+    description: '静かな夜の会話に似合うLunariaの基本衣装。',
+    effect: '基本衣装',
+    flavor_text: 'いつもの夜、いつものわたし。',
     owned: true,
     duplicate_count: 0,
     obtained_at: null,
@@ -54,12 +54,12 @@ const FALLBACK_ITEMS: ItemView[] = [
   },
   {
     id: 'acc_moon_pin',
-    name: 'Crescent Hairpin',
+    name: '三日月のヘアピン',
     category: 'accessory',
     rarity: 'common',
-    description: 'A small moon-shaped pin that catches the light.',
-    effect: 'gentle accent',
-    flavor_text: 'Tiny things can still change the whole sky.',
+    description: '光を受けてきらめく、小さな月形のピン。',
+    effect: 'やさしいアクセント',
+    flavor_text: '小さなものでも、空ぜんぶの見え方を変えられる。',
     owned: true,
     duplicate_count: 0,
     obtained_at: null,
@@ -67,12 +67,12 @@ const FALLBACK_ITEMS: ItemView[] = [
   },
   {
     id: 'bg_window_night',
-    name: 'Night Window',
+    name: '夜の窓辺',
     category: 'background',
     rarity: 'common',
-    description: 'A familiar room lit by the moon outside the window.',
-    effect: 'room scene',
-    flavor_text: 'The same window, the same promise to keep going.',
+    description: '窓の外の月に照らされた、見慣れた部屋。',
+    effect: '部屋の背景',
+    flavor_text: '同じ窓、同じ続けていく約束。',
     owned: true,
     duplicate_count: 0,
     obtained_at: null,
@@ -80,12 +80,12 @@ const FALLBACK_ITEMS: ItemView[] = [
   },
   {
     id: 'expr_embarrassed',
-    name: 'Embarrassed Smile',
+    name: '照れた笑顔',
     category: 'expression_unlock',
     rarity: 'rare',
-    description: 'Unlocks a softer expression for close conversations.',
-    effect: 'expression unlock',
-    flavor_text: 'Do not stare too much. I mean it. Mostly.',
+    description: '近い距離の会話に合う、やわらかな表情を解放します。',
+    effect: '表情解放',
+    flavor_text: 'あまり見つめないで。本気で言ってる。たぶん。',
     owned: false,
     duplicate_count: 0,
     obtained_at: null,
@@ -94,16 +94,16 @@ const FALLBACK_ITEMS: ItemView[] = [
 ]
 
 const CATEGORY_LABEL: Record<ItemCategory, string> = {
-  all: 'All',
-  outfit: 'Outfits',
-  accessory: 'Accessories',
-  background: 'Backgrounds',
-  room_item: 'Room Items',
-  expression_unlock: 'Expressions',
-  motion_unlock: 'Motions',
-  special_diary_skin: 'Diary Skins',
-  small_item: 'Small Items',
-  urban_legend: 'Urban Legends',
+  all: 'すべて',
+  outfit: '衣装',
+  accessory: 'アクセサリー',
+  background: '背景',
+  room_item: '部屋の品',
+  expression_unlock: '表情',
+  motion_unlock: '動き',
+  special_diary_skin: '日記スキン',
+  small_item: '小物',
+  urban_legend: '都市伝説',
 }
 
 const RARITY_COLOR: Record<ItemRarity, string> = {
@@ -112,6 +112,20 @@ const RARITY_COLOR: Record<ItemRarity, string> = {
   epic: '#D6B26C',
   legendary: '#E5C98E',
   urban_legend: '#ff8d8d',
+}
+
+const RARITY_LABEL: Record<ItemRarity, string> = {
+  common: 'コモン',
+  rare: 'レア',
+  epic: 'エピック',
+  legendary: 'レジェンダリー',
+  urban_legend: '都市伝説',
+}
+
+const SOURCE_LABEL: Record<ItemView['source'], string> = {
+  user_items: '所持品DB',
+  gacha_inventory: 'ガチャ所持品',
+  mock: '代替データ',
 }
 
 const FILTERS: ItemCategory[] = ['all', 'outfit', 'accessory', 'background', 'room_item', 'small_item', 'urban_legend']
@@ -126,7 +140,7 @@ export default function ItemsPage() {
     items: FALLBACK_ITEMS,
     source: 'mock',
     db_ready: false,
-    note: 'local fallback',
+    note: 'ローカルの代替データ',
   })
   const [activeFilter, setActiveFilter] = useState<ItemCategory>('all')
   const [showUnowned, setShowUnowned] = useState(true)
@@ -140,7 +154,7 @@ export default function ItemsPage() {
         if (alive) setData(nextData)
       })
       .catch(error => {
-        if (alive) setData({ items: FALLBACK_ITEMS, source: 'mock', db_ready: false, note: `local fallback: ${error.message}` })
+        if (alive) setData({ items: FALLBACK_ITEMS, source: 'mock', db_ready: false, note: `ローカルの代替データ: ${error.message}` })
       })
       .finally(() => {
         if (alive) setLoading(false)
@@ -165,33 +179,33 @@ export default function ItemsPage() {
   return (
     <main style={{ minHeight: '100vh', background: PAGE_BG, color: TEXT_MAIN, padding: '40px 20px' }}>
       <div style={{ maxWidth: 1120, margin: '0 auto' }}>
-        <nav aria-label="Items navigation" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
-          <Link href="/" aria-label="Back to Lunaria room" style={navLinkStyle}>Back to Room</Link>
-          <Link href="/gacha" aria-label="Open gacha" style={navLinkStyle}>Moonbox</Link>
-          <Link href="/character" aria-label="Open character" style={navLinkStyle}>Character State</Link>
+        <nav aria-label="品のナビゲーション" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
+          <Link href="/" aria-label="Lunariaの部屋に戻る" style={navLinkStyle}>部屋に戻る</Link>
+          <Link href="/gacha" aria-label="ガチャを開く" style={navLinkStyle}>月箱</Link>
+          <Link href="/character" aria-label="姿を開く" style={navLinkStyle}>姿の状態</Link>
         </nav>
 
         <section style={{ ...panelStyle, marginBottom: 22 }}>
-          <p style={{ color: '#B99B6B', letterSpacing: '0.18em', textTransform: 'uppercase', margin: 0, fontSize: 12 }}>Inventory Preview</p>
-          <h1 style={{ fontSize: 'clamp(2.2rem, 6vw, 4.8rem)', lineHeight: 0.92, margin: '12px 0 16px' }}>Moonbox Shelf</h1>
+          <p style={{ color: '#B99B6B', letterSpacing: '0.18em', textTransform: 'uppercase', margin: 0, fontSize: 12 }}>所持品プレビュー</p>
+          <h1 style={{ fontSize: 'clamp(2.2rem, 6vw, 4.8rem)', lineHeight: 0.92, margin: '12px 0 16px' }}>月箱の棚</h1>
           <p style={{ maxWidth: 720, color: TEXT_SUB, lineHeight: 1.8, margin: 0 }}>
-            A quiet shelf for Lunaria items. It reads from the future user_items table when available,
-            falls back to current gacha inventory, and keeps this page useful before migration 020 is applied.
+            Lunariaの品を静かに並べる棚です。利用できる場合は将来のユーザー所持品テーブルを読み、
+            それまでは現在のガチャ所持品または代替データを使います。
           </p>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 20 }}>
-            <Metric label="Owned" value={`${ownedCount}/${data.items.length}`} />
-            <Metric label="Completion" value={`${completion}%`} />
-            <Metric label="Source" value={data.source} />
+            <Metric label="所持数" value={`${ownedCount}/${data.items.length}`} />
+            <Metric label="達成率" value={`${completion}%`} />
+            <Metric label="取得元" value={SOURCE_LABEL[data.source]} />
           </div>
           <SourceBanner
             ready={data.db_ready}
             loading={loading}
-            title={data.db_ready ? 'DB item shelf is active' : 'Fallback item shelf is active'}
-            note={loading ? 'Loading item source...' : data.note}
+            title={data.db_ready ? 'DBの品棚が有効です' : '代替の品棚が有効です'}
+            note={loading ? '品の取得元を確認しています...' : data.note}
             detail={
               data.db_ready
-                ? 'This page is reading the durable user item layer.'
-                : 'Safe preview mode. It uses gacha inventory or local mock data until migration 020 is applied.'
+                ? 'このページは永続化されたユーザー所持品レイヤーを読んでいます。'
+                : '安全なプレビューモードです。migration 020が適用されるまで、ガチャ所持品またはローカルの代替データを使います。'
             }
           />
         </section>
@@ -211,14 +225,14 @@ export default function ItemsPage() {
           </div>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: TEXT_SUB, cursor: 'pointer' }}>
             <input type="checkbox" checked={showUnowned} onChange={event => setShowUnowned(event.target.checked)} />
-            Show unowned
+            未所持も表示
           </label>
         </section>
 
         {filteredItems.length === 0 ? (
           <section style={emptyStyle}>
-            <strong>No items match this filter yet.</strong>
-            <p style={{ color: TEXT_DIM, margin: '8px 0 0' }}>Try switching category or enabling unowned items.</p>
+            <strong>この条件に合う品はまだありません。</strong>
+            <p style={{ color: TEXT_DIM, margin: '8px 0 0' }}>カテゴリを切り替えるか、未所持の品も表示してみてください。</p>
           </section>
         ) : (
           <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
@@ -227,17 +241,17 @@ export default function ItemsPage() {
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' }}>
                   <div>
                     <p style={{ color: RARITY_COLOR[item.rarity], margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: '0.14em', fontSize: 11 }}>
-                      {item.rarity.replace('_', ' ')}
+                      {RARITY_LABEL[item.rarity]}
                     </p>
                     <h2 style={{ margin: 0, fontSize: '1.25rem' }}>{item.name}</h2>
                   </div>
-                  <span style={item.owned ? ownedBadgeStyle : lockedBadgeStyle}>{item.owned ? 'Owned' : 'Locked'}</span>
+                  <span style={item.owned ? ownedBadgeStyle : lockedBadgeStyle}>{item.owned ? '所持中' : '未所持'}</span>
                 </div>
                 <p style={{ color: TEXT_SUB, lineHeight: 1.7 }}>{item.description}</p>
                 <p style={{ color: TEXT_DIM, fontStyle: 'italic', lineHeight: 1.6 }}>&quot;{item.flavor_text}&quot;</p>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, color: TEXT_DIM, fontSize: 12 }}>
                   <span>{CATEGORY_LABEL[item.category]}</span>
-                  <span>{item.duplicate_count > 0 ? `dupes +${item.duplicate_count}` : item.source}</span>
+                  <span>{item.duplicate_count > 0 ? `重複 +${item.duplicate_count}` : SOURCE_LABEL[item.source]}</span>
                 </div>
               </article>
             ))}
@@ -267,7 +281,7 @@ function SourceBanner({ ready, loading, title, note, detail }: { ready: boolean;
       background: ready ? 'rgba(143,209,158,0.08)' : 'rgba(215,181,109,0.08)',
     }}>
       <div style={{ color: ready ? '#8fd19e' : '#d7b56d', fontSize: 13, fontWeight: 700 }}>
-        {loading ? 'Checking item source...' : title}
+        {loading ? '品の取得元を確認しています...' : title}
       </div>
       <div style={{ color: TEXT_SUB, fontSize: 13, lineHeight: 1.7, marginTop: 4 }}>{note}</div>
       <div style={{ color: TEXT_DIM, fontSize: 12, lineHeight: 1.6, marginTop: 4 }}>{detail}</div>
