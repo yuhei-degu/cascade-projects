@@ -6,6 +6,7 @@ const PROBE_KEYWORDS   = ['最近', 'ずっと', '迷ってる', '迷う', 'ど�
 const CONSULT_KEYWORDS = ['相談', '教えて', 'どう思う', 'どうしたら', 'アドバイス']
 const DECISION_KEYWORDS= ['辞める', '辞めよう', '変える', '決める', '決断', '選ぶ']
 const HEAVY_WORDS      = ['死にたい', 'もう無理', '消えたい', '消えよう', 'つらい', '限界']
+const LOW_ENERGY_WORDS = ['疲れた', '疲れ', 'やる気が出ない', 'やる気出ない', '無気力', 'しんどい', 'だるい', '眠い', '眠たい', 'はぁ', 'はあ', '落ち込', '沈黙']
 
 export function calcMessageScore(text: string): number {
   // 絶対シグナル（最優先）
@@ -17,12 +18,12 @@ export function calcMessageScore(text: string): number {
   // 継続・probe 系
   if (PROBE_KEYWORDS.some(w => text.includes(w)))  return 4
   // 長文ネガティブ（80文字以上 + ネガワード）
-  const NEG_WORDS = ['しんどい', '疲れ', 'きつい', 'つらい', 'しんどい', '不安', '心配']
+  const NEG_WORDS = ['しんどい', '疲れ', 'きつい', 'つらい', '不安', '心配', '落ち込']
   if (text.length >= 80 && NEG_WORDS.some(w => text.includes(w))) return 4
   // 弱いネガティブ
   if (NEG_WORDS.some(w => text.includes(w)))       return 2
   // 軽い感情・ぼやき
-  const MILD = ['疲れた', 'めんどい', 'だるい', 'やる気', '眠い', '眠たい']
+  const MILD = ['疲れた', 'めんどい', 'だるい', 'やる気', '眠い', '眠たい', 'はぁ', 'はあ']
   if (MILD.some(w => text.includes(w)))             return 1
   return 0
 }
@@ -33,6 +34,7 @@ function calcWindowScore(scores: number[]): number {
 
 function isHeavySignal(text: string, score: number): boolean {
   if (score >= 4) return true
+  if (LOW_ENERGY_WORDS.some(w => text.includes(w))) return true
   if (text.length >= 80 && score >= 2) return true
   if (DECISION_KEYWORDS.some(w => text.includes(w))) return true
   return false

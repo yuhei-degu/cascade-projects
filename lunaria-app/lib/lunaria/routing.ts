@@ -12,9 +12,13 @@ const HEAVY_KEYWORDS = [
 const SERIOUS_CONSULT = [
   '仕事どうしよ', '辞めようか', '人間関係がしんどい', '将来が不安', '自己嫌悪', '自分が嫌い',
 ]
+const LOW_ENERGY = [
+  '疲れた', '疲れ', 'やる気が出ない', 'やる気出ない', '無気力', 'しんどい',
+  'だるい', '眠い', '眠たい', 'はぁ', 'はあ', '落ち込', '沈黙',
+]
 
 // ── Weak triggers（2つ以上で serious、cooldown 対象）─────────
-const WEAK_NEG = ['つらい', 'しんどい', '疲れた', '不安', '心配', '落ち込んでる']
+const WEAK_NEG = ['つらい', 'しんどい', '疲れた', '疲れ', '不安', '心配', '落ち込んでる', '落ち込', '無気力']
 
 function isStrongTrigger(text: string, msgScore: number): boolean {
   if (EXPLICIT_KEYWORDS.some(w => text.includes(w))) return true
@@ -35,7 +39,7 @@ function countWeakTriggers(text: string, msgScore: number): number {
 const KEYWORDS = {
   heavy:    ['死にたい', 'もう無理', '消えたい', '限界', 'つらい'],
   serious4: ['迷ってる', '相談', 'どうしたら', '辞める', '辞めよう'],
-  probe2:   ['最近', 'ずっと', '疲れ', 'しんどい'],
+  probe2:   ['最近', 'ずっと', '疲れ', 'しんどい', 'やる気が出ない', 'やる気出ない', '無気力', 'だるい', '眠い', '眠たい', 'はぁ', 'はあ', '落ち込'],
 }
 
 export function calcMessageScore(text: string): number {
@@ -85,6 +89,9 @@ export function calcRoute(
     routeType = 'claude_serious'
     newLastSeriousAt = Date.now()
   } else if (weakCount >= 2 && cooledDown) {
+    routeType = 'claude_serious'
+    newLastSeriousAt = Date.now()
+  } else if (LOW_ENERGY.some(w => text.includes(w)) && cooledDown) {
     routeType = 'claude_serious'
     newLastSeriousAt = Date.now()
   } else if (windowScore >= 8 && cooledDown) {
