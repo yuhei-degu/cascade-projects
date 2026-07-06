@@ -1,6 +1,5 @@
--- Lunaria PROD INIT bundle (regenerated 2026-07-05, includes 024)
--- = migrations 001..024 concatenated in order, EXCLUDING 003_seed_dev_user.sql
--- Paste this whole file into the Supabase SQL Editor of a FRESH project and run once.
+-- Lunaria PROD INIT bundle (BOM-stripped, regenerated)
+-- migrations 001..024 in order, EXCLUDING 003_seed_dev_user.sql
 
 -- ===== BEGIN 001_lunaria_init.sql =====
 -- ルナリア 初期スキーマ（Certi-AI Hub 相乗り・lunaria_ prefix）
@@ -204,8 +203,7 @@ create policy "lunaria_own_review"
 -- group by rl.rules_version order by rl.rules_version;
 -- ===== END 002_routing_review.sql =====
 
--- ===== SKIPPED: 003_seed_dev_user.sql (dev-only seed) =====
-
+-- ===== SKIPPED: 003_seed_dev_user.sql =====
 -- ===== BEGIN 004_lunaria_diary.sql =====
 -- migration 004: AI日記ルナリア 追加テーブル
 -- Supabase SQL Editor に貼り付けて Run
@@ -1538,7 +1536,7 @@ create trigger lunaria_memory_candidates_touch_updated_at
 -- ===== END 019_memory_candidates.sql =====
 
 -- ===== BEGIN 020_user_items.sql =====
-﻿-- migration 020: user items ownership projection
+-- migration 020: user items ownership projection
 --
 -- Purpose:
 --   Introduce lunaria_user_items as the future source of truth for item ownership,
@@ -1679,7 +1677,7 @@ on conflict (user_id, pool_id) do update
 -- ===== END 020_user_items.sql =====
 
 -- ===== BEGIN 021_character_states.sql =====
-﻿-- migration 021: character state scaffold
+-- migration 021: character state scaffold
 --
 -- Purpose:
 --   Add a small, future-friendly state table for Lunaria's current visible state
@@ -2346,4 +2344,3 @@ revoke all on public.usage_events from authenticated;
 grant insert on public.usage_events to authenticated;
 grant select on public.usage_events to service_role;
 -- ===== END 024_usage_events.sql =====
-
