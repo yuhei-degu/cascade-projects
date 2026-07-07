@@ -1,8 +1,9 @@
 // app/admin/layout.tsx
 // 管理画面グループのレイアウト
-// middleware.ts で owner チェック済みなのでここでは何もしない
 
 import type { Metadata } from 'next'
+
+import { requireStaffAuth } from '@/lib/auth/staff'
 
 export const metadata: Metadata = {
   title: {
@@ -11,12 +12,12 @@ export const metadata: Metadata = {
   },
 }
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  // AdminLayout コンポーネントは各 page.tsx 内でラップする方式を採用
-  // （page.tsx ごとに title props を渡すため）
+  await requireStaffAuth({ role: 'owner', redirectOnFailure: true })
+
   return <>{children}</>
 }

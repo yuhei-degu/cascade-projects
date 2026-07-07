@@ -4,6 +4,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { getOrderStatusForTable } from '@/actions/order'
 import type { OrderWithItems } from '@/lib/types/database'
 
 /**
@@ -171,24 +172,34 @@ export function useStoreSettingsRealtime() {
  * 特定の注文のステータスを追跡するフック
  * C4（注文完了・状況）で使用
  */
-export function useOrderStatus(orderId: string) {
+export function useOrderStatus(orderId: string, tableId: string) {
   const [orderItems, setOrderItems] = useState<
     import('@/lib/types/database').OrderItemWithMenu[]
   >([])
+  const [tableNumber, setTableNumber] = useState('')
+  const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   const fetchOrderItems = useCallback(async () => {
-    const supabase = createClient()
-    const { data } = await supabase
-      .from('order_items')
-      .select(`
-        *,
-        menu_item:menu_items(id, name, cooking_time_minutes, image_url)
-      `)
-      .eq('order_id', orderId)
-      .order('created_at', { ascending: true })
-    setOrderItems((data as unknown as import('@/lib/types/database').OrderItemWithMenu[]) ?? [])
-  }, [orderId])
+    if (!orderId || !tableId) {
+      setOrderItems([])
+      setTableNumber('')
+      setError(null)
+      return
+    }
+
+    const result = await getOrderStatusForTable({ orderId, tableId })
+    if ('error' in result) {
+      setOrderItems([])
+      setTableNumber('')
+      setError(result.error)
+      return
+    }
+
+    setOrderItems(result.data.orderItems)
+    setTableNumber(result.data.tableNumber)
+    setError(null)
+  }, [orderId, tableId])
 
   useEffect(() => {
     setIsLoading(true)
@@ -210,7 +221,7 @@ export function useOrderStatus(orderId: string) {
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-  }, [orderId, fetchOrderItems])
+  }, [orderId, tableId, fetchOrderItems])
 
-  return { orderItems, isLoading }
+  return { orderItems, tableNumber, isLoading, error }
 }

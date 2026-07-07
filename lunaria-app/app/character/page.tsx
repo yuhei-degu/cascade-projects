@@ -79,11 +79,11 @@ const SOURCE_LABELS: Record<CharacterStateResponse['source'], string> = {
   mock: '代替データ',
 }
 
-const PAGE_BG = '#0e0d0b'
-const CARD_BG = '#181612'
-const TEXT_MAIN = '#ddd5c5'
-const TEXT_SUB = '#a39c8c'
-const TEXT_DIM = '#7a7468'
+const PAGE_BG = 'var(--luna-bg)'
+const CARD_BG = 'var(--luna-surface-raised)'
+const TEXT_MAIN = 'var(--luna-text)'
+const TEXT_SUB = 'var(--luna-text-soft)'
+const TEXT_DIM = 'var(--luna-faint)'
 
 export default function CharacterPage() {
   const [state, setState] = useState<CharacterStateResponse>(FALLBACK_STATE)
@@ -131,7 +131,13 @@ export default function CharacterPage() {
   const itemProgress = state.total_items_pool > 0 ? Math.round((state.total_items_owned / state.total_items_pool) * 100) : 0
 
   return (
-    <main style={{ minHeight: '100vh', background: PAGE_BG, color: TEXT_MAIN, padding: '40px 20px' }}>
+    <main style={{
+      minHeight: '100vh',
+      overflowY: 'auto',
+      background: 'radial-gradient(circle at 18% 8%, rgba(241,199,127,.15), transparent 34%), radial-gradient(circle at 84% 14%, rgba(127,179,213,.08), transparent 28%), linear-gradient(180deg, var(--luna-bg), var(--luna-bg-soft))',
+      color: TEXT_MAIN,
+      padding: '40px 20px',
+    }}>
       <div style={{ maxWidth: 1120, margin: '0 auto' }}>
         <nav aria-label="姿のナビゲーション" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
           <Link href="/" aria-label="Lunariaの部屋に戻る" style={navLinkStyle}>部屋に戻る</Link>
@@ -141,7 +147,14 @@ export default function CharacterPage() {
 
         <section style={heroGridStyle}>
           <div style={portraitPanelStyle}>
-            <LunariaPortrait expression={expression} motion={motion} outfit={state.current_outfit_id} />
+            {loading ? (
+              <div aria-label="姿を読み込み中" style={{ width: 'min(100%, 360px)', display: 'grid', gap: 14 }}>
+                <div className="luna-skeleton" style={{ width: '100%', aspectRatio: '3 / 4', borderRadius: 18 }} />
+                <div className="luna-skeleton luna-skeleton-line" style={{ width: '62%', margin: '0 auto' }} />
+              </div>
+            ) : (
+              <LunariaPortrait expression={expression} motion={motion} outfit={state.current_outfit_id} />
+            )}
           </div>
 
           <div style={{ ...panelStyle, minHeight: '100%' }}>
@@ -237,8 +250,15 @@ function ControlGroup({ title, items, active, labels, onSelect }: { title: strin
   return (
     <div>
       <h3 style={{ margin: '0 0 12px' }}>{title}</h3>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-        {items.map(item => (
+      {items.length === 0 ? (
+        <div className="luna-empty" style={{ padding: 18 }}>
+          <span className="luna-empty-icon" aria-hidden="true">◇</span>
+          <strong className="luna-empty-title">{title}はまだ解放されていません。</strong>
+          <p className="luna-empty-copy">会話や月箱で条件を満たすと、ここに選べる項目が増えていきます。</p>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {items.map(item => (
           <button
             key={item}
             type="button"
@@ -247,19 +267,20 @@ function ControlGroup({ title, items, active, labels, onSelect }: { title: strin
           >
             {labels[item] ?? item}
           </button>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
 
 const navLinkStyle = {
-  color: TEXT_MAIN,
+  color: 'var(--luna-gold)',
   textDecoration: 'none',
-  border: '1px solid rgba(214, 178, 108, 0.26)',
+  border: '1px solid var(--luna-border)',
   borderRadius: 999,
   padding: '10px 14px',
-  background: 'rgba(255,255,255,0.03)',
+  background: 'rgba(241,199,127,.065)',
 }
 
 const heroGridStyle = {
@@ -269,11 +290,11 @@ const heroGridStyle = {
 }
 
 const panelStyle = {
-  background: `radial-gradient(circle at top left, rgba(214,178,108,0.15), transparent 36%), ${CARD_BG}`,
-  border: '1px solid rgba(214, 178, 108, 0.18)',
-  borderRadius: 28,
+  background: `radial-gradient(circle at top left, rgba(241,199,127,.15), transparent 36%), ${CARD_BG}`,
+  border: '1px solid var(--luna-border)',
+  borderRadius: 18,
   padding: 'clamp(24px, 5vw, 42px)',
-  boxShadow: '0 24px 80px rgba(0,0,0,0.28)',
+  boxShadow: 'var(--luna-shadow)',
 }
 
 const portraitPanelStyle = {
@@ -285,24 +306,25 @@ const portraitPanelStyle = {
 }
 
 const cardStyle = {
-  background: CARD_BG,
-  border: '1px solid rgba(221,213,197,0.12)',
-  borderRadius: 22,
+  background: 'linear-gradient(145deg, rgba(27,23,17,.9), rgba(14,13,11,.96))',
+  border: '1px solid var(--luna-border)',
+  borderRadius: 18,
   padding: 20,
+  boxShadow: 'var(--luna-shadow)',
 }
 
 const buttonStyle = {
-  border: '1px solid rgba(221,213,197,0.16)',
+  border: '1px solid var(--luna-border)',
   borderRadius: 999,
   padding: '9px 13px',
-  background: 'rgba(255,255,255,0.03)',
+  background: 'rgba(241,199,127,.055)',
   color: TEXT_SUB,
   cursor: 'pointer',
 }
 
 const activeButtonStyle = {
   ...buttonStyle,
-  color: '#111',
-  background: '#D6B26C',
-  borderColor: '#D6B26C',
+  color: '#100d09',
+  background: 'var(--luna-gold)',
+  borderColor: 'rgba(241,199,127,.52)',
 }

@@ -152,6 +152,30 @@ function Stat({ label, value }: { label: string; value: ReactNode }) {
   )
 }
 
+function LoadingPanel({ label }: { label: string }) {
+  return (
+    <div aria-label={label} style={{ display: 'grid', gap: 12 }}>
+      {Array.from({ length: 3 }).map((_, index) => (
+        <div key={index} className="luna-skeleton" style={{ height: 118, padding: 14 }}>
+          <div className="luna-skeleton luna-skeleton-line" style={{ width: '34%', marginBottom: 16 }} />
+          <div className="luna-skeleton luna-skeleton-line" style={{ width: '92%', marginBottom: 10 }} />
+          <div className="luna-skeleton luna-skeleton-line" style={{ width: '76%' }} />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function EmptyState({ title, copy }: { title: string; copy: string }) {
+  return (
+    <div className="luna-empty">
+      <span className="luna-empty-icon" aria-hidden="true">◇</span>
+      <strong className="luna-empty-title">{title}</strong>
+      <p className="luna-empty-copy">{copy}</p>
+    </div>
+  )
+}
+
 function MemoryCard({
   memory,
   busy,
@@ -452,12 +476,12 @@ export default function MemoryPage() {
           <div style={{ display: 'grid', gap: 16 }}>
             <Section title={date ? `${formatDate(date)}の記憶` : 'すべての記憶'}>
               {loading ? (
-                <p style={mutedTextStyle}>記憶の棚を開いています...</p>
+                <LoadingPanel label="記憶を読み込み中" />
               ) : grouped.length === 0 ? (
-                <div>
-                  <p style={emptyTitleStyle}>この条件に合う記憶はまだありません。</p>
-                  <p style={mutedTextStyle}>日付条件を外すか、別の状態に切り替えてみてください。</p>
-                </div>
+                <EmptyState
+                  title="この条件に合う記憶はまだありません。"
+                  copy="日付や状態の条件を外すと、ほかの記憶が見つかるかもしれません。"
+                />
               ) : (
                 <div style={{ display: 'grid', gap: 18 }}>
                   {grouped.map(([groupDate, items]) => (
@@ -481,14 +505,17 @@ export default function MemoryPage() {
           <aside style={{ display: 'grid', gap: 16, alignContent: 'start' }}>
             <Section title="記憶候補">
               {loading ? (
-                <p style={mutedTextStyle}>候補の棚を開いています...</p>
+                <LoadingPanel label="記憶候補を読み込み中" />
               ) : !candidateTableReady ? (
-                <div>
-                  <p style={emptyTitleStyle}>候補の棚はまだ準備できていません。</p>
-                  <p style={mutedTextStyle}>ここで記憶候補を確認するには `019_memory_candidates.sql` を適用してください。</p>
-                </div>
+                <EmptyState
+                  title="記憶候補の棚はまだ準備中です。"
+                  copy="候補テーブルが有効になると、Lunariaが気づいたことをここで確認できます。"
+                />
               ) : candidates.length === 0 ? (
-                <p style={mutedTextStyle}>現在この条件に合う記憶候補はありません。</p>
+                <EmptyState
+                  title="確認待ちの記憶候補はありません。"
+                  copy="会話やゲームから候補が見つかると、この欄に表示されます。"
+                />
               ) : (
                 <div style={{ display: 'grid', gap: 10 }}>
                   {candidates.slice(0, 5).map(candidate => (
@@ -534,12 +561,12 @@ const pageStyle: CSSProperties = {
   minHeight: '100dvh',
   overflowY: 'auto',
   background: `
-    radial-gradient(circle at 14% 8%, rgba(159,207,189,.16), transparent 32%),
-    radial-gradient(circle at 84% 12%, rgba(200,160,96,.14), transparent 30%),
+    radial-gradient(circle at 14% 8%, rgba(241,199,127,.15), transparent 32%),
+    radial-gradient(circle at 84% 12%, rgba(127,179,213,.08), transparent 30%),
     radial-gradient(circle at 50% 95%, rgba(127,179,213,.11), transparent 34%),
-    linear-gradient(180deg, #0d0d0b 0%, #15120f 58%, #090908 100%)
+    linear-gradient(180deg, var(--luna-bg) 0%, var(--luna-bg-soft) 58%, #0b0a09 100%)
   `,
-  color: '#ddd5c5',
+  color: 'var(--luna-text)',
   padding: '18px clamp(16px, 4vw, 46px) 40px',
 }
 
@@ -558,7 +585,7 @@ const backLinkStyle: CSSProperties = {
 }
 
 const eyebrowStyle: CSSProperties = {
-  color: '#9fcfbd',
+  color: 'var(--luna-gold)',
   fontSize: 11,
   letterSpacing: '.22em',
   marginTop: 18,
@@ -569,7 +596,7 @@ const titleStyle: CSSProperties = {
   fontSize: 'clamp(34px, 7vw, 68px)',
   lineHeight: .98,
   marginTop: 10,
-  letterSpacing: '.04em',
+  letterSpacing: 0,
 }
 
 const leadStyle: CSSProperties = {
@@ -581,13 +608,13 @@ const leadStyle: CSSProperties = {
 }
 
 const pillLinkStyle: CSSProperties = {
-  color: '#c8a060',
+  color: 'var(--luna-gold)',
   textDecoration: 'none',
-  border: '1px solid rgba(200,160,96,.24)',
+  border: '1px solid var(--luna-border)',
   borderRadius: 999,
   padding: '9px 13px',
   fontSize: 12,
-  background: 'rgba(200,160,96,.06)',
+  background: 'rgba(241,199,127,.065)',
   whiteSpace: 'nowrap',
 }
 
@@ -596,9 +623,9 @@ const toolbarStyle: CSSProperties = {
   gap: 10,
   flexWrap: 'wrap',
   alignItems: 'center',
-  border: '1px solid rgba(255,255,255,.08)',
-  background: 'rgba(14,13,11,.62)',
-  borderRadius: 22,
+  border: '1px solid var(--luna-border)',
+  background: 'rgba(8,7,6,.72)',
+  borderRadius: 18,
   padding: 12,
   marginBottom: 18,
   backdropFilter: 'blur(12px)',
@@ -606,9 +633,9 @@ const toolbarStyle: CSSProperties = {
 
 const dateInputStyle: CSSProperties = {
   colorScheme: 'dark',
-  background: '#171410',
-  color: '#ddd5c5',
-  border: '1px solid rgba(255,255,255,.12)',
+  background: 'rgba(8,7,6,.72)',
+  color: 'var(--luna-text)',
+  border: '1px solid var(--luna-border)',
   borderRadius: 12,
   padding: '9px 12px',
   fontSize: 14,
@@ -620,10 +647,10 @@ const selectStyle: CSSProperties = {
 }
 
 const navButtonStyle: CSSProperties = {
-  background: 'rgba(255,255,255,.05)',
-  border: '1px solid rgba(255,255,255,.1)',
-  borderRadius: 999,
-  color: '#c8bda9',
+  background: 'rgba(241,199,127,.07)',
+  border: '1px solid var(--luna-border)',
+  borderRadius: 8,
+  color: 'var(--luna-text-soft)',
   cursor: 'pointer',
   fontSize: 12,
   padding: '9px 13px',
@@ -644,15 +671,15 @@ const contentGridStyle: CSSProperties = {
 }
 
 const sectionStyle: CSSProperties = {
-  border: '1px solid rgba(230,210,170,.13)',
+  border: '1px solid var(--luna-border)',
   background: 'linear-gradient(145deg, rgba(31,27,21,.86), rgba(15,14,12,.94))',
-  borderRadius: 24,
+  borderRadius: 18,
   padding: 18,
-  boxShadow: '0 18px 60px rgba(0,0,0,.28)',
+  boxShadow: 'var(--luna-shadow)',
 }
 
 const sectionTitleStyle: CSSProperties = {
-  color: '#c8a060',
+  color: 'var(--luna-gold)',
   fontSize: 12,
   letterSpacing: '.16em',
   marginBottom: 12,

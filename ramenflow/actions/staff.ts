@@ -3,6 +3,7 @@
 // RamenFlow — スタッフ向けアクション（staff / owner 認証必須）
 
 import { createClient } from '@/lib/supabase/server'
+import { requireStaffAuth } from '@/lib/auth/staff'
 import { recalculateWaitTime } from '@/actions/order'
 import type {
   ActionResult,
@@ -18,7 +19,9 @@ export async function updateOrderItemStatus(input: {
   orderItemId: string
   status: OrderItemStatus
 }): Promise<ActionResult> {
-  const supabase = await createClient()
+  const auth = await requireStaffAuth()
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
 
   try {
     // 現在のステータスを確認して不正な遷移を防ぐ
@@ -97,7 +100,9 @@ async function checkAndCompleteOrder(orderId: string): Promise<void> {
  * 注文全体をキャンセルする
  */
 export async function cancelOrder(orderId: string): Promise<ActionResult> {
-  const supabase = await createClient()
+  const auth = await requireStaffAuth()
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
 
   try {
     const { error } = await supabase
@@ -124,7 +129,9 @@ export async function cancelOrder(orderId: string): Promise<ActionResult> {
  * - 席ステータスを empty に
  */
 export async function clearTable(tableId: string): Promise<ActionResult> {
-  const supabase = await createClient()
+  const auth = await requireStaffAuth()
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
 
   try {
     // アクティブな注文を全て completed に
@@ -159,7 +166,9 @@ export async function updateTableStatus(input: {
   tableId: string
   status: TableStatus
 }): Promise<ActionResult> {
-  const supabase = await createClient()
+  const auth = await requireStaffAuth()
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
 
   try {
     const { error } = await supabase

@@ -1,0 +1,8 @@
+{
+  "target_repo": "C:/Users/yuuve/CascadeProjects/ramenflow",
+  "agent_command": ["codex", "exec", "--full-auto", "--cd", "{repo}", "-"],
+  "verify_command": "npm run build",
+  "max_fix_retries": 1,
+  "prompt_template": "You are working in the RamenFlow repo ({repo}), a QR-ordering app for ramen restaurants (Next.js App Router + server actions + Supabase). Complete exactly this one task and nothing else. Do not create new tasks, do not refactor unrelated code, do not touch the database directly (write migrations as SQL files under supabase/ only).\n\nTASK: {task}",
+  "auto_commit": true
+}

@@ -39,9 +39,66 @@ body {
 @keyframes fadeUp { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes orbPulse { 0%,100% { transform: scale(1); opacity: .7; } 50% { transform: scale(1.3); opacity: 1; } }
 @keyframes blink { 0%,100% { opacity: .1; } 55% { opacity: 1; } }
+@keyframes lunaSkeleton { 0% { background-position: 120% 0; } 100% { background-position: -120% 0; } }
 .fade-up  { animation: fadeUp .35s ease-out; }
 .orb-anim { animation: orbPulse 4s ease-in-out infinite; }
 .blink-dot { animation: blink 1.2s ease-in-out infinite; }
+
+.luna-empty {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 34px 18px;
+  border: 1px solid var(--luna-border);
+  border-radius: var(--luna-radius-md);
+  background: linear-gradient(145deg, rgba(241,199,127,.055), rgba(255,247,232,.02));
+  color: var(--luna-muted);
+  text-align: center;
+}
+
+.luna-empty-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(241,199,127,.22);
+  border-radius: 50%;
+  background: rgba(241,199,127,.08);
+  color: var(--luna-gold);
+  font-size: 20px;
+  line-height: 1;
+  box-shadow: 0 0 24px rgba(241,199,127,.08);
+}
+
+.luna-empty-title {
+  color: var(--luna-text);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.luna-empty-copy {
+  max-width: 420px;
+  color: var(--luna-faint);
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.luna-skeleton {
+  overflow: hidden;
+  border: 1px solid var(--luna-border-soft);
+  border-radius: var(--luna-radius-md);
+  background:
+    linear-gradient(90deg, rgba(255,247,232,.035) 25%, rgba(241,199,127,.10) 42%, rgba(255,247,232,.035) 60%)
+    0 0 / 220% 100%,
+    rgba(241,199,127,.035);
+  animation: lunaSkeleton 1.25s ease-in-out infinite;
+}
+
+.luna-skeleton-line {
+  height: 12px;
+  border-radius: 999px;
+}
 input:focus, button:focus, a:focus { outline: none; }
 input:focus-visible, button:focus-visible, a:focus-visible {
   outline: 2px solid rgba(241,199,127,.62);

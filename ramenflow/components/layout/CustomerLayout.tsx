@@ -1,12 +1,6 @@
-// components/layout/CustomerLayout.tsx
-// 客向け画面（C1〜C4）共通レイアウト
-// スマホ縦向け前提・最大幅 430px・和風ブランド感
-
 interface CustomerLayoutProps {
   children: React.ReactNode
-  /** ページタイトル（ヘッダーに表示・省略可） */
   title?: string
-  /** 戻るボタンのコールバック（省略時は非表示） */
   onBack?: () => void
 }
 
@@ -17,7 +11,6 @@ export function CustomerLayout({
 }: CustomerLayoutProps) {
   return (
     <div className="customer-container bg-brand-cream flex flex-col">
-      {/* ヘッダー（タイトルまたは戻るボタンがある場合のみ表示） */}
       {(title || onBack) && (
         <header className="sticky top-0 z-20 bg-brand-cream/95 backdrop-blur-sm border-b border-brand-dark/10">
           <div className="flex items-center h-14 px-4 gap-3">
@@ -27,7 +20,6 @@ export function CustomerLayout({
                 className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-brand-light active:bg-amber-100 transition-colors"
                 aria-label="戻る"
               >
-                {/* 左矢印 */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="20"
@@ -53,7 +45,6 @@ export function CustomerLayout({
         </header>
       )}
 
-      {/* メインコンテンツ */}
       <main className="flex-1 flex flex-col">
         {children}
       </main>

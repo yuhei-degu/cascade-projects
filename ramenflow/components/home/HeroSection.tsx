@@ -3,7 +3,6 @@
 // H1ホームページのヒーローエリア
 // 待ち時間・空席・営業状態を大きく表示。Realtimeで自動更新。
 
-import { useState } from 'react'
 import Link from 'next/link'
 import { useStoreSettingsRealtime } from '@/hooks/useRealtime'
 import { formatWaitTime, getCrowdLevel, CROWD_LEVEL_LABELS, CROWD_LEVEL_COLORS } from '@/lib/wait-time'

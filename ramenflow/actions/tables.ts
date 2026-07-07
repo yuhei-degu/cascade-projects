@@ -2,7 +2,7 @@
 // actions/tables.ts
 // RamenFlow — 席管理アクション（owner 認証必須）
 
-import { createClient } from '@/lib/supabase/server'
+import { requireStaffAuth } from '@/lib/auth/staff'
 import { generateAndStoreQR } from '@/lib/qr'
 import type { ActionResult, TableFormInput } from '@/lib/types/database'
 
@@ -13,7 +13,9 @@ import type { ActionResult, TableFormInput } from '@/lib/types/database'
 export async function upsertTable(
   input: TableFormInput & { id?: string }
 ): Promise<ActionResult<{ id: string; qrCodePath: string }>> {
-  const supabase = await createClient()
+  const auth = await requireStaffAuth({ role: 'owner' })
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
 
   try {
     if (input.id) {
@@ -78,7 +80,9 @@ export async function upsertTable(
  * アクティブな注文が存在する場合は拒否
  */
 export async function deleteTable(tableId: string): Promise<ActionResult> {
-  const supabase = await createClient()
+  const auth = await requireStaffAuth({ role: 'owner' })
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
 
   try {
     // アクティブな注文確認

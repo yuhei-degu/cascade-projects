@@ -1,8 +1,6 @@
 'use client'
-// components/order/MenuSelectionClient.tsx
-// C2: メニュー選択の全インタラクション
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCart, formatPrice } from '@/hooks/useCart'
 import { SoldOutBadge } from '@/components/ui/Badge'
@@ -10,14 +8,9 @@ import { cn } from '@/lib/utils'
 import type {
   MenuCategory,
   MenuItemWithOptions,
-  MenuOptionGroup,
-  MenuOption,
   SelectedOption,
 } from '@/lib/types/database'
 
-// ============================================================
-// OptionModal: オプション選択モーダル
-// ============================================================
 function OptionModal({
   item,
   onAdd,
@@ -28,13 +21,11 @@ function OptionModal({
   onClose: () => void
 }) {
   const hasGroups = item.option_groups && item.option_groups.length > 0
-
-  // 各グループの選択状態を管理
   const [selections, setSelections] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {}
-    item.option_groups?.forEach(g => {
-      if (g.is_required && g.options.length > 0) {
-        init[g.id] = g.options[0].id // 必須グループは最初の選択肢をデフォルト
+    item.option_groups?.forEach(group => {
+      if (group.is_required && group.options.length > 0) {
+        init[group.id] = group.options[0].id
       }
     })
     return init
@@ -44,33 +35,33 @@ function OptionModal({
     setSelections(prev => ({ ...prev, [groupId]: optionId }))
   }
 
-  const canAdd = item.option_groups?.every(g =>
-    !g.is_required || selections[g.id]
+  const canAdd = item.option_groups?.every(group =>
+    !group.is_required || selections[group.id]
   ) ?? true
 
   const handleAdd = () => {
     const selectedOptions: SelectedOption[] = []
-    item.option_groups?.forEach(g => {
-      const optionId = selections[g.id]
+    item.option_groups?.forEach(group => {
+      const optionId = selections[group.id]
       if (!optionId) return
-      const opt = g.options.find(o => o.id === optionId)
-      if (!opt) return
+      const option = group.options.find(opt => opt.id === optionId)
+      if (!option) return
       selectedOptions.push({
-        group_id:    g.id,
-        group_name:  g.name,
-        option_id:   opt.id,
-        option_name: opt.name,
-        price_delta: opt.price_delta,
+        group_id: group.id,
+        group_name: group.name,
+        option_id: option.id,
+        option_name: option.name,
+        price_delta: option.price_delta,
       })
     })
     onAdd(selectedOptions)
     onClose()
   }
 
-  const optionTotal = Object.values(selections).reduce((sum, optId) => {
-    for (const g of item.option_groups ?? []) {
-      const opt = g.options.find(o => o.id === optId)
-      if (opt) return sum + opt.price_delta
+  const optionTotal = Object.values(selections).reduce((sum, optionId) => {
+    for (const group of item.option_groups ?? []) {
+      const option = group.options.find(opt => opt.id === optionId)
+      if (option) return sum + option.price_delta
     }
     return sum
   }, 0)
@@ -79,26 +70,27 @@ function OptionModal({
     <div className="fixed inset-0 z-50 flex items-end">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative z-10 w-full max-w-[430px] mx-auto bg-white rounded-t-3xl overflow-hidden">
-        {/* ヘッダー */}
         <div className="p-5 border-b border-gray-100">
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between gap-3">
             <div>
               <h3 className="font-sans font-bold text-lg text-brand-dark">{item.name}</h3>
               <p className="font-sans font-semibold text-brand-red mt-0.5">
                 {formatPrice(item.price + optionTotal)}
               </p>
             </div>
-            <button onClick={onClose} className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-200 flex-shrink-0">
-              ✕
+            <button
+              onClick={onClose}
+              className="h-8 px-3 rounded-full bg-gray-100 flex items-center justify-center text-xs font-sans font-bold text-gray-500 hover:bg-gray-200 flex-shrink-0"
+            >
+              閉じる
             </button>
           </div>
         </div>
 
-        {/* オプション選択 */}
         <div className="overflow-y-auto max-h-[60vh] p-5 space-y-6">
           {!hasGroups ? (
             <p className="font-sans text-sm text-gray-400 text-center py-4">
-              オプションはありません
+              選べるオプションはありません
             </p>
           ) : (
             item.option_groups?.map(group => (
@@ -110,12 +102,12 @@ function OptionModal({
                   )}
                 </div>
                 <div className="space-y-2">
-                  {group.options.map(opt => {
-                    const isSelected = selections[group.id] === opt.id
+                  {group.options.map(option => {
+                    const isSelected = selections[group.id] === option.id
                     return (
                       <button
-                        key={opt.id}
-                        onClick={() => handleSelect(group.id, opt.id)}
+                        key={option.id}
+                        onClick={() => handleSelect(group.id, option.id)}
                         className={cn(
                           'w-full flex items-center justify-between p-3.5 rounded-xl border-2 transition-all text-left',
                           isSelected
@@ -127,16 +119,16 @@ function OptionModal({
                           'font-sans font-medium text-base',
                           isSelected ? 'text-brand-red' : 'text-brand-dark'
                         )}>
-                          {opt.name}
+                          {option.name}
                         </span>
                         <div className="flex items-center gap-2">
-                          {opt.price_delta !== 0 && (
+                          {option.price_delta !== 0 && (
                             <span className="font-sans text-sm text-gray-500">
-                              {opt.price_delta > 0 ? `+${formatPrice(opt.price_delta)}` : formatPrice(opt.price_delta)}
+                              {option.price_delta > 0 ? `+${formatPrice(option.price_delta)}` : formatPrice(option.price_delta)}
                             </span>
                           )}
                           {isSelected && (
-                            <span className="text-brand-red">✓</span>
+                            <span className="text-xs font-sans font-bold text-brand-red">選択中</span>
                           )}
                         </div>
                       </button>
@@ -148,7 +140,6 @@ function OptionModal({
           )}
         </div>
 
-        {/* 追加ボタン */}
         <div className="p-5 border-t border-gray-100 bottom-safe-area">
           <button
             onClick={handleAdd}
@@ -168,9 +159,6 @@ function OptionModal({
   )
 }
 
-// ============================================================
-// MenuItemCard: 商品カード
-// ============================================================
 function MenuItemCard({
   item,
   onSelect,
@@ -192,7 +180,6 @@ function MenuItemCard({
           : 'bg-white border-gray-100 hover:border-brand-red/30 hover:shadow-sm active:scale-[0.99]'
       )}
     >
-      {/* 商品画像プレースホルダー */}
       <div className="h-16 w-16 rounded-xl bg-brand-cream flex-shrink-0 overflow-hidden">
         {item.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -202,7 +189,6 @@ function MenuItemCard({
         )}
       </div>
 
-      {/* テキスト情報 */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <p className={cn(
@@ -224,7 +210,6 @@ function MenuItemCard({
         </p>
       </div>
 
-      {/* 追加アイコン */}
       {!isSoldOut && (
         <div className="h-9 w-9 rounded-full bg-brand-red flex items-center justify-center flex-shrink-0 shadow-sm">
           <span className="text-white text-xl leading-none">+</span>
@@ -234,9 +219,6 @@ function MenuItemCard({
   )
 }
 
-// ============================================================
-// MenuSelectionClient: メイン
-// ============================================================
 export function MenuSelectionClient({
   categories,
   items,
@@ -245,9 +227,7 @@ export function MenuSelectionClient({
   items: MenuItemWithOptions[]
 }) {
   const router = useRouter()
-
-  // sessionStorage からテーブル情報を復元
-  const [tableId, setTableId]         = useState('')
+  const [tableId, setTableId] = useState('')
   const [tableNumber, setTableNumber] = useState('')
   const [activeCatId, setActiveCatId] = useState<string | null>(
     categories[0]?.id ?? null
@@ -255,16 +235,18 @@ export function MenuSelectionClient({
   const [modalItem, setModalItem] = useState<MenuItemWithOptions | null>(null)
 
   useEffect(() => {
-    const id  = sessionStorage.getItem('rf_table_id') ?? ''
+    const id = sessionStorage.getItem('rf_table_id') ?? ''
     const num = sessionStorage.getItem('rf_table_number') ?? ''
-    if (!id) { router.replace('/'); return }
+    if (!id) {
+      router.replace('/')
+      return
+    }
     setTableId(id)
     setTableNumber(num)
   }, [router])
 
   const { cart, totalAmount, totalCount, addItem } = useCart(tableId, tableNumber)
 
-  // カート内容をsessionStorageに保存（confirm画面で参照）
   useEffect(() => {
     sessionStorage.setItem('rf_cart', JSON.stringify(cart))
   }, [cart])
@@ -273,18 +255,14 @@ export function MenuSelectionClient({
     addItem(item.id, item.name, item.price, opts)
   }
 
-  // カテゴリ別フィルタリング
   const displayedItems = activeCatId
-    ? items.filter(i => i.category_id === activeCatId)
+    ? items.filter(item => item.category_id === activeCatId)
     : items
 
-  // カテゴリなしのアイテムも含む「すべて」タブ
-  const allTab = { id: null, name: 'すべて' }
-  const tabs = [allTab, ...categories] as { id: string | null; name: string }[]
+  const tabs = [{ id: null, name: 'すべて' }, ...categories] as { id: string | null; name: string }[]
 
   return (
     <div className="flex flex-col h-full relative">
-      {/* カテゴリタブ */}
       <div className="sticky top-0 z-10 bg-brand-cream border-b border-brand-dark/10">
         <div className="flex overflow-x-auto gap-1 px-3 py-2 scrollbar-hide">
           {tabs.map(tab => (
@@ -304,12 +282,11 @@ export function MenuSelectionClient({
         </div>
       </div>
 
-      {/* 商品一覧 */}
       <div className="flex-1 overflow-y-auto px-3 py-3 pb-28 space-y-2">
         {displayedItems.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-3xl mb-2">🍜</p>
-            <p className="font-sans text-sm text-gray-400">このカテゴリに商品がありません</p>
+            <p className="font-sans text-sm text-gray-400">このカテゴリには表示できる商品がありません</p>
           </div>
         ) : (
           displayedItems.map(item => (
@@ -317,7 +294,6 @@ export function MenuSelectionClient({
               key={item.id}
               item={item}
               onSelect={() => {
-                // オプションがある場合はモーダル、ない場合は直接追加
                 if (item.option_groups && item.option_groups.length > 0) {
                   setModalItem(item)
                 } else {
@@ -329,7 +305,6 @@ export function MenuSelectionClient({
         )}
       </div>
 
-      {/* 下部固定: カートバー */}
       {totalCount > 0 && (
         <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] p-4 bg-gradient-to-t from-brand-cream via-brand-cream to-transparent pt-8 bottom-safe-area">
           <button
@@ -350,7 +325,6 @@ export function MenuSelectionClient({
         </div>
       )}
 
-      {/* オプションモーダル */}
       {modalItem && (
         <OptionModal
           item={modalItem}

@@ -2,8 +2,8 @@
 // actions/settings.ts
 // RamenFlow — 店舗設定アクション（owner 認証必須）
 
-import { createClient } from '@/lib/supabase/server'
-import type { ActionResult, StoreStatus, StoreSettingsFormInput } from '@/lib/types/database'
+import { requireStaffAuth } from '@/lib/auth/staff'
+import type { ActionResult, StoreSettings, StoreStatus, StoreSettingsFormInput } from '@/lib/types/database'
 
 const STORE_SETTINGS_ID = '00000000-0000-0000-0000-000000000001'
 
@@ -14,7 +14,9 @@ const STORE_SETTINGS_ID = '00000000-0000-0000-0000-000000000001'
 export async function updateStoreStatus(
   status: StoreStatus
 ): Promise<ActionResult> {
-  const supabase = await createClient()
+  const auth = await requireStaffAuth({ role: 'owner' })
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
 
   const { error } = await supabase
     .from('store_settings')
@@ -37,7 +39,9 @@ export async function updateStoreStatus(
 export async function updateStoreSettings(
   input: StoreSettingsFormInput
 ): Promise<ActionResult> {
-  const supabase = await createClient()
+  const auth = await requireStaffAuth({ role: 'owner' })
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
 
   const { error } = await supabase
     .from('store_settings')
@@ -59,11 +63,14 @@ export async function updateStoreSettings(
 /**
  * 現在の店舗設定を取得する（Server Component用）
  */
-export async function getStoreSettings() {
-  const supabase = await createClient()
+export async function getStoreSettings(): Promise<ActionResult<StoreSettings>> {
+  const auth = await requireStaffAuth({ role: 'owner' })
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
   const { data } = await supabase
     .from('store_settings')
     .select('*')
     .single()
-  return data
+  if (!data) return { error: '設定が見つかりません。' }
+  return { success: true, data }
 }

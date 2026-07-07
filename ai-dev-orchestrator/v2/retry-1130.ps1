@@ -5,6 +5,7 @@ $wait = [int]($target - (Get-Date)).TotalSeconds
 Start-Sleep -Seconds $wait
 
 Set-Location 'C:\Users\yuuve\CascadeProjects\ai-dev-orchestrator\v2'
+taskkill /f /im node.exe 2>&1 | Out-Null
 
 $py = @'
 import json
@@ -19,4 +20,4 @@ p.write_text(json.dumps(c, indent=2, ensure_ascii=False), encoding="utf-8")
 print("reset + codex config done")
 '@
 $py | python -
-python run.py *> run-retry.log
+python run.py --all *> run-retry.log

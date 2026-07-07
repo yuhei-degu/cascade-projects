@@ -129,11 +129,11 @@ const SOURCE_LABEL: Record<ItemView['source'], string> = {
 }
 
 const FILTERS: ItemCategory[] = ['all', 'outfit', 'accessory', 'background', 'room_item', 'small_item', 'urban_legend']
-const PAGE_BG = '#0e0d0b'
-const CARD_BG = '#181612'
-const TEXT_MAIN = '#ddd5c5'
-const TEXT_SUB = '#a39c8c'
-const TEXT_DIM = '#7a7468'
+const PAGE_BG = 'var(--luna-bg)'
+const CARD_BG = 'var(--luna-surface-raised)'
+const TEXT_MAIN = 'var(--luna-text)'
+const TEXT_SUB = 'var(--luna-text-soft)'
+const TEXT_DIM = 'var(--luna-faint)'
 
 export default function ItemsPage() {
   const [data, setData] = useState<ItemsResponse>({
@@ -177,7 +177,13 @@ export default function ItemsPage() {
   const completion = data.items.length > 0 ? Math.round((ownedCount / data.items.length) * 100) : 0
 
   return (
-    <main style={{ minHeight: '100vh', background: PAGE_BG, color: TEXT_MAIN, padding: '40px 20px' }}>
+    <main style={{
+      minHeight: '100vh',
+      overflowY: 'auto',
+      background: 'radial-gradient(circle at 18% 8%, rgba(241,199,127,.15), transparent 34%), radial-gradient(circle at 84% 14%, rgba(127,179,213,.08), transparent 28%), linear-gradient(180deg, var(--luna-bg), var(--luna-bg-soft))',
+      color: TEXT_MAIN,
+      padding: '40px 20px',
+    }}>
       <div style={{ maxWidth: 1120, margin: '0 auto' }}>
         <nav aria-label="品のナビゲーション" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
           <Link href="/" aria-label="Lunariaの部屋に戻る" style={navLinkStyle}>部屋に戻る</Link>
@@ -229,11 +235,13 @@ export default function ItemsPage() {
           </label>
         </section>
 
-        {filteredItems.length === 0 ? (
-          <section style={emptyStyle}>
-            <strong>この条件に合う品はまだありません。</strong>
-            <p style={{ color: TEXT_DIM, margin: '8px 0 0' }}>カテゴリを切り替えるか、未所持の品も表示してみてください。</p>
-          </section>
+        {loading ? (
+          <ItemsSkeleton />
+        ) : filteredItems.length === 0 ? (
+          <EmptyState
+            title="この条件に合う品はまだありません。"
+            copy="カテゴリを切り替えるか、未所持の品も表示してみてください。月箱で手に入れた品はここに並びます。"
+          />
         ) : (
           <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
             {filteredItems.map(item => (
@@ -259,6 +267,32 @@ export default function ItemsPage() {
         )}
       </div>
     </main>
+  )
+}
+
+function ItemsSkeleton() {
+  return (
+    <section aria-label="品を読み込み中" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
+      {Array.from({ length: 6 }).map((_, index) => (
+        <article key={index} className="luna-skeleton" style={{ height: 210, padding: 20 }}>
+          <div className="luna-skeleton luna-skeleton-line" style={{ width: '34%', marginBottom: 16 }} />
+          <div className="luna-skeleton luna-skeleton-line" style={{ width: '62%', height: 18, marginBottom: 22 }} />
+          <div className="luna-skeleton luna-skeleton-line" style={{ width: '100%', marginBottom: 10 }} />
+          <div className="luna-skeleton luna-skeleton-line" style={{ width: '86%', marginBottom: 34 }} />
+          <div className="luna-skeleton luna-skeleton-line" style={{ width: '46%' }} />
+        </article>
+      ))}
+    </section>
+  )
+}
+
+function EmptyState({ title, copy }: { title: string; copy: string }) {
+  return (
+    <section className="luna-empty">
+      <span className="luna-empty-icon" aria-hidden="true">◇</span>
+      <strong className="luna-empty-title">{title}</strong>
+      <p className="luna-empty-copy">{copy}</p>
+    </section>
   )
 }
 
@@ -290,49 +324,50 @@ function SourceBanner({ ready, loading, title, note, detail }: { ready: boolean;
 }
 
 const navLinkStyle = {
-  color: TEXT_MAIN,
+  color: 'var(--luna-gold)',
   textDecoration: 'none',
-  border: '1px solid rgba(214, 178, 108, 0.26)',
+  border: '1px solid var(--luna-border)',
   borderRadius: 999,
   padding: '10px 14px',
-  background: 'rgba(255,255,255,0.03)',
+  background: 'rgba(241,199,127,.065)',
 }
 
 const panelStyle = {
-  background: `radial-gradient(circle at top left, rgba(214,178,108,0.15), transparent 36%), ${CARD_BG}`,
-  border: '1px solid rgba(214, 178, 108, 0.18)',
-  borderRadius: 28,
+  background: `radial-gradient(circle at top left, rgba(241,199,127,.15), transparent 36%), ${CARD_BG}`,
+  border: '1px solid var(--luna-border)',
+  borderRadius: 18,
   padding: 'clamp(24px, 5vw, 42px)',
-  boxShadow: '0 24px 80px rgba(0,0,0,0.28)',
+  boxShadow: 'var(--luna-shadow)',
 }
 
 const filterStyle = {
-  border: '1px solid rgba(221,213,197,0.16)',
+  border: '1px solid var(--luna-border)',
   borderRadius: 999,
   padding: '9px 13px',
-  background: 'rgba(255,255,255,0.03)',
+  background: 'rgba(241,199,127,.055)',
   color: TEXT_SUB,
   cursor: 'pointer',
 }
 
 const activeFilterStyle = {
   ...filterStyle,
-  color: '#111',
-  background: '#D6B26C',
-  borderColor: '#D6B26C',
+  color: '#100d09',
+  background: 'var(--luna-gold)',
+  borderColor: 'rgba(241,199,127,.52)',
 }
 
 const itemCardStyle = {
-  background: CARD_BG,
-  border: '1px solid rgba(221,213,197,0.12)',
-  borderRadius: 22,
+  background: 'linear-gradient(145deg, rgba(27,23,17,.9), rgba(14,13,11,.96))',
+  border: '1px solid var(--luna-border)',
+  borderRadius: 18,
   padding: 20,
+  boxShadow: 'var(--luna-shadow)',
 }
 
 const ownedBadgeStyle = {
   borderRadius: 999,
   background: 'rgba(143,209,158,0.13)',
-  color: '#8fd19e',
+  color: 'var(--luna-green)',
   padding: '6px 10px',
   fontSize: 12,
 }
@@ -341,11 +376,4 @@ const lockedBadgeStyle = {
   ...ownedBadgeStyle,
   background: 'rgba(255,255,255,0.05)',
   color: TEXT_DIM,
-}
-
-const emptyStyle = {
-  ...itemCardStyle,
-  color: TEXT_SUB,
-  textAlign: 'center' as const,
-  padding: 36,
 }

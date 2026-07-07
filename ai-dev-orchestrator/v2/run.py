@@ -15,8 +15,16 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-CFG = json.loads((ROOT / "config.json").read_text(encoding="utf-8"))
-TASKS_FILE = ROOT / "TASKS.md"
+
+
+def _path_arg(flag, default):
+    if flag in sys.argv:
+        return Path(sys.argv[sys.argv.index(flag) + 1])
+    return ROOT / default
+
+
+CFG = json.loads(_path_arg("--config", "config.json").read_text(encoding="utf-8"))
+TASKS_FILE = _path_arg("--tasks", "TASKS.md")
 TASK_RE = re.compile(r"^- \[( |~|x|!)\] (.+)$")
 
 

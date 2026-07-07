@@ -2,7 +2,7 @@
 // actions/menu.ts
 // RamenFlow — メニュー管理アクション（owner 認証必須）
 
-import { createClient } from '@/lib/supabase/server'
+import { requireStaffAuth } from '@/lib/auth/staff'
 import type {
   ActionResult,
   MenuItemFormInput,
@@ -11,7 +11,9 @@ import type {
 export async function upsertMenuItem(
   input: MenuItemFormInput & { id?: string }
 ): Promise<ActionResult<{ id: string }>> {
-  const supabase = await createClient()
+  const auth = await requireStaffAuth({ role: 'owner' })
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
 
   try {
     const payload = {
@@ -54,7 +56,9 @@ export async function toggleSoldOut(input: {
   menuItemId: string
   isSoldOut: boolean
 }): Promise<ActionResult> {
-  const supabase = await createClient()
+  const auth = await requireStaffAuth({ role: 'owner' })
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
 
   const { error } = await supabase
     .from('menu_items')
@@ -66,7 +70,9 @@ export async function toggleSoldOut(input: {
 }
 
 export async function deleteMenuItem(menuItemId: string): Promise<ActionResult> {
-  const supabase = await createClient()
+  const auth = await requireStaffAuth({ role: 'owner' })
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
 
   // 注文履歴がある場合はソフト削除（is_active = false）
   const { data: relatedItems } = await supabase
@@ -100,7 +106,9 @@ export async function upsertMenuCategory(input: {
   display_order?: number
   is_active?: boolean
 }): Promise<ActionResult<{ id: string }>> {
-  const supabase = await createClient()
+  const auth = await requireStaffAuth({ role: 'owner' })
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
 
   const payload = {
     name: input.name,
@@ -135,7 +143,9 @@ export async function saveOptionGroups(input: {
     options: { id?: string; name: string; priceDelta: number }[]
   }[]
 }): Promise<ActionResult> {
-  const supabase = await createClient()
+  const auth = await requireStaffAuth({ role: 'owner' })
+  if (!auth.ok) return { error: auth.error }
+  const { supabase } = auth
 
   try {
     // 既存のオプショングループを削除して再作成（最もシンプルなアプローチ）

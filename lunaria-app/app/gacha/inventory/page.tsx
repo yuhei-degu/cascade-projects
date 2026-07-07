@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
 interface InventoryItem {
   id: string
@@ -14,36 +14,65 @@ interface InventoryItem {
 }
 
 const RARITY_COLOR: Record<string, string> = {
-  common_a:     '#9fb1b3',
-  common_b:     '#9fb1b3',
-  rare_a:       '#7fb3d5',
-  rare_b:       '#7fb3d5',
-  epic:         '#c39bd3',
-  legendary:    '#f7ca18',
-  urban_legend: '#ff6b6b',
+  common_a: '#f2f3f0',
+  common_b: '#f2f3f0',
+  rare_a: '#7fb3d5',
+  rare_b: '#7fb3d5',
+  epic: '#f1c77f',
+  legendary: '#ffb15f',
+  urban_legend: '#ff7d9b',
 }
 
 const CATEGORY_LABEL: Record<string, string> = {
-  furniture:    '家具',
-  small_item:   '小物',
-  accessory:    'アクセサリー',
+  furniture: '家具',
+  small_item: '小物',
+  accessory: 'アクセサリー',
   urban_legend: '都市伝説',
 }
 
 const CATEGORY_GLYPH: Record<string, string> = {
-  furniture: '▣',
-  small_item: '✧',
-  accessory: '◇',
-  urban_legend: '☾',
-}
-
-function itemGlyph(item: InventoryItem): string {
-  if (item.rarity === 'urban_legend') return '☾'
-  return CATEGORY_GLYPH[item.category] ?? '✦'
+  furniture: '□',
+  small_item: '◇',
+  accessory: '○',
+  urban_legend: '✦',
 }
 
 const CATEGORIES = ['all', 'furniture', 'small_item', 'accessory', 'urban_legend'] as const
 type Category = typeof CATEGORIES[number]
+
+function itemGlyph(item: InventoryItem): string {
+  if (item.rarity === 'urban_legend') return CATEGORY_GLYPH.urban_legend
+  return CATEGORY_GLYPH[item.category] ?? '◇'
+}
+
+function InventorySkeleton() {
+  return (
+    <div aria-label="所持品を読み込み中" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>
+      {Array.from({ length: 9 }).map((_, index) => (
+        <div key={index} className="luna-skeleton" style={{ aspectRatio: '1', padding: 8 }}>
+          <div className="luna-skeleton" style={{ height: '72%', marginBottom: 8, borderRadius: 8 }} />
+          <div className="luna-skeleton luna-skeleton-line" style={{ width: '70%', margin: '0 auto' }} />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function InventoryEmpty({ filtered }: { filtered: boolean }) {
+  return (
+    <div className="luna-empty">
+      <span className="luna-empty-icon" aria-hidden="true">◇</span>
+      <strong className="luna-empty-title">
+        {filtered ? 'この棚には、まだ品がありません。' : '月箱の棚は、まだ空です。'}
+      </strong>
+      <p className="luna-empty-copy">
+        {filtered
+          ? 'カテゴリを切り替えると、ほかの所持品が見つかるかもしれません。'
+          : '月箱で手に入れた品が、ここに少しずつ並びます。'}
+      </p>
+    </div>
+  )
+}
 
 export default function InventoryPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
@@ -63,97 +92,99 @@ export default function InventoryPage() {
   const filtered = filter === 'all' ? items : items.filter(i => i.category === filter)
 
   return (
-    <div style={{
-      height: '100dvh', display: 'flex', flexDirection: 'column',
-      maxWidth: '480px', margin: '0 auto', padding: '20px',
-      background: 'radial-gradient(circle at 50% 0%, rgba(127,179,213,0.07), transparent 36%)',
+    <main style={{
+      height: '100dvh',
+      maxWidth: 480,
+      margin: '0 auto',
+      padding: 20,
+      display: 'flex',
+      flexDirection: 'column',
+      color: 'var(--luna-text)',
+      background: 'radial-gradient(circle at 50% 0%, rgba(241,199,127,.13), transparent 34%), radial-gradient(circle at 85% 10%, rgba(127,179,213,.08), transparent 30%), linear-gradient(180deg, var(--luna-bg) 0%, var(--luna-bg-soft) 100%)',
     }}>
-      {/* ヘッダー */}
-      <nav aria-label="ガチャ所持品のナビゲーション" style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
-        <Link href="/gacha" aria-label="ガチャに戻る" style={{ color: '#888', textDecoration: 'none', fontSize: '14px' }}>← ガチャ</Link>
-        <h1 style={{ flex: 1, textAlign: 'center', fontSize: '18px', fontWeight: 'normal', color: '#ddd5c5' }}>
+      <nav aria-label="ガチャ所持品のナビゲーション" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <Link href="/gacha" aria-label="ガチャに戻る" style={{ minWidth: 72, color: 'var(--luna-muted)', textDecoration: 'none', fontSize: 14 }}>月箱へ</Link>
+        <h1 style={{ flex: 1, textAlign: 'center', fontSize: 18, fontWeight: 500, color: 'var(--luna-text)' }}>
           月箱の棚
         </h1>
-        <Link href="/" aria-label="Lunariaの部屋を開く" style={{ color: '#888', textDecoration: 'none', fontSize: '14px' }}>ホーム</Link>
+        <Link href="/" aria-label="Lunariaの部屋を開く" style={{ minWidth: 72, color: 'var(--luna-muted)', textDecoration: 'none', fontSize: 14, textAlign: 'right' }}>部屋へ</Link>
       </nav>
 
-      <div style={{
-        color: '#7a7060',
-        fontSize: 12,
-        lineHeight: 1.7,
-        textAlign: 'center',
-        marginBottom: 16,
-      }}>
-        ルナから受け取ったものだけを、静かに並べておく場所。
-      </div>
+      <p style={{ color: 'var(--luna-faint)', fontSize: 12, lineHeight: 1.7, textAlign: 'center', marginBottom: 16 }}>
+        Lunariaから受け取った品だけを、静かに並べておく場所です。
+      </p>
 
-      {/* フィルター */}
-      <div style={{
-        display: 'flex', gap: '8px', overflowX: 'auto', marginBottom: '16px',
-        paddingBottom: '4px',
-      }} className="scroll-thin">
-        {CATEGORIES.map(c => (
+      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', marginBottom: 16, paddingBottom: 4 }} className="scroll-thin">
+        {CATEGORIES.map(category => (
           <button
-            key={c}
-            onClick={() => setFilter(c)}
+            key={category}
+            onClick={() => setFilter(category)}
             style={{
-              background: filter === c ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)',
-              color: filter === c ? '#ddd5c5' : '#888',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '20px', padding: '6px 14px', fontSize: '12px',
-              cursor: 'pointer', whiteSpace: 'nowrap',
+              background: filter === category ? 'var(--luna-gold)' : 'rgba(241,199,127,.055)',
+              color: filter === category ? '#100d09' : 'var(--luna-muted)',
+              border: filter === category ? '1px solid rgba(241,199,127,.52)' : '1px solid var(--luna-border)',
+              borderRadius: 20,
+              padding: '6px 14px',
+              fontSize: 12,
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
             }}
           >
-            {c === 'all' ? `すべて (${items.length})` : `${CATEGORY_LABEL[c]} (${items.filter(i => i.category === c).length})`}
+            {category === 'all' ? `すべて (${items.length})` : `${CATEGORY_LABEL[category]} (${items.filter(i => i.category === category).length})`}
           </button>
         ))}
       </div>
 
-      {/* グリッド */}
-      <div style={{ flex: 1, overflowY: 'auto' }} className="scroll-thin">
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }} className="scroll-thin">
         {loading ? (
-          <div style={{ textAlign: 'center', color: '#888', padding: '40px' }}>読み込み中...</div>
+          <InventorySkeleton />
         ) : filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', color: '#888', padding: '40px', fontSize: '13px' }}>
-            棚はまだ空っぽ。月箱を受け取ると、ここに少しずつ並んでいくよ。
-          </div>
+          <InventoryEmpty filtered={filter !== 'all'} />
         ) : (
-          <div style={{
-            display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px',
-          }}>
-            {filtered.map(item => (
-              <div
-                key={item.id}
-                title={item.description ?? ''}
-                style={{
-                  background: 'rgba(255,255,255,0.04)', borderRadius: '8px',
-                  padding: '8px', border: `1px solid ${RARITY_COLOR[item.rarity] ?? '#333'}33`,
-                  aspectRatio: '1', display: 'flex', flexDirection: 'column',
-                  alignItems: 'center', justifyContent: 'space-between',
-                }}
-              >
-                <div style={{
-                  width: '100%', flex: 1,
-                  background: `radial-gradient(circle at 50% 35%, ${(RARITY_COLOR[item.rarity] ?? '#333')}33, rgba(0,0,0,0.3) 68%)`,
-                  borderRadius: '8px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '32px', marginBottom: '6px',
-                  color: RARITY_COLOR[item.rarity] ?? '#ddd5c5',
-                }}>
-                  <span aria-hidden="true">{itemGlyph(item)}</span>
-                </div>
-                <div style={{
-                  fontSize: '10px', color: '#ddd5c5', textAlign: 'center',
-                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                  width: '100%',
-                }}>
-                  {item.name}
-                </div>
-              </div>
-            ))}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>
+            {filtered.map(item => {
+              const color = RARITY_COLOR[item.rarity] ?? 'var(--luna-gold)'
+              return (
+                <article
+                  key={item.id}
+                  title={item.description ?? ''}
+                  style={{
+                    aspectRatio: '1',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: 8,
+                    border: `1px solid ${color}55`,
+                    borderRadius: 8,
+                    background: 'rgba(255,247,232,.04)',
+                    boxShadow: '0 12px 34px rgba(0,0,0,.18)',
+                  }}
+                >
+                  <div style={{
+                    width: '100%',
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 6,
+                    borderRadius: 8,
+                    background: `radial-gradient(circle at 50% 35%, ${color}33, rgba(8,7,6,.56) 68%)`,
+                    color,
+                    fontSize: 32,
+                    textShadow: `0 0 22px ${color}55`,
+                  }}>
+                    <span aria-hidden="true">{itemGlyph(item)}</span>
+                  </div>
+                  <div style={{ width: '100%', color: 'var(--luna-text)', fontSize: 10, textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {item.name}
+                  </div>
+                </article>
+              )
+            })}
           </div>
         )}
       </div>
-    </div>
+    </main>
   )
 }

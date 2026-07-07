@@ -1,7 +1,3 @@
-// app/order/menu/page.tsx
-// C2: メニュー選択画面
-// カテゴリタブ + 商品カード + 下部固定カートバー
-
 import { createClient } from '@/lib/supabase/server'
 import { CustomerLayout } from '@/components/layout/CustomerLayout'
 import { MenuSelectionClient } from '@/components/order/MenuSelectionClient'
@@ -13,7 +9,6 @@ export const metadata: Metadata = { title: 'メニュー選択' }
 export default async function OrderMenuPage() {
   const supabase = await createClient()
 
-  // カテゴリ + メニュー + オプションを一括取得
   const { data: categories } = await supabase
     .from('menu_categories')
     .select('*')

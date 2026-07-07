@@ -1,51 +1,110 @@
 'use client'
-// app/order/confirm/page.tsx
-// C3: 注文確認画面
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { submitOrder } from '@/actions/order'
+import { prepareOrderConfirmation, submitOrder } from '@/actions/order'
 import { CustomerLayout } from '@/components/layout/CustomerLayout'
 import { formatPrice } from '@/hooks/useCart'
 import { cn } from '@/lib/utils'
 import type { CartState } from '@/lib/types/database'
 
+function CustomerErrorPage({
+  message,
+  onRestart,
+}: {
+  message: string
+  onRestart: () => void
+}) {
+  return (
+    <CustomerLayout title="エラー">
+      <div className="flex-1 flex items-center justify-center px-6">
+        <div className="w-full rounded-2xl bg-white border border-red-100 p-6 text-center shadow-sm">
+          <p className="text-4xl mb-4">!</p>
+          <h1 className="font-sans font-black text-xl text-brand-dark mb-3">
+            注文内容を確認できません
+          </h1>
+          <p className="font-sans text-sm leading-6 text-brand-dark/60">
+            {message}
+          </p>
+          <button
+            onClick={onRestart}
+            className="mt-6 w-full h-12 rounded-2xl bg-brand-red text-white font-sans font-bold"
+          >
+            最初からやり直す
+          </button>
+        </div>
+      </div>
+    </CustomerLayout>
+  )
+}
+
 export default function OrderConfirmPage() {
   const router = useRouter()
-  const [cart, setCart]       = useState<CartState | null>(null)
+  const [cart, setCart] = useState<CartState | null>(null)
   const [loading, setLoading] = useState(false)
-  const [error, setError]     = useState<string | null>(null)
+  const [initializing, setInitializing] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [pageError, setPageError] = useState<string | null>(null)
 
   useEffect(() => {
-    const raw = sessionStorage.getItem('rf_cart')
-    if (!raw) { router.replace('/order'); return }
-    const parsed: CartState = JSON.parse(raw)
-    if (!parsed.items || parsed.items.length === 0) {
-      router.replace('/order/menu')
-      return
+    async function initialize() {
+      const raw = sessionStorage.getItem('rf_cart')
+      if (!raw) {
+        router.replace('/order')
+        return
+      }
+
+      const parsed = JSON.parse(raw) as CartState
+      if (!parsed.items || parsed.items.length === 0) {
+        router.replace('/order/menu')
+        return
+      }
+
+      const tableId = sessionStorage.getItem('rf_table_id') ?? parsed.tableId
+      const result = await prepareOrderConfirmation({ tableId })
+
+      if ('error' in result) {
+        setPageError(result.error)
+        setInitializing(false)
+        return
+      }
+
+      setCart({ ...parsed, tableId, tableNumber: result.data.tableNumber })
+      setInitializing(false)
     }
-    // tableId / tableNumber は rf_table_id を正として上書き
-    const tableId     = sessionStorage.getItem('rf_table_id') ?? parsed.tableId
-    const tableNumber = sessionStorage.getItem('rf_table_number') ?? parsed.tableNumber
-    setCart({ ...parsed, tableId, tableNumber })
+
+    initialize().catch(() => {
+      setPageError('注文内容の確認中にエラーが発生しました。QRコードを読み取り直してください。')
+      setInitializing(false)
+    })
   }, [router])
 
-  if (!cart) {
+  if (pageError) {
+    return (
+      <CustomerErrorPage
+        message={pageError}
+        onRestart={() => router.replace('/')}
+      />
+    )
+  }
+
+  if (initializing || !cart) {
     return (
       <CustomerLayout title="注文確認">
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex flex-col items-center justify-center gap-3">
           <div className="h-8 w-8 rounded-full border-2 border-brand-red/30 border-t-brand-red animate-spin" />
+          <p className="font-sans text-sm text-brand-dark/50">注文内容を確認しています</p>
         </div>
       </CustomerLayout>
     )
   }
 
   const totalAmount = cart.items.reduce((sum, item) => {
-    const optsDelta = item.selectedOptions.reduce((s, o) => s + o.price_delta, 0)
+    const optsDelta = item.selectedOptions.reduce((s, option) => s + option.price_delta, 0)
     return sum + (item.unitPrice + optsDelta) * item.quantity
   }, 0)
 
-  const totalCount = cart.items.reduce((s, i) => s + i.quantity, 0)
+  const totalCount = cart.items.reduce((sum, item) => sum + item.quantity, 0)
 
   const handleSubmit = async () => {
     if (loading) return
@@ -55,11 +114,11 @@ export default function OrderConfirmPage() {
     const result = await submitOrder({
       tableId: cart.tableId,
       items: cart.items.map(item => ({
-        menuItemId:      item.menuItemId,
-        quantity:        item.quantity,
-        unitPrice:       item.unitPrice,
+        menuItemId: item.menuItemId,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
         selectedOptions: item.selectedOptions,
-        notes:           item.notes,
+        notes: item.notes,
       })),
     })
 
@@ -77,11 +136,11 @@ export default function OrderConfirmPage() {
     <CustomerLayout title="注文確認" onBack={() => router.back()}>
       <div className="flex-1 flex flex-col">
         <div className="mx-4 mt-4 px-4 py-3 bg-brand-light rounded-2xl flex items-center gap-3 border border-brand-dark/10">
-          <span className="text-xl">🪑</span>
+          <span className="text-xl">席</span>
           <div>
             <p className="font-sans text-xs text-brand-dark/50">お席</p>
             <p className="font-sans font-black text-xl text-brand-dark leading-none">
-              {cart.tableNumber || '—'}
+              {cart.tableNumber}
             </p>
           </div>
         </div>
@@ -89,7 +148,7 @@ export default function OrderConfirmPage() {
         <div className="flex-1 px-4 mt-4 space-y-3 overflow-y-auto pb-4">
           <h2 className="font-sans font-bold text-sm text-brand-dark/50">ご注文内容</h2>
           {cart.items.map(item => {
-            const optsDelta = item.selectedOptions.reduce((s, o) => s + o.price_delta, 0)
+            const optsDelta = item.selectedOptions.reduce((sum, option) => sum + option.price_delta, 0)
             const lineTotal = (item.unitPrice + optsDelta) * item.quantity
             return (
               <div key={item.cartItemId} className="bg-white rounded-2xl border border-gray-100 p-4">
@@ -98,9 +157,9 @@ export default function OrderConfirmPage() {
                     <p className="font-sans font-bold text-brand-dark">{item.menuItemName}</p>
                     {item.selectedOptions.length > 0 && (
                       <div className="mt-1 flex flex-wrap gap-1">
-                        {item.selectedOptions.map(opt => (
-                          <span key={opt.option_id} className="text-xs font-sans bg-brand-cream text-brand-dark/60 px-2 py-0.5 rounded-full">
-                            {opt.group_name}: {opt.option_name}
+                        {item.selectedOptions.map(option => (
+                          <span key={option.option_id} className="text-xs font-sans bg-brand-cream text-brand-dark/60 px-2 py-0.5 rounded-full">
+                            {option.group_name}: {option.option_name}
                           </span>
                         ))}
                       </div>
@@ -145,7 +204,7 @@ export default function OrderConfirmPage() {
               </>
             ) : '注文を確定する'}
           </button>
-          <p className="font-sans text-xs text-brand-dark/30 text-center mt-2">確定後の取り消しはできません</p>
+          <p className="font-sans text-xs text-brand-dark/30 text-center mt-2">確定後の取り消しはスタッフにお声がけください</p>
         </div>
       </div>
     </CustomerLayout>
