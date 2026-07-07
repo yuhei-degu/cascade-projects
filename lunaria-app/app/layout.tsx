@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next'
+import './globals.css'
 
 const title = 'Lunaria | AI日記'
 const description = 'Lunariaは、AIとの会話を通じて日々の気持ちや出来事を記録できる日本語の日記アプリです。'
@@ -21,33 +22,12 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#0e0d0b',
+  themeColor: '#080706',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ja">
-      <head>
-        <style>{`
-          *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-          body {
-            background: #0e0d0b;
-            color: #ddd5c5;
-            font-family: 'Hiragino Sans', 'Noto Sans JP', 'Meiryo', sans-serif;
-            height: 100dvh;
-            overflow: hidden;
-          }
-          .scroll-thin::-webkit-scrollbar { width: 3px; }
-          .scroll-thin::-webkit-scrollbar-thumb { background: rgba(255,255,255,.06); border-radius: 2px; }
-          @keyframes fadeUp { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-          @keyframes orbPulse { 0%,100% { transform: scale(1); opacity: .7; } 50% { transform: scale(1.3); opacity: 1; } }
-          @keyframes blink { 0%,100% { opacity: .1; } 55% { opacity: 1; } }
-          .fade-up { animation: fadeUp .35s ease-out; }
-          .orb-anim { animation: orbPulse 4s ease-in-out infinite; }
-          .blink-dot { animation: blink 1.2s ease-in-out infinite; }
-          input:focus, button:focus { outline: none; }
-        `}</style>
-      </head>
       <body>{children}</body>
     </html>
   )

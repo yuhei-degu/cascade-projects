@@ -108,10 +108,10 @@ function Typing() {
   return (
     <div role="status" aria-live="polite" aria-atomic="true" aria-label="Lunariaが返信中" style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
       <div aria-hidden="true" style={{ width: 6, height: 6, borderRadius: '50%', background: '#c8a060', flexShrink: 0, marginBottom: 3 }} />
-      <div style={{ background: '#1a1815', border: '1px solid rgba(255,255,255,.07)', borderRadius: '4px 14px 14px 14px', padding: '9px 14px', fontSize: 14 }}>
-        <span aria-hidden="true" className="blink-dot" style={{ color: '#c8a060', animationDelay: '0s' }}>・</span>
-        <span aria-hidden="true" className="blink-dot" style={{ color: '#c8a060', animationDelay: '.3s' }}>・</span>
-        <span aria-hidden="true" className="blink-dot" style={{ color: '#c8a060', animationDelay: '.6s' }}>・</span>
+      <div style={{ background: 'rgba(27,23,17,.92)', border: '1px solid var(--luna-border-soft)', borderRadius: '6px 16px 16px 16px', padding: '11px 15px', fontSize: 14, boxShadow: '0 12px 34px rgba(0,0,0,.22)' }}>
+        <span aria-hidden="true" className="blink-dot" style={{ color: 'var(--luna-gold)', animationDelay: '0s' }}>・</span>
+        <span aria-hidden="true" className="blink-dot" style={{ color: 'var(--luna-gold)', animationDelay: '.3s' }}>・</span>
+        <span aria-hidden="true" className="blink-dot" style={{ color: 'var(--luna-gold)', animationDelay: '.6s' }}>・</span>
       </div>
     </div>
   )
@@ -122,7 +122,7 @@ function ChatMsg({ msg }: { msg: Msg }) {
   return (
     <div className="fade-up" aria-label={ai ? 'Lunariaのメッセージ' : 'あなたのメッセージ'} style={{ display: 'flex', alignItems: 'flex-end', gap: 8, justifyContent: ai ? 'flex-start' : 'flex-end' }}>
       {ai && <div aria-hidden="true" style={{ width: 6, height: 6, borderRadius: '50%', background: '#c8a060', flexShrink: 0, marginBottom: 3 }} />}
-      <div style={{ maxWidth: '76%', fontSize: 14, lineHeight: 1.7, padding: '9px 13px', background: ai ? '#1a1815' : '#231f1b', border: `1px solid ${ai ? 'rgba(255,255,255,.07)' : 'rgba(255,255,255,.04)'}`, borderRadius: ai ? '4px 14px 14px 14px' : '14px 4px 14px 14px', color: ai ? '#ddd5c5' : '#c5bdb0' }}>
+      <div style={{ maxWidth: 'min(78%, 620px)', fontSize: 14, lineHeight: 1.75, padding: '11px 15px', background: ai ? 'rgba(27,23,17,.92)' : 'linear-gradient(145deg, rgba(241,199,127,.13), rgba(35,31,27,.92))', border: `1px solid ${ai ? 'var(--luna-border-soft)' : 'rgba(241,199,127,.16)'}`, borderRadius: ai ? '6px 16px 16px 16px' : '16px 6px 16px 16px', color: ai ? 'var(--luna-text)' : '#e9dcc8', boxShadow: ai ? '0 12px 34px rgba(0,0,0,.22)' : 'none', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}>
         {msg.content}
       </div>
     </div>
@@ -305,7 +305,7 @@ export default function ChatPage() {
   const orbColor = ROUTE_COLOR[routeType]
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden', background: '#0e0d0b', fontFamily: '"Hiragino Sans","Noto Sans JP","Meiryo",sans-serif', color: '#ddd5c5' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden', background: 'radial-gradient(circle at 28% -8%, rgba(241,199,127,.11), transparent 30%), radial-gradient(circle at 78% 0%, rgba(127,179,213,.08), transparent 32%), linear-gradient(180deg, var(--luna-bg) 0%, var(--luna-bg-soft) 100%)', fontFamily: '"Hiragino Sans","Noto Sans JP","Meiryo",sans-serif', color: 'var(--luna-text)' }}>
       {/* ヘッダー */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 16px', borderBottom: '1px solid rgba(255,255,255,.05)', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -342,12 +342,12 @@ export default function ChatPage() {
         gap: 10,
         padding: '8px 16px',
         borderBottom: '1px solid rgba(255,255,255,.04)',
-        background: 'linear-gradient(90deg, rgba(200,160,96,.06), rgba(127,179,213,.035))',
+        background: 'linear-gradient(90deg, rgba(241,199,127,.075), rgba(127,179,213,.035))',
         flexShrink: 0,
       }}>
         <LunariaPortrait expression={assistantVisual.expression} motion={assistantVisual.motion} size="sm" />
         <div style={{ minWidth: 0 }}>
-          <div style={{ color: '#c8a060', fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase' }}>ルナの気分</div>
+          <div style={{ color: 'var(--luna-gold)', fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase' }}>ルナの気分</div>
           <div style={{ color: '#8f8372', fontSize: 12, marginTop: 2 }}>
             {VISUAL_LABELS[assistantVisual.label] ?? assistantVisual.label} / {EXPRESSION_LABELS[assistantVisual.expression] ?? assistantVisual.expression} / {MOTION_LABELS[assistantVisual.motion] ?? assistantVisual.motion}
           </div>
@@ -407,9 +407,9 @@ export default function ChatPage() {
       {/* 入力 */}
       <div role="group" aria-label="Lunariaへのメッセージ入力" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px 16px', borderTop: '1px solid rgba(255,255,255,.05)', flexShrink: 0 }}>
         <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={onKey} placeholder="話しかける..." disabled={loading} autoComplete="off" aria-label="Lunariaへのチャットメッセージ" aria-keyshortcuts="Enter" aria-controls="lunaria-conversation-log" enterKeyHint="send"
-          style={{ flex: 1, background: '#181511', border: '1px solid rgba(255,255,255,.08)', borderRadius: 20, padding: '9px 15px', fontSize: 14, color: '#ddd5c5', caretColor: orbColor, fontFamily: 'inherit' }} />
+          style={{ flex: 1, background: 'rgba(8,7,6,.72)', border: '1px solid var(--luna-border)', borderRadius: 12, padding: '11px 14px', fontSize: 14, color: 'var(--luna-text)', caretColor: orbColor, fontFamily: 'inherit', lineHeight: 1.4 }} />
         <button onClick={send} disabled={!input.trim() || loading} aria-label="Lunariaにメッセージを送る"
-          style={{ width: 34, height: 34, borderRadius: '50%', background: orbColor, border: 'none', color: '#0e0d0b', fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, flexShrink: 0, opacity: input.trim() && !loading ? 1 : .22, transition: 'opacity .2s, background 1s' }}>↑</button>
+          style={{ width: 38, height: 38, borderRadius: '50%', background: orbColor, border: `1px solid ${orbColor}`, color: '#100d09', fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, flexShrink: 0, opacity: input.trim() && !loading ? 1 : .32, transition: 'opacity .2s, background 1s, transform .16s ease' }}>↑</button>
       </div>
     </div>
   )

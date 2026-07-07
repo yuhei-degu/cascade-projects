@@ -8,26 +8,28 @@ type Status = 'idle' | 'sending' | 'sent' | 'error'
 
 const tabStyle = (active: boolean) => ({
   flex: 1,
-  minHeight: 38,
-  border: '1px solid rgba(255,255,255,.1)',
-  borderRadius: 6,
-  background: active ? '#c8a060' : '#0f0d0a',
-  color: active ? '#0e0d0b' : '#ddd5c5',
+  minHeight: 42,
+  border: active ? '1px solid rgba(241,199,127,.52)' : '1px solid var(--luna-border)',
+  borderRadius: 8,
+  background: active ? 'linear-gradient(180deg, var(--luna-gold), var(--luna-gold-strong))' : 'rgba(241,199,127,.055)',
+  color: active ? '#100d09' : 'var(--luna-text-soft)',
   font: 'inherit',
   fontSize: 13,
   fontWeight: 700,
   cursor: 'pointer',
+  transition: 'background .16s ease, border-color .16s ease, color .16s ease, transform .16s ease',
 })
 
 const inputStyle = {
   width: '100%',
-  border: '1px solid rgba(255,255,255,.12)',
-  borderRadius: 6,
-  background: '#0f0d0a',
-  color: '#ddd5c5',
+  border: '1px solid var(--luna-border)',
+  borderRadius: 12,
+  background: 'rgba(8,7,6,.72)',
+  color: 'var(--luna-text)',
   font: 'inherit',
   fontSize: 15,
-  padding: '11px 12px',
+  lineHeight: 1.4,
+  padding: '12px 14px',
 }
 
 export default function LoginPage() {
@@ -138,19 +140,20 @@ export default function LoginPage() {
       minHeight: '100dvh',
       display: 'grid',
       placeItems: 'center',
-      padding: 24,
-      background: '#0e0d0b',
-      color: '#ddd5c5',
+      padding: '20px 16px',
+      background: 'radial-gradient(circle at 18% 8%, rgba(241,199,127,.15), transparent 34%), radial-gradient(circle at 84% 14%, rgba(127,179,213,.08), transparent 28%), linear-gradient(180deg, var(--luna-bg), var(--luna-bg-soft))',
+      color: 'var(--luna-text)',
     }}>
       <form onSubmit={submit} style={{
         width: 'min(100%, 440px)',
         display: 'flex',
         flexDirection: 'column',
         gap: 18,
-        padding: '28px 24px',
-        border: '1px solid rgba(255,255,255,.08)',
-        borderRadius: 8,
-        background: '#15130f',
+        padding: '28px clamp(18px, 5vw, 26px)',
+        border: '1px solid var(--luna-border)',
+        borderRadius: 16,
+        background: 'linear-gradient(145deg, rgba(27,23,17,.92), rgba(14,13,11,.96))',
+        boxShadow: 'var(--luna-shadow)',
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <h1 style={{ fontSize: 24, lineHeight: 1.3, fontWeight: 600 }}>Lunaria にログイン</h1>
@@ -205,12 +208,13 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={submitDisabled}
+          className="luna-button"
           style={{
             minHeight: 44,
-            border: 0,
-            borderRadius: 6,
-            background: '#c8a060',
-            color: '#0e0d0b',
+            border: '1px solid rgba(241,199,127,.36)',
+            borderRadius: 8,
+            background: 'linear-gradient(180deg, var(--luna-gold), var(--luna-gold-strong))',
+            color: '#100d09',
             font: 'inherit',
             fontWeight: 700,
             cursor: submitDisabled ? 'not-allowed' : 'pointer',

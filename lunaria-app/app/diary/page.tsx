@@ -429,12 +429,12 @@ const pageStyle: CSSProperties = {
   minHeight: '100dvh',
   overflowY: 'auto',
   background: `
-    radial-gradient(circle at 18% 8%, rgba(127,179,213,.18), transparent 34%),
-    radial-gradient(circle at 82% 16%, rgba(200,160,96,.14), transparent 28%),
-    radial-gradient(circle at 50% 100%, rgba(159,207,189,.08), transparent 34%),
-    linear-gradient(180deg, #0e0d0b 0%, #15120f 58%, #0b0a09 100%)
+    radial-gradient(circle at 18% 8%, rgba(241,199,127,.15), transparent 34%),
+    radial-gradient(circle at 82% 16%, rgba(127,179,213,.08), transparent 28%),
+    radial-gradient(circle at 50% 100%, rgba(241,199,127,.07), transparent 34%),
+    linear-gradient(180deg, var(--luna-bg) 0%, var(--luna-bg-soft) 58%, #0b0a09 100%)
   `,
-  color: '#ddd5c5',
+  color: 'var(--luna-text)',
   padding: '18px clamp(16px, 4vw, 46px) 40px',
 }
 
@@ -444,6 +444,7 @@ const headerStyle: CSSProperties = {
   gap: 16,
   alignItems: 'center',
   marginBottom: 26,
+  flexWrap: 'wrap',
 }
 
 const backLinkStyle: CSSProperties = {
@@ -453,18 +454,19 @@ const backLinkStyle: CSSProperties = {
 }
 
 const eyebrowStyle: CSSProperties = {
-  color: '#9fcfbd',
+  color: 'var(--luna-gold)',
   fontSize: 11,
-  letterSpacing: '.22em',
+  letterSpacing: '.16em',
   marginTop: 18,
   textTransform: 'uppercase',
 }
 
 const titleStyle: CSSProperties = {
-  fontSize: 'clamp(34px, 7vw, 68px)',
-  lineHeight: .98,
+  color: '#fff7e8',
+  fontSize: 'clamp(32px, 6vw, 58px)',
+  lineHeight: 1.08,
   marginTop: 10,
-  letterSpacing: '.04em',
+  letterSpacing: 0,
 }
 
 const leadStyle: CSSProperties = {
@@ -476,13 +478,13 @@ const leadStyle: CSSProperties = {
 }
 
 const moonboxLinkStyle: CSSProperties = {
-  color: '#c8a060',
+  color: 'var(--luna-gold)',
   textDecoration: 'none',
-  border: '1px solid rgba(200,160,96,.24)',
+  border: '1px solid var(--luna-border)',
   borderRadius: 999,
   padding: '9px 13px',
   fontSize: 12,
-  background: 'rgba(200,160,96,.06)',
+  background: 'rgba(241,199,127,.065)',
   whiteSpace: 'nowrap',
 }
 
@@ -491,19 +493,19 @@ const toolbarStyle: CSSProperties = {
   gap: 10,
   flexWrap: 'wrap',
   alignItems: 'center',
-  border: '1px solid rgba(255,255,255,.08)',
-  background: 'rgba(14,13,11,.62)',
-  borderRadius: 22,
+  border: '1px solid var(--luna-border)',
+  background: 'rgba(8,7,6,.72)',
+  borderRadius: 18,
   padding: 12,
   marginBottom: 18,
   backdropFilter: 'blur(12px)',
 }
 
 const navButtonStyle: CSSProperties = {
-  background: 'rgba(255,255,255,.05)',
-  border: '1px solid rgba(255,255,255,.1)',
-  borderRadius: 999,
-  color: '#c8bda9',
+  background: 'rgba(241,199,127,.07)',
+  border: '1px solid var(--luna-border)',
+  borderRadius: 8,
+  color: 'var(--luna-text-soft)',
   cursor: 'pointer',
   fontSize: 12,
   padding: '9px 13px',
@@ -511,12 +513,13 @@ const navButtonStyle: CSSProperties = {
 
 const dateInputStyle: CSSProperties = {
   colorScheme: 'dark',
-  background: '#171410',
-  color: '#ddd5c5',
-  border: '1px solid rgba(255,255,255,.12)',
+  background: 'rgba(8,7,6,.72)',
+  color: 'var(--luna-text)',
+  border: '1px solid var(--luna-border)',
   borderRadius: 12,
   padding: '9px 12px',
   fontSize: 14,
+  minHeight: 42,
 }
 
 const errorStyle: CSSProperties = {
@@ -541,11 +544,11 @@ const contentGridStyle: CSSProperties = {
 }
 
 const sectionStyle: CSSProperties = {
-  border: '1px solid rgba(230,210,170,.13)',
-  background: 'linear-gradient(145deg, rgba(31,27,21,.86), rgba(15,14,12,.94))',
-  borderRadius: 24,
+  border: '1px solid var(--luna-border)',
+  background: 'linear-gradient(145deg, rgba(27,23,17,.9), rgba(14,13,11,.96))',
+  borderRadius: 16,
   padding: 18,
-  boxShadow: '0 18px 60px rgba(0,0,0,.28)',
+  boxShadow: 'var(--luna-shadow)',
   position: 'relative',
   overflow: 'hidden',
 }
@@ -561,8 +564,8 @@ const sectionGlowStyle: CSSProperties = {
 
 const sectionTitleStyle: CSSProperties = {
   fontSize: 12,
-  letterSpacing: '.16em',
-  color: '#c8a060',
+  letterSpacing: '.12em',
+  color: 'var(--luna-gold)',
   marginBottom: 12,
   position: 'relative',
   textTransform: 'uppercase',
