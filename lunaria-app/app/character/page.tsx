@@ -1,7 +1,8 @@
 ﻿'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import ApiErrorState, { DEFAULT_API_ERROR_MESSAGE } from '@/components/ApiErrorState'
 import LunariaPortrait, { type LunariaExpression, type LunariaMotion } from '@/components/character/LunariaPortrait'
 
 type CharacterStateResponse = {
@@ -90,9 +91,12 @@ export default function CharacterPage() {
   const [expression, setExpression] = useState<LunariaExpression>('gentle_smile')
   const [motion, setMotion] = useState<LunariaMotion>('idle')
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const loadCharacterState = useCallback(() => {
     let alive = true
+    setLoading(true)
+    setError(null)
     fetch('/api/character/state', { cache: 'no-store' })
       .then(response => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`)))
       .then((nextState: CharacterStateResponse) => {
@@ -105,9 +109,10 @@ export default function CharacterPage() {
           setMotion(nextState.current_motion as LunariaMotion)
         }
       })
-      .catch(error => {
+      .catch(() => {
         if (!alive) return
-        setState({ ...FALLBACK_STATE, note: `代替データ: ${error.message}` })
+        setState({ ...FALLBACK_STATE, note: '通信に失敗したため、代替データを表示しています。' })
+        setError(DEFAULT_API_ERROR_MESSAGE)
       })
       .finally(() => {
         if (alive) setLoading(false)
@@ -117,6 +122,8 @@ export default function CharacterPage() {
       alive = false
     }
   }, [])
+
+  useEffect(() => loadCharacterState(), [loadCharacterState])
 
   const affinityStage = useMemo(() => {
     if (state.affinity_level >= 80) return '共犯者'
@@ -184,6 +191,8 @@ export default function CharacterPage() {
           <InfoCard label="品の進捗" value={`${state.total_items_owned}/${state.total_items_pool}`} detail={`${itemProgress}% 解放済み`} />
           <InfoCard label="取得元" value={SOURCE_LABELS[state.source]} detail={state.db_ready ? 'DB準備済み' : '代替モード'} />
         </section>
+
+        {error && <ApiErrorState message={error} onRetry={loadCharacterState} style={{ marginTop: 18 }} />}
 
         <section style={{ ...panelStyle, marginTop: 18 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start' }}>

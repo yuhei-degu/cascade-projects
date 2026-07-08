@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import Link from 'next/link'
+import ApiErrorState, { DEFAULT_API_ERROR_MESSAGE } from '@/components/ApiErrorState'
 import { LunariaPortrait } from '@/components/lunaria/LunariaPortrait'
 import { getGachaDrawCopy, pickDailyBonusCopy, pickNoTicketCopy } from '@/lib/lunaria/gacha-copy'
 import { getReactionForContext } from '@/lib/lunaria/reactions'
@@ -132,9 +133,10 @@ export default function GachaPage() {
   const refreshState = useCallback(async () => {
     try {
       const res = await fetch('/api/gacha/state')
-      if (res.ok) setState(await res.json())
-    } catch (e) {
-      console.warn('[gacha] state fetch failed', e)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      setState(await res.json())
+    } catch {
+      setErrorMsg(DEFAULT_API_ERROR_MESSAGE)
     }
   }, [])
 
@@ -144,6 +146,7 @@ export default function GachaPage() {
         fetch('/api/gacha/pool'),
         fetch('/api/gacha/inventory'),
       ])
+      if (!poolRes.ok || !inventoryRes.ok) throw new Error('collection_load_failed')
       if (poolRes.ok) {
         const data = await poolRes.json()
         setPool((data.items ?? []).sort(sortByRarityAndName))
@@ -152,8 +155,8 @@ export default function GachaPage() {
         const data = await inventoryRes.json()
         setInventory(data.items ?? [])
       }
-    } catch (e) {
-      console.warn('[gacha] collection fetch failed', e)
+    } catch {
+      setErrorMsg(DEFAULT_API_ERROR_MESSAGE)
     }
   }, [])
 
@@ -182,11 +185,15 @@ export default function GachaPage() {
   }, [clear, drawResult])
 
   const claimDaily = async () => {
-    const res = await fetch('/api/gacha/daily', { method: 'POST' })
-    if (res.ok) {
+    setErrorMsg(null)
+    try {
+      const res = await fetch('/api/gacha/daily', { method: 'POST' })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
       await refreshState()
       setNoticeMsg(pickDailyBonusCopy())
       window.setTimeout(() => setNoticeMsg(null), 2400)
+    } catch {
+      setErrorMsg(DEFAULT_API_ERROR_MESSAGE)
     }
   }
 
@@ -208,9 +215,11 @@ export default function GachaPage() {
 
     let data: DrawResult | { error: string }
     try {
-      data = await fetch('/api/gacha/draw', { method: 'POST' }).then(r => r.json())
+      const response = await fetch('/api/gacha/draw', { method: 'POST' })
+      data = await response.json()
+      if (!response.ok && !('error' in data)) throw new Error(`HTTP ${response.status}`)
     } catch {
-      setErrorMsg('抽選に失敗しました。時間をおいてもう一度お試しください。')
+      setErrorMsg(DEFAULT_API_ERROR_MESSAGE)
       setPhase('idle')
       setDrawing(false)
       return
@@ -221,7 +230,7 @@ export default function GachaPage() {
         setNoticeMsg(pickNoTicketCopy())
         window.setTimeout(() => setNoticeMsg(null), 2400)
       } else {
-        setErrorMsg('抽選に失敗しました。時間をおいてもう一度お試しください。')
+        setErrorMsg('抽選に失敗しました。もう一度お試しください。')
       }
       setPhase('idle')
       setDrawing(false)
@@ -321,7 +330,18 @@ export default function GachaPage() {
             </button>
           </section>
 
-          {errorMsg && <p className="gacha-message error">{errorMsg}</p>}
+          {errorMsg && (
+            <ApiErrorState
+              message={errorMsg}
+              onRetry={() => {
+                setErrorMsg(null)
+                void refreshState()
+                void refreshCollection()
+              }}
+              compact
+              style={{ margin: '12px auto', maxWidth: 420 }}
+            />
+          )}
           {noticeMsg && <p className="gacha-message">{noticeMsg}</p>}
 
           <p className="gacha-quota">本日の獲得チケット {state?.earned_today ?? 0}/5</p>

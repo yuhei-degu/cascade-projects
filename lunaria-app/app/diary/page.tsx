@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import type { CSSProperties, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import ApiErrorState, { DEFAULT_API_ERROR_MESSAGE } from '@/components/ApiErrorState'
 
 interface DiaryLog {
   diary_date: string
@@ -148,6 +149,7 @@ export default function DiaryPage() {
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [errorKind, setErrorKind] = useState<'load' | 'generate'>('load')
   const [sourceCounts, setSourceCounts] = useState({ extraction_count: 0, message_count: 0 })
   const [monthDays, setMonthDays] = useState<MonthDay[]>([])
 
@@ -165,6 +167,7 @@ export default function DiaryPage() {
   const loadDay = useCallback(async (targetDate: string) => {
     setLoading(true)
     setError(null)
+    setErrorKind('load')
     try {
       const [diaryRes, messagesRes] = await Promise.all([
         fetch(`/api/diary?date=${encodeURIComponent(targetDate)}&meta=1`, { cache: 'no-store' }),
@@ -180,7 +183,7 @@ export default function DiaryPage() {
       const messageData = await messagesRes.json()
       setMessages(Array.isArray(messageData.messages) ? messageData.messages : [])
     } catch {
-      setError('日記の棚を開けませんでした。少し待ってからもう一度お試しください。')
+      setError(DEFAULT_API_ERROR_MESSAGE)
       setDiary(null)
       setMessages([])
       setSourceCounts({ extraction_count: 0, message_count: 0 })
@@ -200,6 +203,7 @@ export default function DiaryPage() {
   const generateDiary = async () => {
     setGenerating(true)
     setError(null)
+    setErrorKind('generate')
     try {
       const res = await fetch('/api/diary', {
         method: 'POST',
@@ -210,12 +214,12 @@ export default function DiaryPage() {
       if (!res.ok || !data.ok) {
         setError(data.reason === 'no_source'
           ? 'この日の会話がまだ少ないため、日記を書けません。'
-          : 'ルナはこの日を見つけましたが、今回は日記にまとめられませんでした。もう一度お試しください。')
+          : '日記の作成に失敗しました。もう一度お試しください。')
       }
       await loadDay(date)
       await loadMonth(date)
     } catch {
-      setError('日記を書いている途中で失敗しました。もう一度お試しください。')
+      setError(DEFAULT_API_ERROR_MESSAGE)
     } finally {
       setGenerating(false)
     }
@@ -270,7 +274,13 @@ export default function DiaryPage() {
           </button>
         </section>
 
-        {error && <div style={errorStyle}>{error}</div>}
+        {error && (
+          <ApiErrorState
+            message={error}
+            onRetry={errorKind === 'generate' ? generateDiary : () => loadDay(date)}
+            style={{ marginBottom: 14 }}
+          />
+        )}
 
         {loading ? (
           <div style={loadingStyle}>棚を開いています...</div>

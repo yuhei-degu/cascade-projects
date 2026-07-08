@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import ApiErrorState, { DEFAULT_API_ERROR_MESSAGE } from '@/components/ApiErrorState'
 
 interface StatsReport {
   timestamp: string
@@ -98,13 +99,13 @@ export default function AdminGachaPage() {
       const body = await response.json()
       if (!response.ok) {
         setStats(null)
-        setError(body?.error === 'unauthorized' ? '本番環境では管理トークンが必要です。' : 'ガチャ統計を読み込めませんでした。')
+        setError(body?.error === 'unauthorized' ? '管理トークンが必要です。' : DEFAULT_API_ERROR_MESSAGE)
         return
       }
       setStats(body)
     } catch {
       setStats(null)
-      setError('ガチャ統計を読み込めませんでした。')
+      setError(DEFAULT_API_ERROR_MESSAGE)
     } finally {
       setLoading(false)
     }
@@ -167,7 +168,7 @@ export default function AdminGachaPage() {
             padding: 16,
             marginBottom: 20,
           }}>
-            <div style={{ color: '#ffb0b0', fontSize: 13, marginBottom: 10 }}>{error}</div>
+            <ApiErrorState message={error} onRetry={() => loadStats()} compact style={{ marginBottom: 10 }} />
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <input
                 value={token}

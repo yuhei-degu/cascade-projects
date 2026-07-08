@@ -1,7 +1,8 @@
 ﻿'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import ApiErrorState, { DEFAULT_API_ERROR_MESSAGE } from '@/components/ApiErrorState'
 
 type ItemCategory =
   | 'all'
@@ -145,16 +146,21 @@ export default function ItemsPage() {
   const [activeFilter, setActiveFilter] = useState<ItemCategory>('all')
   const [showUnowned, setShowUnowned] = useState(true)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const loadItems = useCallback(() => {
     let alive = true
+    setLoading(true)
+    setError(null)
     fetch('/api/items', { cache: 'no-store' })
       .then(response => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`)))
       .then((nextData: ItemsResponse) => {
         if (alive) setData(nextData)
       })
-      .catch(error => {
-        if (alive) setData({ items: FALLBACK_ITEMS, source: 'mock', db_ready: false, note: `ローカルの代替データ: ${error.message}` })
+      .catch(() => {
+        if (!alive) return
+        setData({ items: FALLBACK_ITEMS, source: 'mock', db_ready: false, note: '通信に失敗したため、代替データを表示しています。' })
+        setError(DEFAULT_API_ERROR_MESSAGE)
       })
       .finally(() => {
         if (alive) setLoading(false)
@@ -164,6 +170,8 @@ export default function ItemsPage() {
       alive = false
     }
   }, [])
+
+  useEffect(() => loadItems(), [loadItems])
 
   const filteredItems = useMemo(() => {
     return data.items.filter(item => {
@@ -215,6 +223,8 @@ export default function ItemsPage() {
             }
           />
         </section>
+
+        {error && <ApiErrorState message={error} onRetry={loadItems} style={{ marginBottom: 18 }} />}
 
         <section style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginBottom: 18 }}>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

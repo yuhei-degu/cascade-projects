@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import ApiErrorState, { DEFAULT_API_ERROR_MESSAGE } from '@/components/ApiErrorState'
 
 interface InventoryItem {
   id: string
@@ -78,16 +79,26 @@ export default function InventoryPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
   const [filter, setFilter] = useState<Category>('all')
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const loadInventory = useCallback(() => {
+    setLoading(true)
+    setError(null)
     fetch('/api/gacha/inventory')
-      .then(r => r.json())
+      .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
       .then(d => {
         setItems(d.items ?? [])
-        setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch(() => {
+        setItems([])
+        setError(DEFAULT_API_ERROR_MESSAGE)
+      })
+      .finally(() => setLoading(false))
   }, [])
+
+  useEffect(() => {
+    loadInventory()
+  }, [loadInventory])
 
   const filtered = filter === 'all' ? items : items.filter(i => i.category === filter)
 
@@ -136,7 +147,9 @@ export default function InventoryPage() {
       </div>
 
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }} className="scroll-thin">
-        {loading ? (
+        {error ? (
+          <ApiErrorState message={error} onRetry={loadInventory} />
+        ) : loading ? (
           <InventorySkeleton />
         ) : filtered.length === 0 ? (
           <InventoryEmpty filtered={filter !== 'all'} />

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import ApiErrorState, { DEFAULT_API_ERROR_MESSAGE } from '@/components/ApiErrorState'
 
 type CheckoutButtonProps = {
   disabled: boolean
@@ -24,13 +25,13 @@ export default function CheckoutButton({ disabled }: CheckoutButtonProps) {
       const data = (await response.json()) as { url?: string; error?: string }
 
       if (!response.ok || !data.url) {
-        setError(data.error ?? 'checkout_unavailable')
+        setError('購入手続きを開始できませんでした。もう一度お試しください。')
         return
       }
 
       window.location.href = data.url
     } catch {
-      setError('checkout_unavailable')
+      setError(DEFAULT_API_ERROR_MESSAGE)
     } finally {
       setLoading(false)
     }
@@ -58,11 +59,7 @@ export default function CheckoutButton({ disabled }: CheckoutButtonProps) {
       >
         {loading ? '接続中...' : disabled ? '現在は受付停止中' : 'チェックアウトへ進む'}
       </button>
-      {error && (
-        <p role="alert" style={{ color: '#d59a83', fontSize: 12, lineHeight: 1.6 }}>
-          {error}
-        </p>
-      )}
+      {error && <ApiErrorState message={error} onRetry={startCheckout} compact />}
     </div>
   )
 }

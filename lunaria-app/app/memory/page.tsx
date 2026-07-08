@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import type { CSSProperties, ReactNode } from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import ApiErrorState, { DEFAULT_API_ERROR_MESSAGE } from '@/components/ApiErrorState'
 
 interface MemoryItem {
   id: string
@@ -343,7 +344,7 @@ export default function MemoryPage() {
       setCandidates(Array.isArray(candidateData.candidates) ? candidateData.candidates : [])
       setCandidateStats(candidateData.stats)
     } catch {
-      setError('記憶の棚を開けませんでした。少し待ってからもう一度お試しください。')
+      setError(DEFAULT_API_ERROR_MESSAGE)
       setMemories([])
       setStats(null)
       setCandidateTableReady(false)
@@ -371,7 +372,7 @@ export default function MemoryPage() {
       if (!res.ok || !data?.ok) throw new Error(data?.error ?? 'review_failed')
       await loadMemories()
     } catch {
-      setError('記憶候補を更新できませんでした。少し待ってからもう一度お試しください。')
+      setError('記憶候補を更新できませんでした。もう一度お試しください。')
     } finally {
       setCandidateBusyId(null)
     }
@@ -405,7 +406,7 @@ export default function MemoryPage() {
       if (!res.ok || !data?.ok) throw new Error(data?.error ?? 'memory_update_failed')
       await loadMemories()
     } catch {
-      setError('記憶を更新できませんでした。少し待ってからもう一度お試しください。')
+      setError('記憶を更新できませんでした。もう一度お試しください。')
     } finally {
       setMemoryBusyId(null)
     }
@@ -470,7 +471,7 @@ export default function MemoryPage() {
           </select>
         </section>
 
-        {error && <div style={errorStyle}>{error}</div>}
+        {error && <ApiErrorState message={error} onRetry={loadMemories} style={{ marginBottom: 14 }} />}
 
         <div style={contentGridStyle}>
           <div style={{ display: 'grid', gap: 16 }}>

@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect, useRef, useCallback } from 'react'
+import ApiErrorState, { DEFAULT_API_ERROR_MESSAGE } from '@/components/ApiErrorState'
 import LunariaPortrait from '@/components/character/LunariaPortrait'
 import {
   type LunariaExpression,
@@ -148,15 +149,16 @@ export default function ChatPage() {
   const [convMode, setConvMode]               = useState<string>('continue')
   const [userName, setUserName]               = useState<string>('')
   const [ticketToast, setTicketToast]         = useState<string | null>(null)
+  const [chatError, setChatError]             = useState<string | null>(null)
   const [assistantVisual, setAssistantVisual] = useState<AssistantVisualState>(() => visualFromAssistant(null, 'light_normal'))
   const [assistantNextStep, setAssistantNextStep] = useState('')
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef  = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    // DB から履歴を取得（リロード後も続きから話せる）
+  const loadInitialMessages = useCallback(() => {
+    setChatError(null)
     fetch('/api/messages')
-      .then(r => r.json())
+      .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
       .then(data => {
         if (data.messages?.length > 0) {
           setMsgs(data.messages)
@@ -164,7 +166,15 @@ export default function ChatPage() {
           setMsgs(load<Msg[]>('luna_msgs', []).slice(-30))
         }
       })
-      .catch(() => setMsgs(load<Msg[]>('luna_msgs', []).slice(-30)))
+      .catch(() => {
+        setMsgs(load<Msg[]>('luna_msgs', []).slice(-30))
+        setChatError(DEFAULT_API_ERROR_MESSAGE)
+      })
+  }, [])
+
+  useEffect(() => {
+    // DB から履歴を取得（リロード後も続きから話せる）
+    loadInitialMessages()
     setPrevScores(load('luna_scores', []))
     setPrevHeavy(load('luna_heavy', 0))
     setLastSeriousAt(load('luna_lastSeriousAt', 0))
@@ -175,7 +185,7 @@ export default function ChatPage() {
       work: false, health: false, meal: false,
       relation: false, hobby: false, tomorrow: false, small_positive: false,
     }))
-  }, [])
+  }, [loadInitialMessages])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -183,21 +193,36 @@ export default function ChatPage() {
   }, [msgs, loading])
 
   // セッション終了検知（5分無操作で日記生成）
+  const writeTodayDiary = useCallback(async () => {
+    try {
+      const response = await fetch('/api/diary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: new Date().toISOString().split('T')[0] }),
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      setChatError(null)
+    } catch {
+      setChatError(DEFAULT_API_ERROR_MESSAGE)
+    }
+  }, [])
+
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (msgs.length > 0) {
-        await fetch('/api/diary', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date: new Date().toISOString().split('T')[0] }) })
+        await writeTodayDiary()
       }
     }, 5 * 60 * 1000)
     return () => clearTimeout(timer)
-  }, [msgs])
+  }, [msgs, writeTodayDiary])
 
   const send = useCallback(async () => {
     const text = input.trim()
     if (!text || loading) return
     const userMsg: Msg = { role: 'user', content: text, ts: Date.now() }
     const newMsgs = [...msgs, userMsg]
-    setMsgs(newMsgs); setInput(''); setLoading(true); setAssistantNextStep('')
+    setChatError(null)
+    setMsgs(newMsgs); setLoading(true); setAssistantNextStep('')
 
     // 受信開始したら typing インジケータを切って placeholder を出す
     let placeholderInserted = false
@@ -279,22 +304,24 @@ export default function ChatPage() {
             save('luna_lastSub', d.lastSubtopic ?? 'unknown')
             save('luna_coverage', d.coverage ?? coverage)
 
-            // ガチャチケット獲得通知（3 秒間トースト表示）
             if (d.ticketGranted) {
-              setTicketToast(`🎟 ガチャ券もらった！（${d.ticketTotal ?? '?'}枚）`)
+              setTicketToast(`ガチャ券を受け取りました（${d.ticketTotal ?? '?'}枚）`)
               setTimeout(() => setTicketToast(null), 3000)
             }
           }
         }
       }
+      setInput('')
       // 何も来ずに終わった保険
       if (!placeholderInserted) {
         setMsgs(p => [...p, { role: 'assistant', content: 'ちょい待って', ts: Date.now() }])
       }
     } catch {
       if (!placeholderInserted) {
-        setMsgs(p => [...p, { role: 'assistant', content: 'ちょい待って', ts: Date.now() }])
+        setMsgs(msgs)
+        setInput(text)
       }
+      setChatError(DEFAULT_API_ERROR_MESSAGE)
     } finally { setLoading(false); inputRef.current?.focus() }
   }, [input, loading, msgs, prevScores, prevHeavy, lastSeriousAt, consecutiveTopicCount, lastTopic, lastSubtopic, coverage])
 
@@ -390,7 +417,7 @@ export default function ChatPage() {
               {lastSeriousAt > 0 ? Math.max(0, Math.ceil((lastSeriousAt + 15*60*1000 - Date.now()) / 60000)) + '分' : '-'}
             </span>
             <span style={{ color: '#555', margin: '0 8px' }}>|</span>
-            <button onClick={() => fetch('/api/diary', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date: new Date().toISOString().split('T')[0] }) })}
+            <button onClick={() => { void writeTodayDiary() }}
               style={{ fontSize: 10, color: '#4a4640', background: 'none', border: '1px solid rgba(255,255,255,.08)', borderRadius: 3, padding: '1px 6px', cursor: 'pointer' }}>日記生成</button>
           </div>
         </div>
@@ -401,6 +428,7 @@ export default function ChatPage() {
         {msgs.length === 0 && <div role="note" aria-label="Lunariaに話しかける" style={{ fontSize: 13, color: '#3a3632', textAlign: 'center', marginTop: 40 }}>話しかけてみて</div>}
         {msgs.map((m, i) => <ChatMsg key={`${m.role}-${m.ts}-${i}`} msg={m} />)}
         {loading && <Typing />}
+        {chatError && <ApiErrorState message={chatError} onRetry={input.trim() ? send : loadInitialMessages} compact style={{ alignSelf: 'center', width: 'min(100%, 420px)' }} />}
         <div ref={bottomRef} />
       </div>
 
