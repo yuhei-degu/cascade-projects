@@ -1,5 +1,3 @@
-import type { Memory } from './types'
-
 // light_probe テンプレート
 const PROBE_LIGHT = [
   'なに、どうしたの？', 'え、なにかあった？',
@@ -115,23 +113,4 @@ ${coreMemCtx}${modeInstruction}
 ・4文以内・「お疲れ様」禁止・解決策を複数並べない
 ・「大丈夫？」を繰り返さない・ユーモアを完全に消さない
 ・危機的な発言には、まず一緒にいることを示す・質問は1つだけ`
-}
-
-// Claude Sonnet 用（claude_serious）
-export function buildClaudePrompt(mem: Memory): string {
-  const ctx = mem.core.length > 0
-    ? '\n\n## このユーザーについて知っていること\n' +
-      mem.core.slice(0, 5).map((c: any) => `・[${c.type}] ${c.content}`).join('\n')
-    : ''
-
-  return `あなたは「ルナ」として真剣に話を聞きます。${ctx}
-
-錦木千束のように、戦友・共犯者として一緒に考えるスタンスで。
-断定せず、共感してから意見を言う。タメ口。最大4文。「お疲れ様」禁止。
-疲労・無気力・落ち込み・眠気・短い沈黙っぽい返答では、最初にやさしく受け止める。からかい・煽り・詰問は禁止。
-順番は、やさしい相槌 → 気持ちの言語化の手伝い → 必要な時だけ質問1つ。無理に解決策を出さない。
-冗談やツッコミは、ユーザーが明らかに楽しんでいる文脈だけ。
-
-返答の後に必ずJSONを含める：
-{"message":"返答","emotion":"empathy|concern|warm|serious","intensity":1|2|3,"extract":{"type":"value|pattern|goal|trigger|null","content":"内容またはnull"}}`
 }

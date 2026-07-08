@@ -36,7 +36,6 @@ const T = {
   extractions: 'lunaria_extractions',
 } as const
 
-const DEBUG_PROMPT = process.env.LUNARIA_DEBUG_PROMPT === '1'
 const MAX_MESSAGE_CHARS = 2000
 const MAX_HISTORY_ITEMS = 20
 
@@ -148,7 +147,6 @@ export async function POST(req: NextRequest) {
     const detectedName = detectNameFromMessage(userMessage)
     const sourceDate = getJstDateString()
     if (detectedName) {
-      console.log('[memory] name detected:', detectedName)
       saveCoreMemory('name', detectedName, userId, { sourceDate, confidence: 1, status: 'confirmed', lastConfirmedAt: new Date().toISOString() }).catch(e => console.warn('[memory]', e))
     }
 
@@ -228,7 +226,6 @@ export async function POST(req: NextRequest) {
           if (probeMemory) {
             precomputedReply = buildMemorySurfaceReply(probeMemory)
             newLastMemorySurfacedAt = Date.now()
-            console.log('[memory] probe surface:', probeMemory)
           }
         } catch (e) {
           console.warn('[memory] getMemoryForProbe error:', e)
@@ -238,7 +235,6 @@ export async function POST(req: NextRequest) {
         precomputedReply = morningMsg ?? getProbeTemplate(route.windowScore)
       }
     } else if (topicResult.intent === 'clarify_first' && topicResult.clarifying_question) {
-      console.log('[intent] clarify_first:', topicResult.clarifying_question)
       precomputedReply = topicResult.clarifying_question
     }
 
@@ -260,10 +256,6 @@ export async function POST(req: NextRequest) {
     const systemWithContext = route.routeType === 'claude_serious'
       ? buildSeriousPrompt(promptPayload)
       : buildNormalPrompt(promptPayload)
-    if (precomputedReply === null) {
-      console.log('[intent] answer_directly, topic:', topicResult.current_topic)
-      if (DEBUG_PROMPT) console.log('[DEBUG-PROMPT]\n' + systemWithContext)
-    }
     const gameHandoffNextStep = getGameHandoffNextStep(userMessage, contextualMem ?? null, history)
     const gameHandoffResponseHint = buildGameHandoffResponseHint(gameHandoffNextStep)
     const llmMsgs: OpenAI.Chat.ChatCompletionMessageParam[] = [
@@ -300,7 +292,6 @@ export async function POST(req: NextRequest) {
             // LLM ストリーミング（gemini-2.5-flash → quota 超過時 gemini-1.5-pro へフォールバック）
             const streamFromGemini = async (model: string) => {
               let raw = ''
-              let finishReason: string | null = null
               const res = await gemini.chat.completions.create({
                 model,
                 // Gemini 2.5 系は thinking トークンが max_tokens に含まれるため余裕を持たせる
@@ -315,14 +306,7 @@ export async function POST(req: NextRequest) {
                   raw += delta
                   send({ type: 'chunk', text: delta })
                 }
-                // 最後のチャンクで finish_reason が入る
-                if (part.choices[0]?.finish_reason) {
-                  finishReason = part.choices[0].finish_reason
-                }
               }
-              // 早期停止の診断ログ：原因（length / safety / stop / etc.）と末尾を残す
-              const tail = raw.slice(-30).replace(/\n/g, '\\n')
-              console.log(`[chat-stream] model=${model} finish_reason=${finishReason} length=${raw.length} tail="${tail}"`)
               return raw
             }
 
@@ -359,7 +343,6 @@ export async function POST(req: NextRequest) {
                 const tail = `\n\n${fadeHint}`
                 reply = `${reply}${tail}`
                 send({ type: 'chunk', text: tail })
-                console.log('[subscription] fade hint injected')
               }
             } catch (e) {
               console.warn('[subscription] fadeHint error:', e)
@@ -412,9 +395,8 @@ export async function POST(req: NextRequest) {
                 await updateEm(extraction.emotions, userId)
 
                 if (extraction.long_term_candidate?.type && extraction.long_term_candidate?.content) {
-                  console.log('[memory-candidate] saving:', extraction.long_term_candidate)
                   const { saveMemoryCandidate } = await import('../../../lib/lunaria/memory-candidates')
-                  const saved = await saveMemoryCandidate(
+                  await saveMemoryCandidate(
                     extraction.long_term_candidate.type,
                     extraction.long_term_candidate.content,
                     userId,
@@ -425,9 +407,6 @@ export async function POST(req: NextRequest) {
                       reason: extraction.summary,
                     },
                   )
-                  console.log('[memory-candidate] saved:', saved)
-                } else {
-                  console.log('[memory] no candidate in extraction:', extraction.summary)
                 }
                 await supabaseAdmin.from(T.extractions).insert({
                   user_id: userId,
