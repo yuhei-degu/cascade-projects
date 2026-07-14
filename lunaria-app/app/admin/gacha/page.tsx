@@ -64,7 +64,7 @@ function StatCard({ label, value, sub }: { label: string; value: string | number
       border: '1px solid rgba(255,255,255,0.08)',
       borderRadius: 'var(--luna-radius-lg)',
       padding: 16,
-      boxShadow: '0 18px 50px rgba(0,0,0,0.18)',
+      boxShadow: 'var(--luna-shadow-sm)',
     }}>
       <div style={{ color: '#7a7060', fontSize: 11, letterSpacing: '.08em', marginBottom: 8 }}>{label}</div>
       <div style={{ color: 'var(--luna-text-soft)', fontSize: 28 }}>{value}</div>

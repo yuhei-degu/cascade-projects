@@ -171,7 +171,7 @@ export default function InventoryPage() {
                     border: `1px solid ${color}55`,
                     borderRadius: 'var(--luna-radius-sm)',
                     background: 'rgba(255,247,232,.04)',
-                    boxShadow: '0 12px 34px rgba(0,0,0,.18)',
+                    boxShadow: 'var(--luna-shadow-sm)',
                   }}
                 >
                   <div style={{

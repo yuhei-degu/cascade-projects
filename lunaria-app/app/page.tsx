@@ -109,7 +109,7 @@ function LandingPage() {
             borderRadius: 'var(--luna-radius-md)',
             background: '#11100d',
             padding: 12,
-            boxShadow: '0 28px 80px rgba(0,0,0,.42)',
+            boxShadow: 'var(--luna-shadow-lg)',
           }}>
             <div style={{ border: '1px solid rgba(213,164,95,.2)', borderRadius: 'var(--luna-radius-sm)', background: '#0c0b09', overflow: 'hidden' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,.1)', padding: '12px 16px' }}>

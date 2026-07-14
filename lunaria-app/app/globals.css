@@ -310,7 +310,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   border: 1px solid var(--luna-border-soft);
   border-radius: 6px 16px 16px 16px;
   background: rgba(27,23,17,.92);
-  box-shadow: 0 12px 34px rgba(0,0,0,.22);
+  box-shadow: var(--luna-shadow-sm);
 }
 
 .chat-bubble.user {
@@ -910,7 +910,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   border: 1px solid color-mix(in srgb, var(--rarity-color), transparent 68%);
   border-radius: var(--luna-radius-md);
   background: rgba(255,255,255,0.035);
-  box-shadow: 0 12px 34px rgba(0,0,0,.18);
+  box-shadow: var(--luna-shadow-sm);
 }
 
 .collection-card.owned {

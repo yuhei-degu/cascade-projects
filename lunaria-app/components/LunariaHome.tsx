@@ -109,7 +109,7 @@ function Typing() {
   return (
     <div role="status" aria-live="polite" aria-atomic="true" aria-label="Lunariaが返信中" style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
       <div aria-hidden="true" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--luna-gold-strong)', flexShrink: 0, marginBottom: 3 }} />
-      <div style={{ background: 'rgba(27,23,17,.92)', border: '1px solid var(--luna-border-soft)', borderRadius: '6px 16px 16px 16px', padding: '11px 15px', fontSize: 14, boxShadow: '0 12px 34px rgba(0,0,0,.22)' }}>
+      <div style={{ background: 'rgba(27,23,17,.92)', border: '1px solid var(--luna-border-soft)', borderRadius: '6px 16px 16px 16px', padding: '11px 15px', fontSize: 14, boxShadow: 'var(--luna-shadow-sm)' }}>
         <span aria-hidden="true" className="blink-dot" style={{ color: 'var(--luna-gold)', animationDelay: '0s' }}>・</span>
         <span aria-hidden="true" className="blink-dot" style={{ color: 'var(--luna-gold)', animationDelay: '.3s' }}>・</span>
         <span aria-hidden="true" className="blink-dot" style={{ color: 'var(--luna-gold)', animationDelay: '.6s' }}>・</span>
@@ -123,7 +123,7 @@ function ChatMsg({ msg }: { msg: Msg }) {
   return (
     <div className="fade-up" aria-label={ai ? 'Lunariaのメッセージ' : 'あなたのメッセージ'} style={{ display: 'flex', alignItems: 'flex-end', gap: 8, justifyContent: ai ? 'flex-start' : 'flex-end' }}>
       {ai && <div aria-hidden="true" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--luna-gold-strong)', flexShrink: 0, marginBottom: 3 }} />}
-      <div style={{ maxWidth: 'min(78%, 620px)', fontSize: 14, lineHeight: 1.75, padding: '11px 15px', background: ai ? 'rgba(27,23,17,.92)' : 'linear-gradient(145deg, rgba(241,199,127,.13), rgba(35,31,27,.92))', border: `1px solid ${ai ? 'var(--luna-border-soft)' : 'rgba(241,199,127,.16)'}`, borderRadius: ai ? '6px 16px 16px 16px' : '16px 6px 16px 16px', color: ai ? 'var(--luna-text)' : 'var(--luna-text)', boxShadow: ai ? '0 12px 34px rgba(0,0,0,.22)' : 'none', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}>
+      <div style={{ maxWidth: 'min(78%, 620px)', fontSize: 14, lineHeight: 1.75, padding: '11px 15px', background: ai ? 'rgba(27,23,17,.92)' : 'linear-gradient(145deg, rgba(241,199,127,.13), rgba(35,31,27,.92))', border: `1px solid ${ai ? 'var(--luna-border-soft)' : 'rgba(241,199,127,.16)'}`, borderRadius: ai ? '6px 16px 16px 16px' : '16px 6px 16px 16px', color: ai ? 'var(--luna-text)' : 'var(--luna-text)', boxShadow: ai ? 'var(--luna-shadow-sm)' : 'none', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}>
         {msg.content}
       </div>
     </div>
@@ -337,16 +337,16 @@ export default function ChatPage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '11px 16px', borderBottom: '1px solid rgba(255,255,255,.05)', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div aria-hidden="true" className="orb-anim" style={{ width: 8, height: 8, borderRadius: '50%', background: orbColor, transition: 'background 1s' }} />
-          <span style={{ fontSize: 15, fontWeight: 500, letterSpacing: '.06em' }}>ルナ</span>
+          <span style={{ fontFamily: 'var(--luna-font-display)', fontSize: 16, fontWeight: 600, letterSpacing: '.08em' }}>ルナ</span>
         </div>
         <nav aria-label="Lunariaのナビゲーション" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <a href="/diary" aria-label="日記を開く" style={{ fontSize: 12, color: '#7a7060', textDecoration: 'none' }}>日々</a>
-          <a href="/memory" aria-label="記憶を開く" style={{ fontSize: 12, color: '#7a7060', textDecoration: 'none' }}>記憶</a>
-          <a href="/character" aria-label="姿を開く" style={{ fontSize: 12, color: '#7a7060', textDecoration: 'none' }}>姿</a>
-          <a href="/items" aria-label="品を開く" style={{ fontSize: 12, color: '#7a7060', textDecoration: 'none' }}>品</a>
-          <a href="/games" aria-label="ゲームを開く" style={{ fontSize: 12, color: '#7a7060', textDecoration: 'none' }}>ゲーム</a>
-          <a href="/gacha" aria-label="ガチャを開く" style={{ fontSize: 12, color: '#7a7060', textDecoration: 'none' }}>🎟</a>
-          <button onClick={() => setShowDev(v => !v)} aria-label="開発者向け診断の表示を切り替える" aria-pressed={showDev} style={{ fontSize: 10, color: showDev ? '#7a7060' : '#2e2c28', background: 'none', border: 'none', cursor: 'pointer' }}>診断</button>
+          <a href="/diary" aria-label="日記を開く" style={{ fontSize: 12, color: 'var(--luna-faint)', textDecoration: 'none' }}>日々</a>
+          <a href="/memory" aria-label="記憶を開く" style={{ fontSize: 12, color: 'var(--luna-faint)', textDecoration: 'none' }}>記憶</a>
+          <a href="/character" aria-label="姿を開く" style={{ fontSize: 12, color: 'var(--luna-faint)', textDecoration: 'none' }}>姿</a>
+          <a href="/items" aria-label="品を開く" style={{ fontSize: 12, color: 'var(--luna-faint)', textDecoration: 'none' }}>品</a>
+          <a href="/games" aria-label="ゲームを開く" style={{ fontSize: 12, color: 'var(--luna-faint)', textDecoration: 'none' }}>ゲーム</a>
+          <a href="/gacha" aria-label="ガチャを開く" style={{ fontSize: 12, color: 'var(--luna-faint)', textDecoration: 'none' }}>🎟</a>
+          <button onClick={() => setShowDev(v => !v)} aria-label="開発者向け診断の表示を切り替える" aria-pressed={showDev} style={{ fontSize: 10, color: showDev ? 'var(--luna-faint)' : '#2e2c28', background: 'none', border: 'none', cursor: 'pointer' }}>診断</button>
         </nav>
       </div>
 
@@ -379,7 +379,7 @@ export default function ChatPage() {
             {VISUAL_LABELS[assistantVisual.label] ?? assistantVisual.label} / {EXPRESSION_LABELS[assistantVisual.expression] ?? assistantVisual.expression} / {MOTION_LABELS[assistantVisual.motion] ?? assistantVisual.motion}
           </div>
           {assistantNextStep && (
-            <div role="status" aria-live="polite" aria-atomic="true" aria-label="Lunariaからの次の提案" style={{ color: '#bba989', fontSize: 12, lineHeight: 1.45, marginTop: 4, maxWidth: 'min(64vw, 520px)', overflowWrap: 'anywhere' }}>
+            <div role="status" aria-live="polite" aria-atomic="true" aria-label="Lunariaからの次の提案" style={{ color: 'var(--luna-text-soft)', fontSize: 12, lineHeight: 1.45, marginTop: 4, maxWidth: 'min(64vw, 520px)', overflowWrap: 'anywhere' }}>
               次: {assistantNextStep}
             </div>
           )}
