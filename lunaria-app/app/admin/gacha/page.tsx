@@ -62,12 +62,12 @@ function StatCard({ label, value, sub }: { label: string; value: string | number
     <div style={{
       background: 'linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.025))',
       border: '1px solid rgba(255,255,255,0.08)',
-      borderRadius: 16,
+      borderRadius: 'var(--luna-radius-lg)',
       padding: 16,
       boxShadow: '0 18px 50px rgba(0,0,0,0.18)',
     }}>
       <div style={{ color: '#7a7060', fontSize: 11, letterSpacing: '.08em', marginBottom: 8 }}>{label}</div>
-      <div style={{ color: '#ddd5c5', fontSize: 28 }}>{value}</div>
+      <div style={{ color: 'var(--luna-text-soft)', fontSize: 28 }}>{value}</div>
       {sub && <div style={{ color: '#888', fontSize: 12, marginTop: 6 }}>{sub}</div>}
     </div>
   )
@@ -137,7 +137,7 @@ export default function AdminGachaPage() {
             onClick={() => loadStats()}
             style={{
               background: 'rgba(255,255,255,0.06)',
-              color: '#ddd5c5',
+              color: 'var(--luna-text-soft)',
               border: '1px solid rgba(255,255,255,0.12)',
               borderRadius: 999,
               padding: '8px 14px',
@@ -152,7 +152,7 @@ export default function AdminGachaPage() {
           <div style={{ color: '#7fb3d5', fontSize: 12, letterSpacing: '.16em', marginBottom: 8 }}>
             LUNARIA 運用
           </div>
-          <h1 style={{ color: '#ddd5c5', fontSize: 30, fontWeight: 400, marginBottom: 8 }}>
+          <h1 style={{ color: 'var(--luna-text-soft)', fontSize: 30, fontWeight: 400, marginBottom: 8 }}>
             ガチャ観測所
           </h1>
           <p style={{ color: '#7a7060', fontSize: 13, lineHeight: 1.7 }}>
@@ -164,7 +164,7 @@ export default function AdminGachaPage() {
           <section style={{
             background: 'rgba(255,107,107,0.08)',
             border: '1px solid rgba(255,107,107,0.22)',
-            borderRadius: 16,
+            borderRadius: 'var(--luna-radius-lg)',
             padding: 16,
             marginBottom: 20,
           }}>
@@ -179,7 +179,7 @@ export default function AdminGachaPage() {
                   flex: 1,
                   minWidth: 240,
                   background: '#0e0d0b',
-                  color: '#ddd5c5',
+                  color: 'var(--luna-text-soft)',
                   border: '1px solid rgba(255,255,255,0.12)',
                   borderRadius: 10,
                   padding: '10px 12px',
@@ -189,7 +189,7 @@ export default function AdminGachaPage() {
                 onClick={saveTokenAndReload}
                 style={{
                   background: '#2d3a44',
-                  color: '#ddd5c5',
+                  color: 'var(--luna-text-soft)',
                   border: '1px solid rgba(127,179,213,0.3)',
                   borderRadius: 10,
                   padding: '10px 14px',
@@ -226,11 +226,11 @@ export default function AdminGachaPage() {
             <section style={{
               background: 'rgba(255,255,255,0.035)',
               border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: 18,
+              borderRadius: 'var(--luna-radius-lg)',
               padding: 18,
               marginBottom: 20,
             }}>
-              <h2 style={{ fontSize: 16, fontWeight: 400, color: '#ddd5c5', marginBottom: 14 }}>プール構成</h2>
+              <h2 style={{ fontSize: 16, fontWeight: 400, color: 'var(--luna-text-soft)', marginBottom: 14 }}>プール構成</h2>
               <div style={{ color: '#888', fontSize: 13, lineHeight: 1.8 }}>
                 <div>レアリティ: {formatMap(stats.pool.active_by_rarity)}</div>
                 <div>カテゴリ: {formatMap(stats.pool.active_by_category)}</div>
@@ -247,10 +247,10 @@ export default function AdminGachaPage() {
             <section style={{
               background: 'rgba(255,255,255,0.035)',
               border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: 18,
+              borderRadius: 'var(--luna-radius-lg)',
               padding: 18,
             }}>
-              <h2 style={{ fontSize: 16, fontWeight: 400, color: '#ddd5c5', marginBottom: 14 }}>最近の抽選</h2>
+              <h2 style={{ fontSize: 16, fontWeight: 400, color: 'var(--luna-text-soft)', marginBottom: 14 }}>最近の抽選</h2>
               {stats.history.recent.length === 0 ? (
                 <div style={{ color: '#888', fontSize: 13 }}>抽選履歴はまだありません。</div>
               ) : (
@@ -265,7 +265,7 @@ export default function AdminGachaPage() {
                         alignItems: 'center',
                         padding: '10px 0',
                         borderBottom: index === stats.history.recent.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.06)',
-                        color: '#ddd5c5',
+                        color: 'var(--luna-text-soft)',
                         fontSize: 13,
                       }}
                     >

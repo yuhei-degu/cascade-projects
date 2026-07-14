@@ -10,7 +10,7 @@ const tabStyle = (active: boolean) => ({
   flex: 1,
   minHeight: 42,
   border: active ? '1px solid rgba(241,199,127,.52)' : '1px solid var(--luna-border)',
-  borderRadius: 8,
+  borderRadius: 'var(--luna-radius-sm)',
   background: active ? 'linear-gradient(180deg, var(--luna-gold), var(--luna-gold-strong))' : 'rgba(241,199,127,.055)',
   color: active ? '#100d09' : 'var(--luna-text-soft)',
   font: 'inherit',
@@ -23,7 +23,7 @@ const tabStyle = (active: boolean) => ({
 const inputStyle = {
   width: '100%',
   border: '1px solid var(--luna-border)',
-  borderRadius: 12,
+  borderRadius: 'var(--luna-radius-md)',
   background: 'rgba(8,7,6,.72)',
   color: 'var(--luna-text)',
   font: 'inherit',
@@ -151,7 +151,7 @@ export default function LoginPage() {
         gap: 18,
         padding: '28px clamp(18px, 5vw, 26px)',
         border: '1px solid var(--luna-border)',
-        borderRadius: 16,
+        borderRadius: 'var(--luna-radius-lg)',
         background: 'linear-gradient(145deg, rgba(27,23,17,.92), rgba(14,13,11,.96))',
         boxShadow: 'var(--luna-shadow)',
       }}>
@@ -212,7 +212,7 @@ export default function LoginPage() {
           style={{
             minHeight: 44,
             border: '1px solid rgba(241,199,127,.36)',
-            borderRadius: 8,
+            borderRadius: 'var(--luna-radius-sm)',
             background: 'linear-gradient(180deg, var(--luna-gold), var(--luna-gold-strong))',
             color: '#100d09',
             font: 'inherit',

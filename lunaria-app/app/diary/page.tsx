@@ -112,7 +112,7 @@ function formatTime(ts: number): string {
 function Section({ title, accent, children }: { title: string; accent?: string; children: ReactNode }) {
   return (
     <section style={sectionStyle}>
-      <div style={{ ...sectionGlowStyle, background: `radial-gradient(circle, ${accent ?? 'rgba(200,160,96,.16)'}, transparent 68%)` }} />
+      <div style={{ ...sectionGlowStyle, background: `radial-gradient(circle, ${accent ?? 'rgba(241,199,127,.16)'}, transparent 68%)` }} />
       <h2 style={sectionTitleStyle}>{title}</h2>
       <div style={{ position: 'relative' }}>{children}</div>
     </section>
@@ -136,8 +136,8 @@ function ListBlock({ items, empty }: { items: string[]; empty: string }) {
 function Stat({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
-      <span style={{ color: '#8f8372' }}>{label}</span>
-      <span style={{ color: '#ddd5c5', textAlign: 'right' }}>{value}</span>
+      <span style={{ color: 'var(--luna-muted)' }}>{label}</span>
+      <span style={{ color: 'var(--luna-text-soft)', textAlign: 'right' }}>{value}</span>
     </div>
   )
 }
@@ -265,9 +265,9 @@ export default function DiaryPage() {
           <button onClick={generateDiary} disabled={generating} style={{
             ...navButtonStyle,
             marginLeft: 'auto',
-            color: generating ? '#6f665a' : '#0e0d0b',
-            background: generating ? '#2a251f' : 'linear-gradient(135deg, #d8b66d, #9fcfbd)',
-            borderColor: 'rgba(200,160,96,.5)',
+            color: generating ? 'var(--luna-faint)' : '#0e0d0b',
+            background: generating ? '#2a251f' : 'linear-gradient(180deg, var(--luna-gold), var(--luna-gold-strong))',
+            borderColor: 'rgba(241,199,127,.5)',
             fontWeight: 700,
           }}>
             {generating ? '日記を書いています...' : 'この日を書く'}
@@ -287,7 +287,7 @@ export default function DiaryPage() {
         ) : (
           <div style={contentGridStyle}>
             <div style={{ display: 'grid', gap: 16 }}>
-              <Section title={hasDiary ? `${formatDateLabel(date)}の日記` : `${formatDateLabel(date)}の空の棚`} accent="rgba(200,160,96,.18)">
+              <Section title={hasDiary ? `${formatDateLabel(date)}の日記` : `${formatDateLabel(date)}の空の棚`} accent="rgba(241,199,127,.18)">
                 {hasDiary ? (
                   <div>
                     <div style={datePillStyle}>{date}</div>
@@ -324,7 +324,7 @@ export default function DiaryPage() {
                 <ListBlock items={asList(diary?.unresolved_issues)} empty="今すぐ気にかける未解決の話題はありません。" />
               </Section>
 
-              <Section title="次に話すこと" accent="rgba(200,160,96,.15)">
+              <Section title="次に話すこと" accent="rgba(241,199,127,.15)">
                 <ListBlock items={asList(diary?.next_topics)} empty="ルナはまだ次の話題を見つけていません。" />
               </Section>
 
@@ -354,14 +354,14 @@ export default function DiaryPage() {
                     ) : messages.map((message, index) => (
                       <div key={`${message.ts}-${index}`} style={{
                         border: '1px solid rgba(255,255,255,.07)',
-                        borderRadius: 15,
+                        borderRadius: 'var(--luna-radius-lg)',
                         padding: 11,
-                        background: message.role === 'assistant' ? 'rgba(127,179,213,.06)' : 'rgba(200,160,96,.06)',
+                        background: message.role === 'assistant' ? 'rgba(127,179,213,.06)' : 'rgba(241,199,127,.06)',
                       }}>
-                        <div style={{ color: '#766d60', fontSize: 11, marginBottom: 5 }}>
+                        <div style={{ color: 'var(--luna-faint)', fontSize: 11, marginBottom: 5 }}>
                           {message.role === 'assistant' ? 'ルナ' : 'あなた'} / {formatTime(message.ts)}
                         </div>
-                        <div style={{ color: '#d8cebd', fontSize: 13, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{message.content}</div>
+                        <div style={{ color: 'var(--luna-text-soft)', fontSize: 13, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{message.content}</div>
                       </div>
                     ))}
                   </div>
@@ -370,7 +370,7 @@ export default function DiaryPage() {
             </div>
 
             <aside style={{ display: 'grid', gap: 16, alignContent: 'start' }}>
-              <Section title="月の棚" accent="rgba(200,160,96,.13)">
+              <Section title="月の棚" accent="rgba(241,199,127,.13)">
                 {monthDays.length === 0 ? (
                   <p style={mutedTextStyle}>この月にはまだ日が並んでいません。</p>
                 ) : (
@@ -381,12 +381,12 @@ export default function DiaryPage() {
                         onClick={() => setDate(day.date)}
                         style={{
                           ...monthDayButtonStyle,
-                          borderColor: day.date === date ? 'rgba(200,160,96,.55)' : 'rgba(255,255,255,.08)',
-                          background: day.date === date ? 'rgba(200,160,96,.12)' : 'rgba(255,255,255,.035)',
+                          borderColor: day.date === date ? 'rgba(241,199,127,.55)' : 'rgba(255,255,255,.08)',
+                          background: day.date === date ? 'rgba(241,199,127,.12)' : 'rgba(255,255,255,.035)',
                         }}
                       >
-                        <span style={{ color: '#ddd5c5', fontSize: 13 }}>{day.date.slice(5)}</span>
-                        <span style={{ color: day.generated ? '#9fcfbd' : '#8f8372', fontSize: 11 }}>
+                        <span style={{ color: 'var(--luna-text-soft)', fontSize: 13 }}>{day.date.slice(5)}</span>
+                        <span style={{ color: day.generated ? '#9fcfbd' : 'var(--luna-muted)', fontSize: 11 }}>
                           {day.generated ? '日記' : '会話'} / {day.message_count}
                         </span>
                       </button>
@@ -402,12 +402,12 @@ export default function DiaryPage() {
                   <div style={{ display: 'grid', gap: 10 }}>
                     {emotionEntries.map(([key, value]) => (
                       <div key={key} style={{ display: 'grid', gap: 5 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#b8ad9c', fontSize: 12 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--luna-muted)', fontSize: 12 }}>
                           <span>{emotionLabels[key] ?? key}</span>
                           <span>{value}</span>
                         </div>
                         <div style={meterStyle}>
-                          <div style={{ width: `${Math.min(Number(value) * 10, 100)}%`, height: '100%', background: 'linear-gradient(90deg, #7fb3d5, #d8b66d)' }} />
+                          <div style={{ width: `${Math.min(Number(value) * 10, 100)}%`, height: '100%', background: 'linear-gradient(90deg, #7fb3d5, var(--luna-gold-strong))' }} />
                         </div>
                       </div>
                     ))}
@@ -418,7 +418,7 @@ export default function DiaryPage() {
               <Section title="日記の元データ" accent="rgba(127,179,213,.13)">
                 <details style={detailsStyle}>
                   <summary style={summaryToggleStyle}>技術的な詳細</summary>
-                  <div style={{ display: 'grid', gap: 10, color: '#b8ad9c', fontSize: 13, marginTop: 10 }}>
+                  <div style={{ display: 'grid', gap: 10, color: 'var(--luna-muted)', fontSize: 13, marginTop: 10 }}>
                     <Stat label="メッセージ数" value={sourceCounts.message_count} />
                     <Stat label="抽出数" value={sourceCounts.extraction_count} />
                     <Stat label="重要度" value={diary?.importance ?? '-'} />
@@ -458,7 +458,7 @@ const headerStyle: CSSProperties = {
 }
 
 const backLinkStyle: CSSProperties = {
-  color: '#766d60',
+  color: 'var(--luna-faint)',
   textDecoration: 'none',
   fontSize: 12,
 }
@@ -472,7 +472,8 @@ const eyebrowStyle: CSSProperties = {
 }
 
 const titleStyle: CSSProperties = {
-  color: '#fff7e8',
+  fontFamily: 'var(--luna-font-display)',
+  color: 'var(--luna-text-bright)',
   fontSize: 'clamp(32px, 6vw, 58px)',
   lineHeight: 1.08,
   marginTop: 10,
@@ -480,7 +481,7 @@ const titleStyle: CSSProperties = {
 }
 
 const leadStyle: CSSProperties = {
-  color: '#9f9485',
+  color: 'var(--luna-muted)',
   fontSize: 14,
   lineHeight: 1.9,
   marginTop: 12,
@@ -505,7 +506,7 @@ const toolbarStyle: CSSProperties = {
   alignItems: 'center',
   border: '1px solid var(--luna-border)',
   background: 'rgba(8,7,6,.72)',
-  borderRadius: 18,
+  borderRadius: 'var(--luna-radius-lg)',
   padding: 12,
   marginBottom: 18,
   backdropFilter: 'blur(12px)',
@@ -514,7 +515,7 @@ const toolbarStyle: CSSProperties = {
 const navButtonStyle: CSSProperties = {
   background: 'rgba(241,199,127,.07)',
   border: '1px solid var(--luna-border)',
-  borderRadius: 8,
+  borderRadius: 'var(--luna-radius-sm)',
   color: 'var(--luna-text-soft)',
   cursor: 'pointer',
   fontSize: 12,
@@ -526,7 +527,7 @@ const dateInputStyle: CSSProperties = {
   background: 'rgba(8,7,6,.72)',
   color: 'var(--luna-text)',
   border: '1px solid var(--luna-border)',
-  borderRadius: 12,
+  borderRadius: 'var(--luna-radius-md)',
   padding: '9px 12px',
   fontSize: 14,
   minHeight: 42,
@@ -538,12 +539,12 @@ const errorStyle: CSSProperties = {
   marginBottom: 14,
   padding: '10px 12px',
   border: '1px solid rgba(230,165,141,.22)',
-  borderRadius: 14,
+  borderRadius: 'var(--luna-radius-lg)',
   background: 'rgba(230,165,141,.06)',
 }
 
 const loadingStyle: CSSProperties = {
-  color: '#766d60',
+  color: 'var(--luna-faint)',
   padding: 28,
 }
 
@@ -556,7 +557,7 @@ const contentGridStyle: CSSProperties = {
 const sectionStyle: CSSProperties = {
   border: '1px solid var(--luna-border)',
   background: 'linear-gradient(145deg, rgba(27,23,17,.9), rgba(14,13,11,.96))',
-  borderRadius: 16,
+  borderRadius: 'var(--luna-radius-lg)',
   padding: 18,
   boxShadow: 'var(--luna-shadow)',
   position: 'relative',
@@ -593,27 +594,29 @@ const datePillStyle: CSSProperties = {
 }
 
 const diaryTitleStyle: CSSProperties = {
-  color: '#f1dfbd',
+  fontFamily: 'var(--luna-font-display)',
+  color: 'var(--luna-text-bright)',
   fontSize: 25,
   lineHeight: 1.35,
   marginBottom: 12,
 }
 
 const lunaCommentStyle: CSSProperties = {
-  color: '#eee0ca',
+  fontFamily: 'var(--luna-font-display)',
+  color: 'var(--luna-text)',
   fontSize: 20,
   lineHeight: 1.75,
   marginBottom: 16,
 }
 
 const summaryStyle: CSSProperties = {
-  color: '#b8ad9c',
+  color: 'var(--luna-muted)',
   fontSize: 14,
   lineHeight: 1.9,
 }
 
 const mutedTextStyle: CSSProperties = {
-  color: '#746b60',
+  color: 'var(--luna-faint)',
   fontSize: 13,
   lineHeight: 1.8,
 }
@@ -632,7 +635,7 @@ const listItemStyle: CSSProperties = {
   display: 'flex',
   gap: 10,
   alignItems: 'flex-start',
-  color: '#d8cebd',
+  color: 'var(--luna-text-soft)',
   fontSize: 14,
   lineHeight: 1.75,
 }
@@ -647,24 +650,24 @@ const topicPillStyle: CSSProperties = {
 }
 
 const detailsStyle: CSSProperties = {
-  color: '#d8cebd',
+  color: 'var(--luna-text-soft)',
 }
 
 const summaryToggleStyle: CSSProperties = {
-  color: '#c8bda9',
+  color: 'var(--luna-text-soft)',
   cursor: 'pointer',
   fontSize: 13,
   lineHeight: 1.6,
 }
 
 const memoryCardStyle: CSSProperties = {
-  border: '1px solid rgba(200,160,96,.14)',
-  borderRadius: 15,
-  color: '#d8cebd',
+  border: '1px solid rgba(241,199,127,.14)',
+  borderRadius: 'var(--luna-radius-lg)',
+  color: 'var(--luna-text-soft)',
   fontSize: 13,
   lineHeight: 1.75,
   padding: '10px 12px',
-  background: 'rgba(200,160,96,.045)',
+  background: 'rgba(241,199,127,.045)',
   display: 'flex',
   justifyContent: 'space-between',
   gap: 10,
@@ -682,8 +685,8 @@ const memoryBadgeStyle: CSSProperties = {
 const monthDayButtonStyle: CSSProperties = {
   alignItems: 'center',
   border: '1px solid rgba(255,255,255,.08)',
-  borderRadius: 14,
-  color: '#c8bda9',
+  borderRadius: 'var(--luna-radius-lg)',
+  color: 'var(--luna-text-soft)',
   cursor: 'pointer',
   display: 'flex',
   justifyContent: 'space-between',

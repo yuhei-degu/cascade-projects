@@ -47,8 +47,8 @@ export default function CheckoutButton({ disabled }: CheckoutButtonProps) {
         style={{
           minHeight: 42,
           borderRadius: 6,
-          border: '1px solid rgba(200,160,96,.55)',
-          background: disabled ? 'rgba(255,255,255,.05)' : '#c8a060',
+          border: '1px solid rgba(241,199,127,.55)',
+          background: disabled ? 'rgba(255,255,255,.05)' : 'var(--luna-gold-strong)',
           color: disabled ? '#81786a' : '#0e0d0b',
           cursor: disabled || loading ? 'not-allowed' : 'pointer',
           fontFamily: 'inherit',

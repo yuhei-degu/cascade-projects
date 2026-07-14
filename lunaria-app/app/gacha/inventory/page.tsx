@@ -51,7 +51,7 @@ function InventorySkeleton() {
     <div aria-label="所持品を読み込み中" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 }}>
       {Array.from({ length: 9 }).map((_, index) => (
         <div key={index} className="luna-skeleton" style={{ aspectRatio: '1', padding: 8 }}>
-          <div className="luna-skeleton" style={{ height: '72%', marginBottom: 8, borderRadius: 8 }} />
+          <div className="luna-skeleton" style={{ height: '72%', marginBottom: 8, borderRadius: 'var(--luna-radius-sm)' }} />
           <div className="luna-skeleton luna-skeleton-line" style={{ width: '70%', margin: '0 auto' }} />
         </div>
       ))}
@@ -169,7 +169,7 @@ export default function InventoryPage() {
                     justifyContent: 'space-between',
                     padding: 8,
                     border: `1px solid ${color}55`,
-                    borderRadius: 8,
+                    borderRadius: 'var(--luna-radius-sm)',
                     background: 'rgba(255,247,232,.04)',
                     boxShadow: '0 12px 34px rgba(0,0,0,.18)',
                   }}
@@ -181,7 +181,7 @@ export default function InventoryPage() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     marginBottom: 6,
-                    borderRadius: 8,
+                    borderRadius: 'var(--luna-radius-sm)',
                     background: `radial-gradient(circle at 50% 35%, ${color}33, rgba(8,7,6,.56) 68%)`,
                     color,
                     fontSize: 32,

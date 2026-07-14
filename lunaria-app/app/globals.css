@@ -9,6 +9,7 @@
   --luna-gold: #f1c77f;
   --luna-gold-strong: #d5a45f;
   --luna-gold-soft: rgba(241, 199, 127, 0.12);
+  --luna-text-bright: #f7eedd;
   --luna-text: #eee2cf;
   --luna-text-soft: #cfc1aa;
   --luna-muted: #9a8f7f;
@@ -20,6 +21,13 @@
   --luna-radius-md: 12px;
   --luna-radius-lg: 18px;
   --luna-shadow: 0 22px 70px rgba(0, 0, 0, 0.34);
+  --luna-font-display: var(--font-display, 'Shippori Mincho'), 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+}
+
+.luna-display {
+  font-family: var(--luna-font-display);
+  font-weight: 600;
+  letter-spacing: .02em;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -309,7 +317,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   border: 1px solid rgba(241,199,127,.16);
   border-radius: 16px 6px 16px 16px;
   background: linear-gradient(145deg, rgba(241,199,127,.13), rgba(35,31,27,.92));
-  color: #e9dcc8;
+  color: var(--luna-text);
 }
 
 .chat-inputbar {
@@ -368,6 +376,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 }
 
 .gacha-nav h1 {
+  font-family: var(--luna-font-display);
   flex: 1;
   color: var(--luna-text);
   font-size: 18px;
@@ -431,18 +440,18 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 .gacha-status span {
   display: block;
   margin-bottom: 4px;
-  color: #8d8474;
+  color: var(--luna-muted);
   font-size: 11px;
 }
 
 .gacha-status strong {
-  color: #efe5d2;
+  color: var(--luna-text);
   font-size: 24px;
   font-weight: 600;
 }
 
 .gacha-status small {
-  color: #776f62;
+  color: var(--luna-faint);
   font-size: 12px;
   font-weight: 400;
 }
@@ -495,14 +504,14 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 }
 
 .moon-meter p {
-  color: #8d8474;
+  color: var(--luna-muted);
   font-size: 11px;
   text-align: center;
 }
 
 .gacha-lead {
   margin-bottom: 16px;
-  color: #8d8474;
+  color: var(--luna-muted);
   font-size: 12px;
   text-align: center;
 }
@@ -542,7 +551,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   height: 180px;
   border: 1px solid rgba(241,199,127,0.32);
   border-radius: 50%;
-  color: #f4ead8;
+  color: var(--luna-text-bright);
   background:
     radial-gradient(circle at 32% 24%, rgba(255,255,255,0.18), transparent 16%),
     radial-gradient(circle at 50% 45%, rgba(127,179,213,0.28), rgba(241,199,127,0.24) 42%, #11100e 73%);
@@ -574,7 +583,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 
 .gacha-message {
   margin-bottom: 10px;
-  color: #efe5d2;
+  color: var(--luna-text);
   font-size: 13px;
   text-align: center;
 }
@@ -585,7 +594,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 
 .gacha-quota {
   margin-bottom: 6px;
-  color: #70685c;
+  color: var(--luna-faint);
   font-size: 11px;
   text-align: center;
 }
@@ -598,7 +607,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   align-items: center;
   justify-content: center;
   border: 0;
-  color: #f8efe0;
+  color: var(--luna-text-bright);
   background: #040404;
   cursor: pointer;
 }
@@ -641,7 +650,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 }
 
 .production-core p {
-  color: #bfb5a3;
+  color: var(--luna-muted);
   font-size: 13px;
   letter-spacing: 0;
 }
@@ -680,7 +689,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 }
 
 .flip-card-back {
-  color: #9c927f;
+  color: var(--luna-muted);
   background: linear-gradient(145deg, #22201d, #11100e);
   font-size: 18px;
 }
@@ -720,7 +729,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   right: 0;
   bottom: 24px;
   z-index: 1;
-  color: #70685c;
+  color: var(--luna-faint);
   font-size: 12px;
   text-align: center;
 }
@@ -743,7 +752,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   padding: 22px 20px;
   border: 1px solid color-mix(in srgb, var(--rarity-color), transparent 35%);
   border-radius: var(--luna-radius-md);
-  color: #efe5d2;
+  color: var(--luna-text);
   background: linear-gradient(145deg, var(--luna-surface-raised), var(--luna-bg-soft));
   box-shadow: 0 0 46px var(--rarity-glow);
   text-align: center;
@@ -790,8 +799,9 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 }
 
 .result-panel h2 {
+  font-family: var(--luna-font-display);
   margin-bottom: 8px;
-  color: #f5ecdc;
+  color: var(--luna-text-bright);
   font-size: 19px;
   font-weight: 700;
 }
@@ -799,7 +809,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 .result-description,
 .result-note {
   margin-bottom: 12px;
-  color: #9a9181;
+  color: var(--luna-muted);
   font-size: 12px;
 }
 
@@ -813,7 +823,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 }
 
 .duplicate-note.special {
-  color: #f5ecdc;
+  color: var(--luna-text-bright);
   background: rgba(98,168,255,0.12);
 }
 
@@ -822,7 +832,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   padding: 10px 12px;
   border: 1px solid rgba(98,168,255,0.18);
   border-radius: var(--luna-radius-md);
-  color: #ded4c2;
+  color: var(--luna-text-soft);
   background: rgba(98,168,255,0.06);
   font-size: 13px;
   text-align: left;
@@ -866,17 +876,17 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 .collection-summary span {
   display: block;
   margin-bottom: 2px;
-  color: #8d8474;
+  color: var(--luna-muted);
   font-size: 11px;
 }
 
 .collection-summary strong {
-  color: #f4ead8;
+  color: var(--luna-text-bright);
   font-size: 28px;
 }
 
 .collection-summary p {
-  color: #a1998b;
+  color: var(--luna-muted);
   font-size: 13px;
 }
 
@@ -953,7 +963,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
   align-items: center;
   justify-content: center;
   margin-bottom: 4px;
-  color: #efe5d2;
+  color: var(--luna-text);
   font-size: 11px;
   font-weight: 600;
   line-height: 1.25;
@@ -966,7 +976,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 }
 
 .collection-card p {
-  color: #8d8474;
+  color: var(--luna-muted);
   font-size: 10px;
   text-align: center;
 }
@@ -974,7 +984,7 @@ input:focus-visible, button:focus-visible, a:focus-visible {
 .collection-empty {
   grid-column: 1 / -1;
   padding: 40px 0;
-  color: #8d8474;
+  color: var(--luna-muted);
   font-size: 13px;
   text-align: center;
 }

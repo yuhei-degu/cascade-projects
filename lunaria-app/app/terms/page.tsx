@@ -89,12 +89,12 @@ export default function TermsPage() {
       minHeight: '100dvh',
       overflowY: 'auto',
       background: '#0e0d0b',
-      color: '#ddd5c5',
+      color: 'var(--luna-text-soft)',
       padding: '40px 20px 64px',
     }}>
       <article style={{ width: 'min(100%, 840px)', margin: '0 auto' }}>
-        <a href="/" style={{ color: '#c8a060', fontSize: 14, textDecoration: 'none' }}>Lunaria</a>
-        <h1 style={{ marginTop: 24, color: '#fff7e8', fontSize: 32, lineHeight: 1.3 }}>利用規約</h1>
+        <a href="/" style={{ color: 'var(--luna-gold-strong)', fontSize: 14, textDecoration: 'none' }}>Lunaria</a>
+        <h1 style={{ marginTop: 24, color: 'var(--luna-text-bright)', fontSize: 32, lineHeight: 1.3 }}>利用規約</h1>
         <p style={{ marginTop: 12, color: '#9a907f', fontSize: 14 }}>制定日：2026年7月6日</p>
 
         <div style={{ display: 'grid', gap: 28, marginTop: 36 }}>
@@ -103,7 +103,7 @@ export default function TermsPage() {
               <h2 style={{ color: '#f1c77f', fontSize: 18, lineHeight: 1.5 }}>{section.title}</h2>
               <div style={{ display: 'grid', gap: 10, marginTop: 10 }}>
                 {section.body.map((paragraph) => (
-                  <p key={paragraph} style={{ color: '#ddd5c5', fontSize: 15, lineHeight: 1.9 }}>
+                  <p key={paragraph} style={{ color: 'var(--luna-text-soft)', fontSize: 15, lineHeight: 1.9 }}>
                     {paragraph}
                   </p>
                 ))}
@@ -113,8 +113,8 @@ export default function TermsPage() {
         </div>
 
         <nav aria-label="関連ページ" style={{ display: 'flex', gap: 16, marginTop: 40, fontSize: 14 }}>
-          <a href="/privacy" style={{ color: '#c8a060' }}>プライバシーポリシー</a>
-          <a href="/login" style={{ color: '#c8a060' }}>ログイン</a>
+          <a href="/privacy" style={{ color: 'var(--luna-gold-strong)' }}>プライバシーポリシー</a>
+          <a href="/login" style={{ color: 'var(--luna-gold-strong)' }}>ログイン</a>
         </nav>
       </article>
     </main>

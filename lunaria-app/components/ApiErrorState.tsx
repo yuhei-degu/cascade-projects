@@ -45,7 +45,7 @@ export default function ApiErrorState({
             justifySelf: 'start',
             minHeight: 34,
             border: '1px solid rgba(230,165,141,.32)',
-            borderRadius: 8,
+            borderRadius: 'var(--luna-radius-sm)',
             background: 'rgba(230,165,141,.11)',
             color: '#ffd2c2',
             cursor: 'pointer',

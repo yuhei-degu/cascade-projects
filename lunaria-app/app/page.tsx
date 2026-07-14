@@ -57,7 +57,7 @@ function LandingPage() {
               記憶を持つAIコンパニオン
             </p>
             <h1 style={{
-              color: '#fff7e8',
+              color: 'var(--luna-text-bright)',
               fontSize: 'clamp(40px, 7vw, 64px)',
               lineHeight: 1.12,
               fontWeight: 700,
@@ -74,7 +74,7 @@ function LandingPage() {
               {features.map(([title, body]) => (
                 <article key={title} style={{
                   border: '1px solid rgba(255,255,255,.1)',
-                  borderRadius: 8,
+                  borderRadius: 'var(--luna-radius-sm)',
                   background: 'rgba(255,255,255,.035)',
                   padding: 16,
                 }}>
@@ -100,22 +100,22 @@ function LandingPage() {
               }}>
                 Lunariaを始める
               </a>
-              <p style={{ color: '#8f8372', fontSize: 14 }}>ログイン後はこれまでのホーム画面に移動します。</p>
+              <p style={{ color: 'var(--luna-muted)', fontSize: 14 }}>ログイン後はこれまでのホーム画面に移動します。</p>
             </div>
           </div>
 
           <div aria-label="Lunariaスクリーンショット枠" style={{
             border: '1px solid rgba(255,255,255,.1)',
-            borderRadius: 12,
+            borderRadius: 'var(--luna-radius-md)',
             background: '#11100d',
             padding: 12,
             boxShadow: '0 28px 80px rgba(0,0,0,.42)',
           }}>
-            <div style={{ border: '1px solid rgba(213,164,95,.2)', borderRadius: 8, background: '#0c0b09', overflow: 'hidden' }}>
+            <div style={{ border: '1px solid rgba(213,164,95,.2)', borderRadius: 'var(--luna-radius-sm)', background: '#0c0b09', overflow: 'hidden' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,.1)', padding: '12px 16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span aria-hidden="true" style={{ width: 8, height: 8, borderRadius: '50%', background: '#d5a45f' }} />
-                  <span style={{ color: '#ddd5c5', fontSize: 14, fontWeight: 600 }}>Lunaria</span>
+                  <span style={{ color: 'var(--luna-text-soft)', fontSize: 14, fontWeight: 600 }}>Lunaria</span>
                 </div>
                 <span style={{ color: '#716656', fontSize: 12 }}>会話</span>
               </div>
@@ -125,7 +125,7 @@ function LandingPage() {
                   border: '1px solid rgba(255,255,255,.1)',
                   borderRadius: '4px 12px 12px 12px',
                   background: '#191612',
-                  color: '#ddd5c5',
+                  color: 'var(--luna-text-soft)',
                   padding: '12px 16px',
                   fontSize: 14,
                   lineHeight: 1.7,
@@ -144,7 +144,7 @@ function LandingPage() {
                 }}>
                   うん。昨日話した仕事のこと、まだ気になってる。
                 </div>
-                <div style={{ display: 'grid', gap: 10, border: '1px solid rgba(127,179,213,.2)', borderRadius: 8, background: '#0f1518', padding: 16 }}>
+                <div style={{ display: 'grid', gap: 10, border: '1px solid rgba(127,179,213,.2)', borderRadius: 'var(--luna-radius-sm)', background: '#0f1518', padding: 16 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <span style={{ color: '#9ed0ea', fontSize: 14, fontWeight: 700 }}>記憶</span>
                     <span style={{ color: '#7894a0', fontSize: 12 }}>更新候補</span>
@@ -153,7 +153,7 @@ function LandingPage() {
                     「仕事の締切前は夜に不安が強くなりやすい」を次回の会話に活かします。
                   </p>
                 </div>
-                <div style={{ border: '1px solid rgba(213,164,95,.2)', borderRadius: 8, background: '#18130b', padding: 16 }}>
+                <div style={{ border: '1px solid rgba(213,164,95,.2)', borderRadius: 'var(--luna-radius-sm)', background: '#18130b', padding: 16 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
                     <span style={{ color: '#f1c77f', fontSize: 14, fontWeight: 700 }}>ガチャのきっかけ</span>
                     <span style={{ borderRadius: 999, background: 'rgba(213,164,95,.15)', color: '#f1c77f', padding: '4px 12px', fontSize: 12 }}>1枚</span>

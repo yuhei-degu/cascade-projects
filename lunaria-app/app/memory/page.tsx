@@ -147,8 +147,8 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 function Stat({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div style={statStyle}>
-      <span style={{ color: '#8f8372' }}>{label}</span>
-      <span style={{ color: '#ddd5c5', textAlign: 'right' }}>{value}</span>
+      <span style={{ color: 'var(--luna-muted)' }}>{label}</span>
+      <span style={{ color: 'var(--luna-text-soft)', textAlign: 'right' }}>{value}</span>
     </div>
   )
 }
@@ -201,7 +201,7 @@ function MemoryCard({
             </Link>
           )}
         </div>
-        <span style={{ color: '#c8a060', fontSize: 12, whiteSpace: 'nowrap' }}>スコア {memory.score ?? '-'}</span>
+        <span style={{ color: 'var(--luna-gold-strong)', fontSize: 12, whiteSpace: 'nowrap' }}>スコア {memory.score ?? '-'}</span>
       </div>
 
       <p style={memoryContentStyle}>{memory.content}</p>
@@ -580,7 +580,7 @@ const headerStyle: CSSProperties = {
 }
 
 const backLinkStyle: CSSProperties = {
-  color: '#766d60',
+  color: 'var(--luna-faint)',
   textDecoration: 'none',
   fontSize: 12,
 }
@@ -601,7 +601,7 @@ const titleStyle: CSSProperties = {
 }
 
 const leadStyle: CSSProperties = {
-  color: '#9f9485',
+  color: 'var(--luna-muted)',
   fontSize: 14,
   lineHeight: 1.9,
   marginTop: 12,
@@ -626,7 +626,7 @@ const toolbarStyle: CSSProperties = {
   alignItems: 'center',
   border: '1px solid var(--luna-border)',
   background: 'rgba(8,7,6,.72)',
-  borderRadius: 18,
+  borderRadius: 'var(--luna-radius-lg)',
   padding: 12,
   marginBottom: 18,
   backdropFilter: 'blur(12px)',
@@ -637,7 +637,7 @@ const dateInputStyle: CSSProperties = {
   background: 'rgba(8,7,6,.72)',
   color: 'var(--luna-text)',
   border: '1px solid var(--luna-border)',
-  borderRadius: 12,
+  borderRadius: 'var(--luna-radius-md)',
   padding: '9px 12px',
   fontSize: 14,
 }
@@ -650,7 +650,7 @@ const selectStyle: CSSProperties = {
 const navButtonStyle: CSSProperties = {
   background: 'rgba(241,199,127,.07)',
   border: '1px solid var(--luna-border)',
-  borderRadius: 8,
+  borderRadius: 'var(--luna-radius-sm)',
   color: 'var(--luna-text-soft)',
   cursor: 'pointer',
   fontSize: 12,
@@ -661,7 +661,7 @@ const checkLabelStyle: CSSProperties = {
   display: 'inline-flex',
   gap: 7,
   alignItems: 'center',
-  color: '#9f9485',
+  color: 'var(--luna-muted)',
   fontSize: 12,
 }
 
@@ -674,7 +674,7 @@ const contentGridStyle: CSSProperties = {
 const sectionStyle: CSSProperties = {
   border: '1px solid var(--luna-border)',
   background: 'linear-gradient(145deg, rgba(31,27,21,.86), rgba(15,14,12,.94))',
-  borderRadius: 18,
+  borderRadius: 'var(--luna-radius-lg)',
   padding: 18,
   boxShadow: 'var(--luna-shadow)',
 }
@@ -689,7 +689,7 @@ const sectionTitleStyle: CSSProperties = {
 
 const memoryCardStyle: CSSProperties = {
   border: '1px solid rgba(255,255,255,.08)',
-  borderRadius: 18,
+  borderRadius: 'var(--luna-radius-lg)',
   background: 'linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.018))',
   padding: 14,
 }
@@ -701,7 +701,7 @@ const candidateCardStyle: CSSProperties = {
 }
 
 const memoryContentStyle: CSSProperties = {
-  color: '#eee0ca',
+  color: 'var(--luna-text)',
   fontSize: 15,
   lineHeight: 1.85,
   marginBottom: 13,
@@ -733,7 +733,7 @@ const statusBadgeStyle: CSSProperties = {
 }
 
 const candidateBadgeStyle: CSSProperties = {
-  color: '#d8b66d',
+  color: 'var(--luna-gold-strong)',
   border: '1px solid rgba(216,182,109,.24)',
   borderRadius: 999,
   padding: '4px 8px',
@@ -742,7 +742,7 @@ const candidateBadgeStyle: CSSProperties = {
 }
 
 const dateBadgeStyle: CSSProperties = {
-  color: '#d8b66d',
+  color: 'var(--luna-gold-strong)',
   border: '1px solid rgba(216,182,109,.2)',
   borderRadius: 999,
   padding: '4px 8px',
@@ -752,7 +752,7 @@ const dateBadgeStyle: CSSProperties = {
 }
 
 const notesStyle: CSSProperties = {
-  color: '#8f8372',
+  color: 'var(--luna-muted)',
   borderTop: '1px solid rgba(255,255,255,.07)',
   fontSize: 12,
   lineHeight: 1.7,
@@ -784,8 +784,8 @@ const gameCarryoverReturnStyle: CSSProperties = {
 
 const returnRoomLinkStyle: CSSProperties = {
   color: '#0f0d0a',
-  background: '#d8b66d',
-  borderRadius: 8,
+  background: 'var(--luna-gold-strong)',
+  borderRadius: 'var(--luna-radius-sm)',
   padding: '5px 10px',
   textDecoration: 'none',
   whiteSpace: 'nowrap',
@@ -834,14 +834,14 @@ const groupTitleStyle: CSSProperties = {
 }
 
 const emptyTitleStyle: CSSProperties = {
-  color: '#ddd5c5',
+  color: 'var(--luna-text-soft)',
   fontSize: 15,
   lineHeight: 1.8,
   marginBottom: 8,
 }
 
 const mutedTextStyle: CSSProperties = {
-  color: '#746b60',
+  color: 'var(--luna-faint)',
   fontSize: 13,
   lineHeight: 1.8,
 }
@@ -852,6 +852,6 @@ const errorStyle: CSSProperties = {
   marginBottom: 14,
   padding: '10px 12px',
   border: '1px solid rgba(230,165,141,.22)',
-  borderRadius: 14,
+  borderRadius: 'var(--luna-radius-lg)',
   background: 'rgba(230,165,141,.06)',
 }

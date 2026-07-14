@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -200,8 +200,8 @@ export default function ItemsPage() {
         </nav>
 
         <section style={{ ...panelStyle, marginBottom: 22 }}>
-          <p style={{ color: '#B99B6B', letterSpacing: '0.18em', textTransform: 'uppercase', margin: 0, fontSize: 12 }}>所持品プレビュー</p>
-          <h1 style={{ fontSize: 'clamp(2.2rem, 6vw, 4.8rem)', lineHeight: 0.92, margin: '12px 0 16px' }}>月箱の棚</h1>
+          <p style={{ color: 'var(--luna-gold-strong)', letterSpacing: '0.18em', textTransform: 'uppercase', margin: 0, fontSize: 12 }}>所持品プレビュー</p>
+          <h1 style={{ fontFamily: 'var(--luna-font-display)', fontSize: 'clamp(2.2rem, 6vw, 4.8rem)', lineHeight: 1.05, margin: '12px 0 16px' }}>月箱の棚</h1>
           <p style={{ maxWidth: 720, color: TEXT_SUB, lineHeight: 1.8, margin: 0 }}>
             Lunariaの品を静かに並べる棚です。利用できる場合は将来のユーザー所持品テーブルを読み、
             それまでは現在のガチャ所持品または代替データを使います。
@@ -308,7 +308,7 @@ function EmptyState({ title, copy }: { title: string; copy: string }) {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ minWidth: 126, border: '1px solid rgba(214, 178, 108, 0.22)', borderRadius: 16, padding: '12px 14px', background: 'rgba(255,255,255,0.03)' }}>
+    <div style={{ minWidth: 126, border: '1px solid rgba(241,199,127, 0.22)', borderRadius: 'var(--luna-radius-lg)', padding: '12px 14px', background: 'rgba(255,255,255,0.03)' }}>
       <div style={{ color: TEXT_DIM, fontSize: 12 }}>{label}</div>
       <div style={{ color: TEXT_MAIN, fontSize: 18, fontWeight: 700 }}>{value}</div>
     </div>
@@ -319,12 +319,12 @@ function SourceBanner({ ready, loading, title, note, detail }: { ready: boolean;
   return (
     <div style={{
       marginTop: 18,
-      border: `1px solid ${ready ? 'rgba(143,209,158,0.28)' : 'rgba(215,181,109,0.3)'}`,
-      borderRadius: 18,
+      border: `1px solid ${ready ? 'rgba(143,209,158,0.28)' : 'rgba(241,199,127,0.3)'}`,
+      borderRadius: 'var(--luna-radius-lg)',
       padding: '12px 14px',
-      background: ready ? 'rgba(143,209,158,0.08)' : 'rgba(215,181,109,0.08)',
+      background: ready ? 'rgba(143,209,158,0.08)' : 'rgba(241,199,127,0.08)',
     }}>
-      <div style={{ color: ready ? '#8fd19e' : '#d7b56d', fontSize: 13, fontWeight: 700 }}>
+      <div style={{ color: ready ? '#8fd19e' : 'var(--luna-gold-strong)', fontSize: 13, fontWeight: 700 }}>
         {loading ? '品の取得元を確認しています...' : title}
       </div>
       <div style={{ color: TEXT_SUB, fontSize: 13, lineHeight: 1.7, marginTop: 4 }}>{note}</div>
@@ -345,7 +345,7 @@ const navLinkStyle = {
 const panelStyle = {
   background: `radial-gradient(circle at top left, rgba(241,199,127,.15), transparent 36%), ${CARD_BG}`,
   border: '1px solid var(--luna-border)',
-  borderRadius: 18,
+  borderRadius: 'var(--luna-radius-lg)',
   padding: 'clamp(24px, 5vw, 42px)',
   boxShadow: 'var(--luna-shadow)',
 }
@@ -369,7 +369,7 @@ const activeFilterStyle = {
 const itemCardStyle = {
   background: 'linear-gradient(145deg, rgba(27,23,17,.9), rgba(14,13,11,.96))',
   border: '1px solid var(--luna-border)',
-  borderRadius: 18,
+  borderRadius: 'var(--luna-radius-lg)',
   padding: 20,
   boxShadow: 'var(--luna-shadow)',
 }

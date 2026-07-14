@@ -26,21 +26,21 @@ export default async function PricingPage({
       minHeight: '100dvh',
       overflowY: 'auto',
       background: '#0e0d0b',
-      color: '#ddd5c5',
+      color: 'var(--luna-text-soft)',
       padding: '28px 18px',
       fontFamily: '"Hiragino Sans","Noto Sans JP","Meiryo",sans-serif',
     }}>
       <div style={{ maxWidth: 760, margin: '0 auto', display: 'grid', gap: 22 }}>
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14 }}>
           <div>
-            <p style={{ color: '#8f8372', fontSize: 12, letterSpacing: '.12em', textTransform: 'uppercase' }}>
+            <p style={{ color: 'var(--luna-muted)', fontSize: 12, letterSpacing: '.12em', textTransform: 'uppercase' }}>
               Lunaria プレミアム
             </p>
             <h1 style={{ marginTop: 8, color: '#f0dfbd', fontSize: 28, fontWeight: 700 }}>
               料金プラン
             </h1>
           </div>
-          <Link href="/" style={{ color: '#8f8372', fontSize: 13, textDecoration: 'none' }}>
+          <Link href="/" style={{ color: 'var(--luna-muted)', fontSize: 13, textDecoration: 'none' }}>
             戻る
           </Link>
         </header>
@@ -75,7 +75,7 @@ export default async function PricingPage({
 
         <section style={{
           border: '1px solid rgba(255,255,255,.08)',
-          borderRadius: 8,
+          borderRadius: 'var(--luna-radius-sm)',
           background: '#15130f',
           padding: 20,
           display: 'grid',

@@ -81,7 +81,7 @@ export default function GamesPage() {
       ) : (
         <section aria-label="ゲームルームの状態" style={{ padding: 18, display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
           {games.map(game => (
-            <article key={game.title} style={{ border: '1px solid var(--luna-border)', borderRadius: 8, padding: 16, background: 'linear-gradient(145deg, rgba(27,23,17,.9), rgba(14,13,11,.96))', minHeight: 168, boxShadow: 'var(--luna-shadow)' }}>
+            <article key={game.title} style={{ border: '1px solid var(--luna-border)', borderRadius: 'var(--luna-radius-sm)', padding: 16, background: 'linear-gradient(145deg, rgba(27,23,17,.9), rgba(14,13,11,.96))', minHeight: 168, boxShadow: 'var(--luna-shadow)' }}>
               <div style={{ color: 'var(--luna-faint)', fontSize: 12, marginBottom: 10 }}>{game.status}</div>
               <h2 style={{ margin: 0, fontSize: 18, lineHeight: 1.25 }}>{game.title}</h2>
               <p style={{ color: 'var(--luna-text-soft)', fontSize: 14, lineHeight: 1.65, margin: '12px 0 0' }}>{game.summary}</p>

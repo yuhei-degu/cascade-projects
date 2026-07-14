@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -156,7 +156,7 @@ export default function CharacterPage() {
           <div style={portraitPanelStyle}>
             {loading ? (
               <div aria-label="姿を読み込み中" style={{ width: 'min(100%, 360px)', display: 'grid', gap: 14 }}>
-                <div className="luna-skeleton" style={{ width: '100%', aspectRatio: '3 / 4', borderRadius: 18 }} />
+                <div className="luna-skeleton" style={{ width: '100%', aspectRatio: '3 / 4', borderRadius: 'var(--luna-radius-lg)' }} />
                 <div className="luna-skeleton luna-skeleton-line" style={{ width: '62%', margin: '0 auto' }} />
               </div>
             ) : (
@@ -165,7 +165,7 @@ export default function CharacterPage() {
           </div>
 
           <div style={{ ...panelStyle, minHeight: '100%' }}>
-            <p style={{ color: '#B99B6B', letterSpacing: '0.18em', textTransform: 'uppercase', margin: 0, fontSize: 12 }}>姿の状態プレビュー</p>
+            <p style={{ color: 'var(--luna-gold-strong)', letterSpacing: '0.18em', textTransform: 'uppercase', margin: 0, fontSize: 12 }}>姿の状態プレビュー</p>
             <h1 style={{ fontSize: 'clamp(2.1rem, 6vw, 4.5rem)', lineHeight: 0.95, margin: '12px 0 16px' }}>Lunariaの状態</h1>
             <p style={{ color: TEXT_SUB, lineHeight: 1.8, margin: 0 }}>
               衣装、表情解放、動きの解放、親密度を確認するプレビューです。migration 021が準備できている場合は
@@ -241,12 +241,12 @@ function SourceBanner({ ready, loading, title, note, detail }: { ready: boolean;
   return (
     <div style={{
       marginTop: 18,
-      border: `1px solid ${ready ? 'rgba(143,209,158,0.28)' : 'rgba(215,181,109,0.3)'}`,
-      borderRadius: 18,
+      border: `1px solid ${ready ? 'rgba(143,209,158,0.28)' : 'rgba(241,199,127,0.3)'}`,
+      borderRadius: 'var(--luna-radius-lg)',
       padding: '12px 14px',
-      background: ready ? 'rgba(143,209,158,0.08)' : 'rgba(215,181,109,0.08)',
+      background: ready ? 'rgba(143,209,158,0.08)' : 'rgba(241,199,127,0.08)',
     }}>
-      <div style={{ color: ready ? '#8fd19e' : '#d7b56d', fontSize: 13, fontWeight: 700 }}>
+      <div style={{ color: ready ? '#8fd19e' : 'var(--luna-gold-strong)', fontSize: 13, fontWeight: 700 }}>
         {loading ? '姿の取得元を確認しています...' : title}
       </div>
       <div style={{ color: TEXT_SUB, fontSize: 13, lineHeight: 1.7, marginTop: 4 }}>{note}</div>
@@ -301,7 +301,7 @@ const heroGridStyle = {
 const panelStyle = {
   background: `radial-gradient(circle at top left, rgba(241,199,127,.15), transparent 36%), ${CARD_BG}`,
   border: '1px solid var(--luna-border)',
-  borderRadius: 18,
+  borderRadius: 'var(--luna-radius-lg)',
   padding: 'clamp(24px, 5vw, 42px)',
   boxShadow: 'var(--luna-shadow)',
 }
@@ -317,7 +317,7 @@ const portraitPanelStyle = {
 const cardStyle = {
   background: 'linear-gradient(145deg, rgba(27,23,17,.9), rgba(14,13,11,.96))',
   border: '1px solid var(--luna-border)',
-  borderRadius: 18,
+  borderRadius: 'var(--luna-radius-lg)',
   padding: 20,
   boxShadow: 'var(--luna-shadow)',
 }

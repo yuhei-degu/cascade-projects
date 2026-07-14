@@ -108,7 +108,7 @@ function visualFromAssistant(meta: AssistantMeta | null | undefined, routeType: 
 function Typing() {
   return (
     <div role="status" aria-live="polite" aria-atomic="true" aria-label="Lunariaが返信中" style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
-      <div aria-hidden="true" style={{ width: 6, height: 6, borderRadius: '50%', background: '#c8a060', flexShrink: 0, marginBottom: 3 }} />
+      <div aria-hidden="true" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--luna-gold-strong)', flexShrink: 0, marginBottom: 3 }} />
       <div style={{ background: 'rgba(27,23,17,.92)', border: '1px solid var(--luna-border-soft)', borderRadius: '6px 16px 16px 16px', padding: '11px 15px', fontSize: 14, boxShadow: '0 12px 34px rgba(0,0,0,.22)' }}>
         <span aria-hidden="true" className="blink-dot" style={{ color: 'var(--luna-gold)', animationDelay: '0s' }}>・</span>
         <span aria-hidden="true" className="blink-dot" style={{ color: 'var(--luna-gold)', animationDelay: '.3s' }}>・</span>
@@ -122,8 +122,8 @@ function ChatMsg({ msg }: { msg: Msg }) {
   const ai = msg.role === 'assistant'
   return (
     <div className="fade-up" aria-label={ai ? 'Lunariaのメッセージ' : 'あなたのメッセージ'} style={{ display: 'flex', alignItems: 'flex-end', gap: 8, justifyContent: ai ? 'flex-start' : 'flex-end' }}>
-      {ai && <div aria-hidden="true" style={{ width: 6, height: 6, borderRadius: '50%', background: '#c8a060', flexShrink: 0, marginBottom: 3 }} />}
-      <div style={{ maxWidth: 'min(78%, 620px)', fontSize: 14, lineHeight: 1.75, padding: '11px 15px', background: ai ? 'rgba(27,23,17,.92)' : 'linear-gradient(145deg, rgba(241,199,127,.13), rgba(35,31,27,.92))', border: `1px solid ${ai ? 'var(--luna-border-soft)' : 'rgba(241,199,127,.16)'}`, borderRadius: ai ? '6px 16px 16px 16px' : '16px 6px 16px 16px', color: ai ? 'var(--luna-text)' : '#e9dcc8', boxShadow: ai ? '0 12px 34px rgba(0,0,0,.22)' : 'none', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}>
+      {ai && <div aria-hidden="true" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--luna-gold-strong)', flexShrink: 0, marginBottom: 3 }} />}
+      <div style={{ maxWidth: 'min(78%, 620px)', fontSize: 14, lineHeight: 1.75, padding: '11px 15px', background: ai ? 'rgba(27,23,17,.92)' : 'linear-gradient(145deg, rgba(241,199,127,.13), rgba(35,31,27,.92))', border: `1px solid ${ai ? 'var(--luna-border-soft)' : 'rgba(241,199,127,.16)'}`, borderRadius: ai ? '6px 16px 16px 16px' : '16px 6px 16px 16px', color: ai ? 'var(--luna-text)' : 'var(--luna-text)', boxShadow: ai ? '0 12px 34px rgba(0,0,0,.22)' : 'none', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}>
         {msg.content}
       </div>
     </div>
@@ -375,7 +375,7 @@ export default function ChatPage() {
         <LunariaPortrait expression={assistantVisual.expression} motion={assistantVisual.motion} size="sm" />
         <div style={{ minWidth: 0 }}>
           <div style={{ color: 'var(--luna-gold)', fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase' }}>ルナの気分</div>
-          <div style={{ color: '#8f8372', fontSize: 12, marginTop: 2 }}>
+          <div style={{ color: 'var(--luna-muted)', fontSize: 12, marginTop: 2 }}>
             {VISUAL_LABELS[assistantVisual.label] ?? assistantVisual.label} / {EXPRESSION_LABELS[assistantVisual.expression] ?? assistantVisual.expression} / {MOTION_LABELS[assistantVisual.motion] ?? assistantVisual.motion}
           </div>
           {assistantNextStep && (
@@ -399,7 +399,7 @@ export default function ChatPage() {
             <span style={{ color: '#555', margin: '0 8px' }}>|</span>
             <span style={{ color: '#888', marginRight: 6 }}>モード</span>
             <span style={{ color: '#8a7' }}>{convMode}</span>
-            {userName && <><span style={{ color: '#555', margin: '0 8px' }}>|</span><span style={{ color: '#c8a060' }}>{userName}</span></>}
+            {userName && <><span style={{ color: '#555', margin: '0 8px' }}>|</span><span style={{ color: 'var(--luna-gold-strong)' }}>{userName}</span></>}
           </div>
           <div>
             <span style={{ color: '#888', marginRight: 6 }}>話題</span>{lastTopic}/{lastSubtopic}
@@ -435,7 +435,7 @@ export default function ChatPage() {
       {/* 入力 */}
       <div role="group" aria-label="Lunariaへのメッセージ入力" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px 16px', borderTop: '1px solid rgba(255,255,255,.05)', flexShrink: 0 }}>
         <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={onKey} placeholder="話しかける..." disabled={loading} autoComplete="off" aria-label="Lunariaへのチャットメッセージ" aria-keyshortcuts="Enter" aria-controls="lunaria-conversation-log" enterKeyHint="send"
-          style={{ flex: 1, background: 'rgba(8,7,6,.72)', border: '1px solid var(--luna-border)', borderRadius: 12, padding: '11px 14px', fontSize: 14, color: 'var(--luna-text)', caretColor: orbColor, fontFamily: 'inherit', lineHeight: 1.4 }} />
+          style={{ flex: 1, background: 'rgba(8,7,6,.72)', border: '1px solid var(--luna-border)', borderRadius: 'var(--luna-radius-md)', padding: '11px 14px', fontSize: 14, color: 'var(--luna-text)', caretColor: orbColor, fontFamily: 'inherit', lineHeight: 1.4 }} />
         <button onClick={send} disabled={!input.trim() || loading} aria-label="Lunariaにメッセージを送る"
           style={{ width: 38, height: 38, borderRadius: '50%', background: orbColor, border: `1px solid ${orbColor}`, color: '#100d09', fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, flexShrink: 0, opacity: input.trim() && !loading ? 1 : .32, transition: 'opacity .2s, background 1s, transform .16s ease' }}>↑</button>
       </div>

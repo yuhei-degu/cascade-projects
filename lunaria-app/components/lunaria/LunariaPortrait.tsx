@@ -128,7 +128,7 @@ const placeholderStyle: CSSProperties = {
   inset: 0,
   display: 'grid',
   placeItems: 'center',
-  color: '#ddd5c5',
+  color: 'var(--luna-text-soft)',
 }
 
 const moonHaloStyle: CSSProperties = {
