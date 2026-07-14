@@ -273,14 +273,14 @@ export default function GachaPage() {
   return (
     <main className="gacha-shell">
       <nav className="gacha-nav" aria-label="ガチャのナビゲーション">
-        <Link href="/" aria-label="Lunariaの部屋に戻る">← ルーム</Link>
-        <h1>月箱</h1>
-        <Link href="/gacha/inventory" aria-label="ガチャ所持品を開く">所持品</Link>
+        <Link href="/" aria-label="Lunariaの部屋に戻る">← ホーム</Link>
+        <h1>ガチャ</h1>
+        <Link href="/gacha/inventory" aria-label="ガチャの入手履歴を開く">入手履歴</Link>
       </nav>
 
       <div className="gacha-tabs" role="tablist" aria-label="ガチャの表示切り替え">
-        <button type="button" className={viewMode === 'draw' ? 'active' : ''} onClick={() => setViewMode('draw')}>抽選</button>
-        <button type="button" className={viewMode === 'collection' ? 'active' : ''} onClick={() => setViewMode('collection')}>図鑑</button>
+        <button type="button" className={viewMode === 'draw' ? 'active' : ''} onClick={() => setViewMode('draw')}>ガチャを引く</button>
+        <button type="button" className={viewMode === 'collection' ? 'active' : ''} onClick={() => setViewMode('collection')}>コレクション</button>
       </div>
 
       {viewMode === 'draw' ? (
@@ -312,7 +312,7 @@ export default function GachaPage() {
             </section>
           )}
 
-          <p className="gacha-lead">月箱を開けて、家具・小物・アクセサリを集めよう。光の色が、手に入るレアリティを告げます。</p>
+          <p className="gacha-lead">ガチャを回して、家具・小物・アクセサリーを集めよう。光の色でレアリティがわかります。</p>
 
           {state?.daily_bonus_available && (
             <button type="button" className="daily-button" onClick={claimDaily}>今日のチケットを受け取る</button>
@@ -326,7 +326,7 @@ export default function GachaPage() {
               disabled={drawing || !state}
               aria-busy={drawing}
             >
-              <span>{drawing ? '抽選中' : !state ? '読込中' : state.ticket_count < 1 ? 'チケット不足' : '月箱を開ける'}</span>
+              <span>{drawing ? '引いています…' : !state ? '読み込み中…' : state.ticket_count < 1 ? 'チケット不足' : 'ガチャを引く'}</span>
             </button>
           </section>
 

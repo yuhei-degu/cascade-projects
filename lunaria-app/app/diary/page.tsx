@@ -240,7 +240,7 @@ export default function DiaryPage() {
           <div>
             <Link href="/" aria-label="Lunariaの部屋に戻る" style={backLinkStyle}>ルナの部屋に戻る</Link>
             <p style={eyebrowStyle}>Lunaria 日記</p>
-            <h1 style={titleStyle}>日々の棚</h1>
+            <h1 style={titleStyle}>日記</h1>
             <p style={leadStyle}>
               ルナが話したこと、心に残ったこと、次へ持っていきたいことをそっと集める場所です。
             </p>
@@ -248,7 +248,7 @@ export default function DiaryPage() {
 
           <nav aria-label="日記のナビゲーション" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             <Link href="/memory" aria-label="記憶を開く" style={moonboxLinkStyle}>記憶</Link>
-            <Link href="/gacha" aria-label="ガチャを開く" style={moonboxLinkStyle}>月箱</Link>
+            <Link href="/gacha" aria-label="ガチャを開く" style={moonboxLinkStyle}>ガチャ</Link>
           </nav>
         </header>
 
@@ -283,11 +283,11 @@ export default function DiaryPage() {
         )}
 
         {loading ? (
-          <div style={loadingStyle}>棚を開いています...</div>
+          <div style={loadingStyle}>読み込み中...</div>
         ) : (
           <div style={contentGridStyle}>
             <div style={{ display: 'grid', gap: 16 }}>
-              <Section title={hasDiary ? `${formatDateLabel(date)}の日記` : `${formatDateLabel(date)}の空の棚`} accent="rgba(241,199,127,.18)">
+              <Section title={hasDiary ? `${formatDateLabel(date)}の日記` : `${formatDateLabel(date)}（日記なし）`} accent="rgba(241,199,127,.18)">
                 {hasDiary ? (
                   <div>
                     <div style={datePillStyle}>{date}</div>
@@ -302,7 +302,7 @@ export default function DiaryPage() {
                   </div>
                 ) : (
                   <div>
-                    <p style={summaryStyle}>ルナはまだこの棚に日記を置いていません。</p>
+                    <p style={summaryStyle}>この日の日記はまだ生成されていません。</p>
                     <p style={mutedTextStyle}>この日の会話がある場合は「この日を書く」から生成できます。</p>
                   </div>
                 )}
@@ -320,7 +320,7 @@ export default function DiaryPage() {
                 </Section>
               )}
 
-              <Section title="まだ開いていること" accent="rgba(230,165,141,.13)">
+              <Section title="気になっていること" accent="rgba(230,165,141,.13)">
                 <ListBlock items={asList(diary?.unresolved_issues)} empty="今すぐ気にかける未解決の話題はありません。" />
               </Section>
 
@@ -361,7 +361,7 @@ export default function DiaryPage() {
                         <div style={{ color: 'var(--luna-faint)', fontSize: 11, marginBottom: 5 }}>
                           {message.role === 'assistant' ? 'ルナ' : 'あなた'} / {formatTime(message.ts)}
                         </div>
-                        <div style={{ color: 'var(--luna-text-soft)', fontSize: 13, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{message.content}</div>
+                        <div style={{ color: 'var(--luna-text-soft)', fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{message.content}</div>
                       </div>
                     ))}
                   </div>
@@ -370,9 +370,9 @@ export default function DiaryPage() {
             </div>
 
             <aside style={{ display: 'grid', gap: 16, alignContent: 'start' }}>
-              <Section title="月の棚" accent="rgba(241,199,127,.13)">
+              <Section title="この月の一覧" accent="rgba(241,199,127,.13)">
                 {monthDays.length === 0 ? (
-                  <p style={mutedTextStyle}>この月にはまだ日が並んでいません。</p>
+                  <p style={mutedTextStyle}>この月の記録はまだありません。</p>
                 ) : (
                   <div style={{ display: 'grid', gap: 8 }}>
                     {monthDays.map(day => (
@@ -385,7 +385,7 @@ export default function DiaryPage() {
                           background: day.date === date ? 'rgba(241,199,127,.12)' : 'rgba(255,255,255,.035)',
                         }}
                       >
-                        <span style={{ color: 'var(--luna-text-soft)', fontSize: 13 }}>{day.date.slice(5)}</span>
+                        <span style={{ color: 'var(--luna-text-soft)', fontSize: 14 }}>{day.date.slice(5)}</span>
                         <span style={{ color: day.generated ? '#9fcfbd' : 'var(--luna-muted)', fontSize: 11 }}>
                           {day.generated ? '日記' : '会話'} / {day.message_count}
                         </span>
@@ -395,14 +395,14 @@ export default function DiaryPage() {
                 )}
               </Section>
 
-              <Section title="感情のあと" accent="rgba(159,207,189,.12)">
+              <Section title="感情の記録" accent="rgba(159,207,189,.12)">
                 {emotionEntries.length === 0 ? (
-                  <p style={mutedTextStyle}>強い感情のあとがまだありません。</p>
+                  <p style={mutedTextStyle}>この日の感情の記録はまだありません。</p>
                 ) : (
                   <div style={{ display: 'grid', gap: 10 }}>
                     {emotionEntries.map(([key, value]) => (
                       <div key={key} style={{ display: 'grid', gap: 5 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--luna-muted)', fontSize: 12 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--luna-muted)', fontSize: 13 }}>
                           <span>{emotionLabels[key] ?? key}</span>
                           <span>{value}</span>
                         </div>
@@ -418,7 +418,7 @@ export default function DiaryPage() {
               <Section title="日記の元データ" accent="rgba(127,179,213,.13)">
                 <details style={detailsStyle}>
                   <summary style={summaryToggleStyle}>技術的な詳細</summary>
-                  <div style={{ display: 'grid', gap: 10, color: 'var(--luna-muted)', fontSize: 13, marginTop: 10 }}>
+                  <div style={{ display: 'grid', gap: 10, color: 'var(--luna-muted)', fontSize: 14, marginTop: 10 }}>
                     <Stat label="メッセージ数" value={sourceCounts.message_count} />
                     <Stat label="抽出数" value={sourceCounts.extraction_count} />
                     <Stat label="重要度" value={diary?.importance ?? '-'} />
@@ -460,7 +460,7 @@ const headerStyle: CSSProperties = {
 const backLinkStyle: CSSProperties = {
   color: 'var(--luna-faint)',
   textDecoration: 'none',
-  fontSize: 12,
+  fontSize: 13,
 }
 
 const eyebrowStyle: CSSProperties = {
@@ -482,7 +482,7 @@ const titleStyle: CSSProperties = {
 
 const leadStyle: CSSProperties = {
   color: 'var(--luna-muted)',
-  fontSize: 14,
+  fontSize: 15,
   lineHeight: 1.9,
   marginTop: 12,
   maxWidth: 620,
@@ -494,7 +494,7 @@ const moonboxLinkStyle: CSSProperties = {
   border: '1px solid var(--luna-border)',
   borderRadius: 999,
   padding: '9px 13px',
-  fontSize: 12,
+  fontSize: 13,
   background: 'rgba(241,199,127,.065)',
   whiteSpace: 'nowrap',
 }
@@ -518,7 +518,7 @@ const navButtonStyle: CSSProperties = {
   borderRadius: 'var(--luna-radius-sm)',
   color: 'var(--luna-text-soft)',
   cursor: 'pointer',
-  fontSize: 12,
+  fontSize: 13,
   padding: '9px 13px',
 }
 
@@ -529,13 +529,13 @@ const dateInputStyle: CSSProperties = {
   border: '1px solid var(--luna-border)',
   borderRadius: 'var(--luna-radius-md)',
   padding: '9px 12px',
-  fontSize: 14,
+  fontSize: 15,
   minHeight: 42,
 }
 
 const errorStyle: CSSProperties = {
   color: '#e6a58d',
-  fontSize: 13,
+  fontSize: 14,
   marginBottom: 14,
   padding: '10px 12px',
   border: '1px solid rgba(230,165,141,.22)',
@@ -574,7 +574,7 @@ const sectionGlowStyle: CSSProperties = {
 }
 
 const sectionTitleStyle: CSSProperties = {
-  fontSize: 12,
+  fontSize: 13,
   letterSpacing: '.12em',
   color: 'var(--luna-gold)',
   marginBottom: 12,
@@ -611,13 +611,13 @@ const lunaCommentStyle: CSSProperties = {
 
 const summaryStyle: CSSProperties = {
   color: 'var(--luna-muted)',
-  fontSize: 14,
+  fontSize: 15,
   lineHeight: 1.9,
 }
 
 const mutedTextStyle: CSSProperties = {
   color: 'var(--luna-faint)',
-  fontSize: 13,
+  fontSize: 14,
   lineHeight: 1.8,
 }
 
@@ -636,7 +636,7 @@ const listItemStyle: CSSProperties = {
   gap: 10,
   alignItems: 'flex-start',
   color: 'var(--luna-text-soft)',
-  fontSize: 14,
+  fontSize: 15,
   lineHeight: 1.75,
 }
 
@@ -644,7 +644,7 @@ const topicPillStyle: CSSProperties = {
   border: '1px solid rgba(127,179,213,.22)',
   borderRadius: 999,
   color: '#b9d8e8',
-  fontSize: 12,
+  fontSize: 13,
   padding: '6px 10px',
   background: 'rgba(127,179,213,.07)',
 }
@@ -656,7 +656,7 @@ const detailsStyle: CSSProperties = {
 const summaryToggleStyle: CSSProperties = {
   color: 'var(--luna-text-soft)',
   cursor: 'pointer',
-  fontSize: 13,
+  fontSize: 14,
   lineHeight: 1.6,
 }
 
@@ -664,7 +664,7 @@ const memoryCardStyle: CSSProperties = {
   border: '1px solid rgba(241,199,127,.14)',
   borderRadius: 'var(--luna-radius-lg)',
   color: 'var(--luna-text-soft)',
-  fontSize: 13,
+  fontSize: 14,
   lineHeight: 1.75,
   padding: '10px 12px',
   background: 'rgba(241,199,127,.045)',

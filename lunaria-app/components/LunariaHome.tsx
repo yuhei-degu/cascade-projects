@@ -109,7 +109,7 @@ function Typing() {
   return (
     <div role="status" aria-live="polite" aria-atomic="true" aria-label="Lunariaが返信中" style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
       <div aria-hidden="true" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--luna-gold-strong)', flexShrink: 0, marginBottom: 3 }} />
-      <div style={{ background: 'rgba(27,23,17,.92)', border: '1px solid var(--luna-border-soft)', borderRadius: '6px 16px 16px 16px', padding: '11px 15px', fontSize: 14, boxShadow: 'var(--luna-shadow-sm)' }}>
+      <div style={{ background: 'rgba(27,23,17,.92)', border: '1px solid var(--luna-border-soft)', borderRadius: '6px 16px 16px 16px', padding: '11px 15px', fontSize: 15, boxShadow: 'var(--luna-shadow-sm)' }}>
         <span aria-hidden="true" className="blink-dot" style={{ color: 'var(--luna-gold)', animationDelay: '0s' }}>・</span>
         <span aria-hidden="true" className="blink-dot" style={{ color: 'var(--luna-gold)', animationDelay: '.3s' }}>・</span>
         <span aria-hidden="true" className="blink-dot" style={{ color: 'var(--luna-gold)', animationDelay: '.6s' }}>・</span>
@@ -123,7 +123,7 @@ function ChatMsg({ msg }: { msg: Msg }) {
   return (
     <div className="fade-up" aria-label={ai ? 'Lunariaのメッセージ' : 'あなたのメッセージ'} style={{ display: 'flex', alignItems: 'flex-end', gap: 8, justifyContent: ai ? 'flex-start' : 'flex-end' }}>
       {ai && <div aria-hidden="true" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--luna-gold-strong)', flexShrink: 0, marginBottom: 3 }} />}
-      <div style={{ maxWidth: 'min(78%, 620px)', fontSize: 14, lineHeight: 1.75, padding: '11px 15px', background: ai ? 'rgba(27,23,17,.92)' : 'linear-gradient(145deg, rgba(241,199,127,.13), rgba(35,31,27,.92))', border: `1px solid ${ai ? 'var(--luna-border-soft)' : 'rgba(241,199,127,.16)'}`, borderRadius: ai ? '6px 16px 16px 16px' : '16px 6px 16px 16px', color: ai ? 'var(--luna-text)' : 'var(--luna-text)', boxShadow: ai ? 'var(--luna-shadow-sm)' : 'none', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}>
+      <div style={{ maxWidth: 'min(78%, 620px)', fontSize: 15, lineHeight: 1.75, padding: '11px 15px', background: ai ? 'rgba(27,23,17,.92)' : 'linear-gradient(145deg, rgba(241,199,127,.13), rgba(35,31,27,.92))', border: `1px solid ${ai ? 'var(--luna-border-soft)' : 'rgba(241,199,127,.16)'}`, borderRadius: ai ? '6px 16px 16px 16px' : '16px 6px 16px 16px', color: ai ? 'var(--luna-text)' : 'var(--luna-text)', boxShadow: ai ? 'var(--luna-shadow-sm)' : 'none', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}>
         {msg.content}
       </div>
     </div>
@@ -340,12 +340,12 @@ export default function ChatPage() {
           <span style={{ fontFamily: 'var(--luna-font-display)', fontSize: 16, fontWeight: 600, letterSpacing: '.08em' }}>ルナ</span>
         </div>
         <nav aria-label="Lunariaのナビゲーション" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <a href="/diary" aria-label="日記を開く" style={{ fontSize: 12, color: 'var(--luna-faint)', textDecoration: 'none' }}>日々</a>
-          <a href="/memory" aria-label="記憶を開く" style={{ fontSize: 12, color: 'var(--luna-faint)', textDecoration: 'none' }}>記憶</a>
-          <a href="/character" aria-label="姿を開く" style={{ fontSize: 12, color: 'var(--luna-faint)', textDecoration: 'none' }}>姿</a>
-          <a href="/items" aria-label="品を開く" style={{ fontSize: 12, color: 'var(--luna-faint)', textDecoration: 'none' }}>品</a>
-          <a href="/games" aria-label="ゲームを開く" style={{ fontSize: 12, color: 'var(--luna-faint)', textDecoration: 'none' }}>ゲーム</a>
-          <a href="/gacha" aria-label="ガチャを開く" style={{ fontSize: 12, color: 'var(--luna-faint)', textDecoration: 'none' }}>🎟</a>
+          <a href="/diary" aria-label="日記を開く" style={{ fontSize: 13.5, color: 'var(--luna-muted)', textDecoration: 'none' }}>日記</a>
+          <a href="/memory" aria-label="記憶を開く" style={{ fontSize: 13.5, color: 'var(--luna-muted)', textDecoration: 'none' }}>記憶</a>
+          <a href="/character" aria-label="きせかえを開く" style={{ fontSize: 13.5, color: 'var(--luna-muted)', textDecoration: 'none' }}>きせかえ</a>
+          <a href="/items" aria-label="アイテムを開く" style={{ fontSize: 13.5, color: 'var(--luna-muted)', textDecoration: 'none' }}>アイテム</a>
+          <a href="/games" aria-label="ゲームを開く" style={{ fontSize: 13.5, color: 'var(--luna-muted)', textDecoration: 'none' }}>ゲーム</a>
+          <a href="/gacha" aria-label="ガチャを開く" style={{ fontSize: 13.5, color: 'var(--luna-muted)', textDecoration: 'none' }}>ガチャ</a>
           <button onClick={() => setShowDev(v => !v)} aria-label="開発者向け診断の表示を切り替える" aria-pressed={showDev} style={{ fontSize: 10, color: showDev ? 'var(--luna-faint)' : '#2e2c28', background: 'none', border: 'none', cursor: 'pointer' }}>診断</button>
         </nav>
       </div>
@@ -435,7 +435,7 @@ export default function ChatPage() {
       {/* 入力 */}
       <div role="group" aria-label="Lunariaへのメッセージ入力" style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px 16px', borderTop: '1px solid rgba(255,255,255,.05)', flexShrink: 0 }}>
         <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={onKey} placeholder="話しかける..." disabled={loading} autoComplete="off" aria-label="Lunariaへのチャットメッセージ" aria-keyshortcuts="Enter" aria-controls="lunaria-conversation-log" enterKeyHint="send"
-          style={{ flex: 1, background: 'rgba(8,7,6,.72)', border: '1px solid var(--luna-border)', borderRadius: 'var(--luna-radius-md)', padding: '11px 14px', fontSize: 14, color: 'var(--luna-text)', caretColor: orbColor, fontFamily: 'inherit', lineHeight: 1.4 }} />
+          style={{ flex: 1, background: 'rgba(8,7,6,.72)', border: '1px solid var(--luna-border)', borderRadius: 'var(--luna-radius-md)', padding: '11px 14px', fontSize: 15, color: 'var(--luna-text)', caretColor: orbColor, fontFamily: 'inherit', lineHeight: 1.4 }} />
         <button onClick={send} disabled={!input.trim() || loading} aria-label="Lunariaにメッセージを送る"
           style={{ width: 38, height: 38, borderRadius: '50%', background: orbColor, border: `1px solid ${orbColor}`, color: '#100d09', fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, flexShrink: 0, opacity: input.trim() && !loading ? 1 : .32, transition: 'opacity .2s, background 1s, transform .16s ease' }}>↑</button>
       </div>

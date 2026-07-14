@@ -124,9 +124,9 @@ const RARITY_LABEL: Record<ItemRarity, string> = {
 }
 
 const SOURCE_LABEL: Record<ItemView['source'], string> = {
-  user_items: '所持品DB',
-  gacha_inventory: 'ガチャ所持品',
-  mock: '代替データ',
+  user_items: '同期済み',
+  gacha_inventory: 'ガチャ入手',
+  mock: '仮データ',
 }
 
 const FILTERS: ItemCategory[] = ['all', 'outfit', 'accessory', 'background', 'room_item', 'small_item', 'urban_legend']
@@ -141,7 +141,7 @@ export default function ItemsPage() {
     items: FALLBACK_ITEMS,
     source: 'mock',
     db_ready: false,
-    note: 'ローカルの代替データ',
+    note: '一時データ',
   })
   const [activeFilter, setActiveFilter] = useState<ItemCategory>('all')
   const [showUnowned, setShowUnowned] = useState(true)
@@ -159,7 +159,7 @@ export default function ItemsPage() {
       })
       .catch(() => {
         if (!alive) return
-        setData({ items: FALLBACK_ITEMS, source: 'mock', db_ready: false, note: '通信に失敗したため、代替データを表示しています。' })
+        setData({ items: FALLBACK_ITEMS, source: 'mock', db_ready: false, note: '通信に失敗したため、一時データを表示しています。' })
         setError(DEFAULT_API_ERROR_MESSAGE)
       })
       .finally(() => {
@@ -193,33 +193,32 @@ export default function ItemsPage() {
       padding: '40px 20px',
     }}>
       <div style={{ maxWidth: 1120, margin: '0 auto' }}>
-        <nav aria-label="品のナビゲーション" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
-          <Link href="/" aria-label="Lunariaの部屋に戻る" style={navLinkStyle}>部屋に戻る</Link>
-          <Link href="/gacha" aria-label="ガチャを開く" style={navLinkStyle}>月箱</Link>
-          <Link href="/character" aria-label="姿を開く" style={navLinkStyle}>姿の状態</Link>
+        <nav aria-label="アイテムのナビゲーション" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
+          <Link href="/" aria-label="Lunariaの部屋に戻る" style={navLinkStyle}>ホームに戻る</Link>
+          <Link href="/gacha" aria-label="ガチャを開く" style={navLinkStyle}>ガチャ</Link>
+          <Link href="/character" aria-label="きせかえを開く" style={navLinkStyle}>きせかえ</Link>
         </nav>
 
         <section style={{ ...panelStyle, marginBottom: 22 }}>
-          <p style={{ color: 'var(--luna-gold-strong)', letterSpacing: '0.18em', textTransform: 'uppercase', margin: 0, fontSize: 12 }}>所持品プレビュー</p>
-          <h1 style={{ fontFamily: 'var(--luna-font-display)', fontSize: 'clamp(2.2rem, 6vw, 4.8rem)', lineHeight: 1.05, margin: '12px 0 16px' }}>月箱の棚</h1>
+          <p style={{ color: 'var(--luna-gold-strong)', letterSpacing: '0.18em', textTransform: 'uppercase', margin: 0, fontSize: 13 }}>コレクション</p>
+          <h1 style={{ fontFamily: 'var(--luna-font-display)', fontSize: 'clamp(2.2rem, 6vw, 4.8rem)', lineHeight: 1.05, margin: '12px 0 16px' }}>アイテム</h1>
           <p style={{ maxWidth: 720, color: TEXT_SUB, lineHeight: 1.8, margin: 0 }}>
-            Lunariaの品を静かに並べる棚です。利用できる場合は将来のユーザー所持品テーブルを読み、
-            それまでは現在のガチャ所持品または代替データを使います。
+            ガチャなどで手に入れたアイテムを一覧できます。
           </p>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 20 }}>
             <Metric label="所持数" value={`${ownedCount}/${data.items.length}`} />
             <Metric label="達成率" value={`${completion}%`} />
-            <Metric label="取得元" value={SOURCE_LABEL[data.source]} />
+            <Metric label="データ元" value={SOURCE_LABEL[data.source]} />
           </div>
           <SourceBanner
             ready={data.db_ready}
             loading={loading}
-            title={data.db_ready ? 'DBの品棚が有効です' : '代替の品棚が有効です'}
-            note={loading ? '品の取得元を確認しています...' : data.note}
+            title={data.db_ready ? 'データベースと同期済み' : 'プレビュー表示中'}
+            note={loading ? '読み込み中...' : data.note}
             detail={
               data.db_ready
-                ? 'このページは永続化されたユーザー所持品レイヤーを読んでいます。'
-                : '安全なプレビューモードです。migration 020が適用されるまで、ガチャ所持品またはローカルの代替データを使います。'
+                ? '所持アイテムはアカウントに保存されています。'
+                : '安全なプレビューモードです。migration 020が適用されるまで、ガチャ所持品または一時データを使います。'
             }
           />
         </section>
@@ -249,8 +248,8 @@ export default function ItemsPage() {
           <ItemsSkeleton />
         ) : filteredItems.length === 0 ? (
           <EmptyState
-            title="この条件に合う品はまだありません。"
-            copy="カテゴリを切り替えるか、未所持の品も表示してみてください。月箱で手に入れた品はここに並びます。"
+            title="条件に合うアイテムはありません。"
+            copy="カテゴリを切り替えるか、「未所持も表示」をオンにしてみてください。ガチャで手に入れたアイテムはここに並びます。"
           />
         ) : (
           <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
@@ -267,7 +266,7 @@ export default function ItemsPage() {
                 </div>
                 <p style={{ color: TEXT_SUB, lineHeight: 1.7 }}>{item.description}</p>
                 <p style={{ color: TEXT_DIM, fontStyle: 'italic', lineHeight: 1.6 }}>&quot;{item.flavor_text}&quot;</p>
-                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, color: TEXT_DIM, fontSize: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, color: TEXT_DIM, fontSize: 13 }}>
                   <span>{CATEGORY_LABEL[item.category]}</span>
                   <span>{item.duplicate_count > 0 ? `重複 +${item.duplicate_count}` : SOURCE_LABEL[item.source]}</span>
                 </div>
@@ -282,7 +281,7 @@ export default function ItemsPage() {
 
 function ItemsSkeleton() {
   return (
-    <section aria-label="品を読み込み中" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
+    <section aria-label="アイテムを読み込み中" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
       {Array.from({ length: 6 }).map((_, index) => (
         <article key={index} className="luna-skeleton" style={{ height: 210, padding: 20 }}>
           <div className="luna-skeleton luna-skeleton-line" style={{ width: '34%', marginBottom: 16 }} />
@@ -309,7 +308,7 @@ function EmptyState({ title, copy }: { title: string; copy: string }) {
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div style={{ minWidth: 126, border: '1px solid rgba(241,199,127, 0.22)', borderRadius: 'var(--luna-radius-lg)', padding: '12px 14px', background: 'rgba(255,255,255,0.03)' }}>
-      <div style={{ color: TEXT_DIM, fontSize: 12 }}>{label}</div>
+      <div style={{ color: TEXT_DIM, fontSize: 13 }}>{label}</div>
       <div style={{ color: TEXT_MAIN, fontSize: 18, fontWeight: 700 }}>{value}</div>
     </div>
   )
@@ -324,11 +323,11 @@ function SourceBanner({ ready, loading, title, note, detail }: { ready: boolean;
       padding: '12px 14px',
       background: ready ? 'rgba(143,209,158,0.08)' : 'rgba(241,199,127,0.08)',
     }}>
-      <div style={{ color: ready ? '#8fd19e' : 'var(--luna-gold-strong)', fontSize: 13, fontWeight: 700 }}>
-        {loading ? '品の取得元を確認しています...' : title}
+      <div style={{ color: ready ? '#8fd19e' : 'var(--luna-gold-strong)', fontSize: 14, fontWeight: 700 }}>
+        {loading ? '読み込み中...' : title}
       </div>
-      <div style={{ color: TEXT_SUB, fontSize: 13, lineHeight: 1.7, marginTop: 4 }}>{note}</div>
-      <div style={{ color: TEXT_DIM, fontSize: 12, lineHeight: 1.6, marginTop: 4 }}>{detail}</div>
+      <div style={{ color: TEXT_SUB, fontSize: 14, lineHeight: 1.7, marginTop: 4 }}>{note}</div>
+      <div style={{ color: TEXT_DIM, fontSize: 13, lineHeight: 1.6, marginTop: 4 }}>{detail}</div>
     </div>
   )
 }
@@ -379,7 +378,7 @@ const ownedBadgeStyle = {
   background: 'rgba(143,209,158,0.13)',
   color: 'var(--luna-green)',
   padding: '6px 10px',
-  fontSize: 12,
+  fontSize: 13,
 }
 
 const lockedBadgeStyle = {
