@@ -218,7 +218,7 @@ export default function ItemsPage() {
             detail={
               data.db_ready
                 ? '所持アイテムはアカウントに保存されています。'
-                : '安全なプレビューモードです。migration 020が適用されるまで、ガチャ所持品または一時データを使います。'
+                : 'データ連携の準備中のため、一時的なアイテム一覧を表示しています。'
             }
           />
         </section>
