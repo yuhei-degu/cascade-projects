@@ -17,6 +17,7 @@ import { getProfile, getPendingUpdates, setProfile, savePendingUpdate, clearPend
 import type { ProfileField } from '../../../lib/lunaria/profile'
 import { supabaseAdmin } from '../../../lib/supabase'
 import { buildNormalPrompt, buildSeriousPrompt } from '../../../lib/lunaria/prompt-builder'
+import { buildConversationMoveNote } from '../../../lib/lunaria/conversation-move'
 import { tryGrantTicketByScore } from '../../../lib/lunaria/gacha'
 import { getJstDateString } from '../../../lib/lunaria/date'
 import { parseAssistantReply, stringifyAssistantMessage } from '../../../lib/lunaria/assistant-reply'
@@ -256,11 +257,13 @@ export async function POST(req: NextRequest) {
     const systemWithContext = route.routeType === 'claude_serious'
       ? buildSeriousPrompt(promptPayload)
       : buildNormalPrompt(promptPayload)
+    const conversationMoveNote = buildConversationMoveNote(history, userMessage)
     const gameHandoffNextStep = getGameHandoffNextStep(userMessage, contextualMem ?? null, history)
     const gameHandoffResponseHint = buildGameHandoffResponseHint(gameHandoffNextStep)
     const llmMsgs: OpenAI.Chat.ChatCompletionMessageParam[] = [
       { role: 'system', content: systemWithContext },
       ...(gameHandoffResponseHint ? [{ role: 'system' as const, content: gameHandoffResponseHint }] : []),
+      ...(conversationMoveNote ? [{ role: 'system' as const, content: conversationMoveNote }] : []),
       ...history.slice(-12).map((m: any) => ({
         role: m.role as 'user' | 'assistant',
         content: m.content,
