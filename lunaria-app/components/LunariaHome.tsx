@@ -24,6 +24,9 @@ interface AssistantVisualState {
   motion: LunariaMotion
   label: string
 }
+// ガチャ/ゲームは保留中(削除ではない)。NEXT_PUBLIC_SHOW_PLAYFUL=1 で再表示
+const SHOW_PLAYFUL = process.env.NEXT_PUBLIC_SHOW_PLAYFUL === '1'
+
 const ROUTE_COLOR: Record<RouteType, string> = {
   light_normal:   '#4d8f7a',
   light_probe:    '#c8963c',
@@ -344,8 +347,10 @@ export default function ChatPage() {
           <a href="/memory" aria-label="記憶を開く" style={{ fontSize: 13.5, color: 'var(--luna-muted)', textDecoration: 'none' }}>記憶</a>
           <a href="/character" aria-label="きせかえを開く" style={{ fontSize: 13.5, color: 'var(--luna-muted)', textDecoration: 'none' }}>きせかえ</a>
           <a href="/items" aria-label="アイテムを開く" style={{ fontSize: 13.5, color: 'var(--luna-muted)', textDecoration: 'none' }}>アイテム</a>
-          <a href="/games" aria-label="ゲームを開く" style={{ fontSize: 13.5, color: 'var(--luna-muted)', textDecoration: 'none' }}>ゲーム</a>
-          <a href="/gacha" aria-label="ガチャを開く" style={{ fontSize: 13.5, color: 'var(--luna-muted)', textDecoration: 'none' }}>ガチャ</a>
+          {SHOW_PLAYFUL && (<>
+            <a href="/games" aria-label="ゲームを開く" style={{ fontSize: 13.5, color: 'var(--luna-muted)', textDecoration: 'none' }}>ゲーム</a>
+            <a href="/gacha" aria-label="ガチャを開く" style={{ fontSize: 13.5, color: 'var(--luna-muted)', textDecoration: 'none' }}>ガチャ</a>
+          </>)}
           <button onClick={() => setShowDev(v => !v)} aria-label="開発者向け診断の表示を切り替える" aria-pressed={showDev} style={{ fontSize: 10, color: showDev ? 'var(--luna-faint)' : '#2e2c28', background: 'none', border: 'none', cursor: 'pointer' }}>診断</button>
         </nav>
       </div>
