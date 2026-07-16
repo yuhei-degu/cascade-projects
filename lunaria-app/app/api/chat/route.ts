@@ -365,11 +365,17 @@ export async function POST(req: NextRequest) {
           }
 
           // 5. メッセージ保存（fire-and-forget）
+          // work_items の source_message_id 用にユーザー発言の id だけ拾う（失敗しても会話は壊さない）
           const now = Date.now()
-          supabaseAdmin.from(T.messages).insert([
-            { user_id: userId, role: 'user',      content: userMessage, created_at: new Date(now).toISOString() },
-            { user_id: userId, role: 'assistant', content: reply, route_type: route.routeType, created_at: new Date(now + 1).toISOString() },
-          ]).then(() => {})
+          const userMessageIdPromise: Promise<string | null> = Promise.resolve(
+            supabaseAdmin.from(T.messages).insert([
+              { user_id: userId, role: 'user',      content: userMessage, created_at: new Date(now).toISOString() },
+              { user_id: userId, role: 'assistant', content: reply, route_type: route.routeType, created_at: new Date(now + 1).toISOString() },
+            ]).select('id'),
+          ).then(
+            res => res.data?.[0]?.id ?? null,
+            () => null,
+          )
 
           // 6. routing_log 保存
           supabaseAdmin.from(T.routingLog).insert({
@@ -410,6 +416,11 @@ export async function POST(req: NextRequest) {
                       reason: extraction.summary,
                     },
                   )
+                }
+                if (extraction.work_items.length > 0) {
+                  const { saveWorkItems } = await import('../../../lib/lunaria/work-items')
+                  const sourceMessageId = await userMessageIdPromise
+                  await saveWorkItems(extraction.work_items, userId, { date: sourceDate, sourceMessageId })
                 }
                 await supabaseAdmin.from(T.extractions).insert({
                   user_id: userId,

@@ -27,6 +27,7 @@ const EXTRACT_SYSTEM = `あなたは会話分析エンジンです。
   "affinity_delta": 0,
   "status_updates": [],
   "unresolved_issues": [],
+  "work_items": [],
   "long_term_candidate": null
 }
 
@@ -38,7 +39,18 @@ self_disclosure_depth:
 affinity_delta: depth 0→0点, 1→1点, 2→2〜3点, 3→4〜5点
 status_updates: [{type:"job|relationship|goal|other", value:"変更内容"}]
 unresolved_issues: 翌日に持ち越す未解決の話題
+work_items: ユーザーの作業・仕事・プロジェクトの報告。[{kind:"did|done|stuck|decided|next", content:"内容", project:"プロジェクト名 or null"}]
 long_term_candidate: {type:"value|pattern|goal|trigger|name", content:"内容"} または null
+
+work_items の判定基準（重要）：
+kind の定義:
+  did=着手・進行中の作業 / done=完了したこと / stuck=詰まった・ブロックされていること
+  decided=下した判断・決定 / next=次にやると言ったこと
+- ユーザー本人の発言のみから抽出する（ルナの発言・提案は含めない）
+- content はユーザーの言葉に忠実に、1項目1内容で簡潔に（例:「migration 025を書いた」）
+- 同じ内容を複数の kind に重複させない。完了報告なら done のみ
+- project は会話から明確に推定できる場合のみ入れる。不明なら null
+- 作業の話が出ていなければ空配列 [] を返す。雑談や感情を無理に作業化しない
 
 名前の検出（最重要）：
 ユーザーが自分の名前を教えた場合は必ず抽出する。

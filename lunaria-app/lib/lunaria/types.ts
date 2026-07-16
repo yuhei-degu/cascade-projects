@@ -15,6 +15,17 @@ export const DEFAULT_EMOTION: Emotion = {
   joy: 1, anger: 0, sadness: 1, shyness: 0, loneliness: 2, anxiety: 1,
 }
 
+// ── 作業抽出（work items / ピボット Phase 1） ─────────────────
+export const WORK_ITEM_KINDS = ['did', 'done', 'stuck', 'decided', 'next'] as const
+export type WorkItemKind = (typeof WORK_ITEM_KINDS)[number]
+
+export const WorkItemSchema = z.object({
+  kind:    z.enum(WORK_ITEM_KINDS),
+  content: z.string(),
+  project: z.string().nullable().default(null),
+})
+export type WorkItem = z.infer<typeof WorkItemSchema>
+
 // ── Gemini 抽出結果 ──────────────────────────────────────────
 export const ExtractionSchema = z.object({
   summary:               z.string(),
@@ -27,6 +38,7 @@ export const ExtractionSchema = z.object({
     value: z.string(),
   })).default([]),
   unresolved_issues:     z.array(z.string()).default([]),
+  work_items:            z.array(WorkItemSchema).default([]),
   long_term_candidate:   z.object({
     type:    z.enum(['value', 'pattern', 'goal', 'trigger', 'name']),
     content: z.string(),
