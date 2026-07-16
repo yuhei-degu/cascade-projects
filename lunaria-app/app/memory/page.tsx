@@ -436,8 +436,11 @@ export default function MemoryPage() {
           </div>
           <nav aria-label="記憶のナビゲーション" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             <Link href="/diary" aria-label="日記を開く" style={pillLinkStyle}>日記</Link>
-            <Link href="/games" aria-label="ゲームを開く" style={pillLinkStyle}>ゲーム</Link>
-            <Link href="/gacha" aria-label="ガチャを開く" style={pillLinkStyle}>月箱</Link>
+            <Link href="/work" aria-label="しごとの記録を開く" style={pillLinkStyle}>しごと</Link>
+            {process.env.NEXT_PUBLIC_SHOW_PLAYFUL === '1' && (<>
+              <Link href="/games" aria-label="ゲームを開く" style={pillLinkStyle}>ゲーム</Link>
+              <Link href="/gacha" aria-label="ガチャを開く" style={pillLinkStyle}>月箱</Link>
+            </>)}
           </nav>
         </header>
 

@@ -248,7 +248,10 @@ export default function DiaryPage() {
 
           <nav aria-label="日記のナビゲーション" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             <Link href="/memory" aria-label="記憶を開く" style={moonboxLinkStyle}>記憶</Link>
-            <Link href="/gacha" aria-label="ガチャを開く" style={moonboxLinkStyle}>ガチャ</Link>
+            <Link href="/work" aria-label="しごとの記録を開く" style={moonboxLinkStyle}>しごと</Link>
+            {process.env.NEXT_PUBLIC_SHOW_PLAYFUL === '1' && (
+              <Link href="/gacha" aria-label="ガチャを開く" style={moonboxLinkStyle}>ガチャ</Link>
+            )}
           </nav>
         </header>
 

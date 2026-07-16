@@ -24,6 +24,7 @@ import { parseAssistantReply, stringifyAssistantMessage } from '../../../lib/lun
 import type { AssistantReply } from '../../../lib/lunaria/assistant-reply'
 import { buildGameHandoffResponseHint, getGameHandoffNextStep, withGameHandoffNextStep } from '../../../lib/lunaria/game-handoff'
 import { getAuthenticatedUserId } from '../_auth'
+import { hasWorkSignal } from '../../../lib/lunaria/work-items'
 import { trackEvent } from '../../../lib/track'
 
 const gemini = new OpenAI({
@@ -389,7 +390,9 @@ export async function POST(req: NextRequest) {
 
           // 7. 抽出（条件付き、after() でレスポンス送信後に実行）
           const hasNameHint = /名前|って言|と申し|と呼ん/.test(userMessage)
-          const shouldExtract = route.msgScore >= 2 || history.length >= 6 || hasNameHint
+          // 短い作業報告（「migration書けた」等）は msgScore が低く抽出をスキップしがちなので、
+          // 作業シグナルでも起動する（pivot Phase 1: 取り漏らしの方が高くつく）
+          const shouldExtract = route.msgScore >= 2 || history.length >= 6 || hasNameHint || hasWorkSignal(userMessage)
           if (shouldExtract) {
             after(async () => {
               try {

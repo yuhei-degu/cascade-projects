@@ -149,7 +149,9 @@ export default function CharacterPage() {
         <nav aria-label="姿のナビゲーション" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
           <Link href="/" aria-label="Lunariaの部屋に戻る" style={navLinkStyle}>部屋に戻る</Link>
           <Link href="/items" aria-label="品を開く" style={navLinkStyle}>品</Link>
-          <Link href="/gacha" aria-label="ガチャを開く" style={navLinkStyle}>月箱</Link>
+          {process.env.NEXT_PUBLIC_SHOW_PLAYFUL === '1' && (
+            <Link href="/gacha" aria-label="ガチャを開く" style={navLinkStyle}>月箱</Link>
+          )}
         </nav>
 
         <section style={heroGridStyle}>

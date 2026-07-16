@@ -195,7 +195,9 @@ export default function ItemsPage() {
       <div style={{ maxWidth: 1120, margin: '0 auto' }}>
         <nav aria-label="アイテムのナビゲーション" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 28 }}>
           <Link href="/" aria-label="Lunariaの部屋に戻る" style={navLinkStyle}>ホームに戻る</Link>
-          <Link href="/gacha" aria-label="ガチャを開く" style={navLinkStyle}>ガチャ</Link>
+          {process.env.NEXT_PUBLIC_SHOW_PLAYFUL === '1' && (
+            <Link href="/gacha" aria-label="ガチャを開く" style={navLinkStyle}>ガチャ</Link>
+          )}
           <Link href="/character" aria-label="きせかえを開く" style={navLinkStyle}>きせかえ</Link>
         </nav>
 

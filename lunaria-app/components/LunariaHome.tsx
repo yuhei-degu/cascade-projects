@@ -345,6 +345,7 @@ export default function ChatPage() {
         <nav aria-label="Lunariaのナビゲーション" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <a href="/diary" aria-label="日記を開く" style={{ fontSize: 13.5, color: 'var(--luna-muted)', textDecoration: 'none' }}>日記</a>
           <a href="/memory" aria-label="記憶を開く" style={{ fontSize: 13.5, color: 'var(--luna-muted)', textDecoration: 'none' }}>記憶</a>
+          <a href="/work" aria-label="しごとの記録を開く" style={{ fontSize: 13.5, color: 'var(--luna-muted)', textDecoration: 'none' }}>しごと</a>
           <a href="/character" aria-label="きせかえを開く" style={{ fontSize: 13.5, color: 'var(--luna-muted)', textDecoration: 'none' }}>きせかえ</a>
           <a href="/items" aria-label="アイテムを開く" style={{ fontSize: 13.5, color: 'var(--luna-muted)', textDecoration: 'none' }}>アイテム</a>
           {SHOW_PLAYFUL && (<>
