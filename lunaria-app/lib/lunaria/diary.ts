@@ -7,6 +7,7 @@ import { getJstDayRange } from './date'
 const T = {
   extractions: 'lunaria_extractions',
   diary:       'lunaria_diary_logs',
+  workItems:   'lunaria_work_items',
 } as const
 interface GeminiGenerateContentResponse {
   candidates?: Array<{
@@ -276,6 +277,108 @@ JSON形式:
   }
 }
 
+// ── 明日の一手（pivot Phase 2） ──────────────────────────────
+// work_items 直近7日 + 当日の unresolved_issues から1件だけ提案を生成し、
+// tomorrow_step に保存する。翌朝の第一声はこれを LLM 呼び出しなしで即返す。
+
+function isMissingColumnOrTable(error: any): boolean {
+  const message = String(error?.message ?? '')
+  return error?.code === 'PGRST204' || error?.code === '42703' || error?.code === '42P01' ||
+    error?.code === 'PGRST205' || /tomorrow_step|lunaria_work_items|schema cache/i.test(message)
+}
+
+async function buildTomorrowStepSource(date: string, userId: string, diary: Diary): Promise<string | null> {
+  let workLines: string[] = []
+  try {
+    const since = new Date(new Date(`${date}T12:00:00+09:00`).getTime() - 6 * 24 * 60 * 60 * 1000)
+    const sinceDate = new Date(since.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10)
+    const { data, error } = await supabaseAdmin
+      .from(T.workItems)
+      .select('date, kind, content, project')
+      .eq('user_id', userId)
+      .gte('date', sinceDate)
+      .lte('date', date)
+      .is('deleted_at', null)
+      .order('date', { ascending: true })
+      .limit(120)
+    if (error) throw error
+    workLines = (data ?? []).map((row: any) =>
+      `${row.date} [${row.kind}] ${row.content}${row.project ? `（${row.project}）` : ''}`)
+  } catch (error) {
+    if (!isMissingColumnOrTable(error)) console.warn('[diary] work_items fetch failed', error)
+  }
+
+  const unresolved = diary.unresolved_issues.filter(issue => issue.trim().length > 0)
+  if (workLines.length === 0 && unresolved.length === 0) return null
+
+  return [
+    workLines.length > 0 ? `[直近7日の作業記録]\n${workLines.join('\n')}` : '',
+    unresolved.length > 0 ? `[未解決の話題]\n${unresolved.map(issue => `- ${issue}`).join('\n')}` : '',
+  ].filter(Boolean).join('\n\n')
+}
+
+// eval(scripts/eval-next-step.mts) からも同じプロンプトを使うため公開
+export function buildTomorrowStepPrompt(source: string): string {
+  return `あなたは Lunaria のルナ（明るくテンポのいい幼なじみ、タメ口）です。
+以下はユーザーの直近の作業記録と未解決の話題です。
+明日の朝いちばんに掛ける「一手」の提案をひとつだけ作ってください。
+
+ルール:
+- 1件だけ。複数を並べない（3件は読まれない）
+- 断定・命令ではなく提案形（「〜からじゃない？」「〜やっちゃえば？」）
+- 直近の続きを最優先。複数日続いている詰まり(stuck)があればそれに触れる
+- ユーザーが言っていない作業を発明しない。記録にある語彙をそのまま使う
+- 60文字以内。説教しない。励ましすぎない
+- 提案できる材料がなければ {"step": null} を返す
+- JSONのみ返す
+
+入力:
+${source.slice(0, 4000)}
+
+JSON形式:
+{"step": "昨日◯◯までやったんでしょ、今日は△△からじゃない？"}`
+}
+
+export async function generateTomorrowStep(date: string, userId: string, diary: Diary): Promise<string | null> {
+  const source = await buildTomorrowStepSource(date, userId, diary)
+  if (!source) return null
+
+  try {
+    // thinking モデルは思考トークンも上限に含むため、少なすぎるとJSONが途中で切れる
+    const raw = await generateGeminiJson(buildTomorrowStepPrompt(source), 1200)
+    const parsed = asDiaryObject(parseDiaryJson(raw))
+    const step = typeof parsed.step === 'string' ? parsed.step.trim() : ''
+    return step.length > 0 && step.length <= 120 ? step : null
+  } catch (error) {
+    console.warn('[diary] tomorrow step generation failed', error)
+    return null
+  }
+}
+
+async function saveTomorrowStep(date: string, step: string, userId: string): Promise<void> {
+  const { error } = await supabaseAdmin
+    .from(T.diary)
+    .update({ tomorrow_step: step })
+    .eq('user_id', userId)
+    .eq('diary_date', date)
+  if (error) {
+    if (isMissingColumnOrTable(error)) {
+      console.warn('[diary] tomorrow_step column missing (apply migration 026), skipped')
+      return
+    }
+    throw error
+  }
+}
+
+async function attachTomorrowStep(date: string, userId: string, diary: Diary): Promise<void> {
+  try {
+    const step = await generateTomorrowStep(date, userId, diary)
+    if (step) await saveTomorrowStep(date, step, userId)
+  } catch (error) {
+    console.warn('[diary] tomorrow step attach failed', error)
+  }
+}
+
 export async function generateDiary(date: string, userId: string): Promise<Diary | null> {
   const source = await buildDiarySource(date, userId)
   if (!source) return null
@@ -317,6 +420,7 @@ JSON形式:
     const parsed = parseGeneratedDiary(raw, source)
 
     await saveDiary(date, parsed, userId)
+    await attachTomorrowStep(date, userId, parsed)
 
     return parsed
   } catch (error) {
@@ -324,12 +428,14 @@ JSON形式:
     const repaired = await repairDiaryGeneration(source)
     if (repaired) {
       await saveDiary(date, repaired, userId)
+      await attachTomorrowStep(date, userId, repaired)
       return repaired
     }
 
     console.warn('[diary] saving fallback diary')
     const fallback = buildFallbackDiary(source)
     await saveDiary(date, fallback, userId)
+    await attachTomorrowStep(date, userId, fallback)
     return fallback
   }
 }
@@ -339,14 +445,29 @@ export async function getMorningOpening(userId: string): Promise<string | null> 
   yesterday.setDate(yesterday.getDate() - 1)
   const date = new Date(yesterday.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10)
 
-  const { data } = await supabaseAdmin
+  let { data, error }: { data: any; error: any } = await supabaseAdmin
     .from(T.diary)
-    .select('unresolved_issues, next_topics, luna_comment, importance')
+    .select('unresolved_issues, next_topics, luna_comment, importance, tomorrow_step')
     .eq('user_id', userId)
     .eq('diary_date', date)
     .maybeSingle()
 
+  if (error && isMissingColumnOrTable(error)) {
+    const legacy = await supabaseAdmin
+      .from(T.diary)
+      .select('unresolved_issues, next_topics, luna_comment, importance')
+      .eq('user_id', userId)
+      .eq('diary_date', date)
+      .maybeSingle()
+    data = legacy.data
+  }
+
   if (!data) return null
+
+  // 明日の一手があれば LLM を呼ばず即返す（pivot Phase 2: 第一声を速く・具体的に）
+  if (typeof data.tomorrow_step === 'string' && data.tomorrow_step.trim().length > 0) {
+    return data.tomorrow_step.trim()
+  }
 
   const unresolved = asStringList(data.unresolved_issues)
   const nextTopics = asStringList(data.next_topics)

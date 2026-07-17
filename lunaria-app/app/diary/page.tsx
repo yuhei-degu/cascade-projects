@@ -19,6 +19,7 @@ interface DiaryLog {
   importance: number | null
   source_message_count: number | null
   generated_at: string | null
+  tomorrow_step?: string | null
 }
 
 interface Message {
@@ -330,6 +331,14 @@ export default function DiaryPage() {
               <Section title="次に話すこと" accent="rgba(241,199,127,.15)">
                 <ListBlock items={asList(diary?.next_topics)} empty="ルナはまだ次の話題を見つけていません。" />
               </Section>
+
+              {diary?.tomorrow_step && (
+                <Section title="明日の一手" accent="rgba(77,143,122,.16)">
+                  <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.9, color: 'var(--luna-text-soft)' }}>
+                    {diary.tomorrow_step}
+                  </p>
+                </Section>
+              )}
 
               {memoryChanges.length > 0 && (
                 <Section title="記憶候補" accent="rgba(159,207,189,.14)">
