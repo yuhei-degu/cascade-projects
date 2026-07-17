@@ -27,6 +27,17 @@ interface WorkItemsResponse {
   stats?: { total: number; by_kind: Record<string, number> } | null
 }
 
+interface WeeklyReview {
+  week_start: string
+  title: string
+  progressed: string[]
+  stalled: string[]
+  condition_note: string | null
+  next_week_step: string | null
+  luna_comment: string
+  generated_at: string | null
+}
+
 const KINDS = ['did', 'done', 'stuck', 'decided', 'next'] as const
 
 const kindLabels: Record<string, string> = {
@@ -135,6 +146,10 @@ export default function WorkPage() {
   const [error, setError] = useState<string | null>(null)
   const [tableMissing, setTableMissing] = useState(false)
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [review, setReview] = useState<WeeklyReview | null>(null)
+  const [reviewReady, setReviewReady] = useState(true)
+  const [reviewGenerating, setReviewGenerating] = useState(false)
+  const [reviewNote, setReviewNote] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -162,6 +177,48 @@ export default function WorkPage() {
   useEffect(() => {
     load()
   }, [load])
+
+  const loadReview = useCallback(async () => {
+    try {
+      const res = await fetch('/api/weekly-review')
+      const data = await res.json()
+      if (!data.ok && data.error === 'weekly_reviews_table_missing') {
+        setReviewReady(false)
+        return
+      }
+      setReview(data.review ?? null)
+    } catch {
+      // レビューは補助機能なので静かに諦める
+    }
+  }, [])
+
+  useEffect(() => {
+    loadReview()
+  }, [loadReview])
+
+  const generateReview = useCallback(async () => {
+    setReviewGenerating(true)
+    setReviewNote(null)
+    try {
+      const res = await fetch('/api/weekly-review', { method: 'POST' })
+      const data = await res.json()
+      if (!data.ok) {
+        if (data.error === 'weekly_reviews_table_missing' || data.reason === 'table_missing') {
+          setReviewReady(false)
+        } else if (data.reason === 'no_source') {
+          setReviewNote('今週はまだ材料が足りないみたい。ルナに今日のことを話してみて。')
+        } else {
+          setReviewNote('ふりかえりを作れませんでした。少し置いてもう一度どうぞ。')
+        }
+        return
+      }
+      setReview(data.review)
+    } catch {
+      setReviewNote('ふりかえりを作れませんでした。少し置いてもう一度どうぞ。')
+    } finally {
+      setReviewGenerating(false)
+    }
+  }, [])
 
   const patchItem = useCallback(async (item: WorkItem, body: Record<string, unknown>) => {
     setBusyId(item.id)
@@ -245,6 +302,57 @@ export default function WorkPage() {
             ))}
           </span>
         </section>
+
+        {reviewReady && (
+          <section style={reviewCardStyle} aria-label="今週のルナとの7日間">
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+              <h2 style={{ ...groupTitleStyle, fontSize: 16 }}>今週のルナとの7日間</h2>
+              <button
+                type="button"
+                onClick={generateReview}
+                disabled={reviewGenerating}
+                style={{ ...rangeButtonStyle, ...(reviewGenerating ? null : rangeButtonActiveStyle) }}
+              >
+                {reviewGenerating ? '振り返り中...' : review ? 'ふりかえりを作り直す' : 'ふりかえりを作る'}
+              </button>
+            </div>
+
+            {reviewNote && <p style={{ margin: '10px 0 0', fontSize: 13, color: 'var(--luna-faint)' }}>{reviewNote}</p>}
+
+            {review && (
+              <div style={{ display: 'grid', gap: 12, marginTop: 12 }}>
+                <p style={{ margin: 0, fontSize: 15, color: 'var(--luna-gold-strong)', fontWeight: 700 }}>{review.title}</p>
+                {review.progressed.length > 0 && (
+                  <div>
+                    <p style={reviewLabelStyle}>進んだこと</p>
+                    {review.progressed.map((line, i) => <p key={i} style={reviewLineStyle}>✦ {line}</p>)}
+                  </div>
+                )}
+                {review.stalled.length > 0 && (
+                  <div>
+                    <p style={reviewLabelStyle}>足踏みしたこと</p>
+                    {review.stalled.map((line, i) => <p key={i} style={reviewLineStyle}>… {line}</p>)}
+                  </div>
+                )}
+                {review.condition_note && (
+                  <div>
+                    <p style={reviewLabelStyle}>調子と作業</p>
+                    <p style={reviewLineStyle}>{review.condition_note}</p>
+                  </div>
+                )}
+                {review.next_week_step && (
+                  <div>
+                    <p style={reviewLabelStyle}>来週の一手</p>
+                    <p style={{ ...reviewLineStyle, color: 'var(--luna-text-soft)' }}>{review.next_week_step}</p>
+                  </div>
+                )}
+                {review.luna_comment && (
+                  <p style={{ margin: 0, fontSize: 13.5, color: 'var(--luna-gold)', lineHeight: 1.8 }}>ルナ「{review.luna_comment}」</p>
+                )}
+              </div>
+            )}
+          </section>
+        )}
 
         {error && <ApiErrorState message={error} onRetry={load} style={{ marginBottom: 14 }} />}
 
@@ -371,6 +479,29 @@ const rangeButtonActiveStyle: CSSProperties = {
   background: 'rgba(241,199,127,.16)',
   color: 'var(--luna-gold-strong)',
   borderColor: 'var(--luna-gold)',
+}
+
+const reviewCardStyle: CSSProperties = {
+  border: '1px solid var(--luna-border)',
+  background: 'rgba(241,199,127,.05)',
+  borderRadius: 'var(--luna-radius-lg)',
+  padding: 16,
+  marginBottom: 18,
+}
+
+const reviewLabelStyle: CSSProperties = {
+  margin: '0 0 4px',
+  fontSize: 11,
+  letterSpacing: '.14em',
+  color: 'var(--luna-faint)',
+  textTransform: 'uppercase',
+}
+
+const reviewLineStyle: CSSProperties = {
+  margin: 0,
+  fontSize: 14,
+  lineHeight: 1.8,
+  color: 'var(--luna-muted)',
 }
 
 const groupTitleStyle: CSSProperties = {

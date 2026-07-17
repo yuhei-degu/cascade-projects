@@ -18,7 +18,8 @@ interface GeminiGenerateContentResponse {
   }>
 }
 
-async function generateGeminiJson(prompt: string, maxOutputTokens: number): Promise<string> {
+// weekly-review.ts からも使うため export（Gemini JSON生成の共通経路）
+export async function generateGeminiJson(prompt: string, maxOutputTokens: number): Promise<string> {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) throw new Error('GEMINI_API_KEY is not configured')
 
