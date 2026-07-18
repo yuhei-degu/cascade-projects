@@ -10,6 +10,8 @@ interface PromptPayload {
   modeInstruction: string
   profileCtx:     string
   responseMode?:  'normal' | 'practical_help'
+  /** 直近の作業メモ（pivot: 進捗を長期的に理解して具体的に助言するための注入層） */
+  workCtx?:       string
 }
 
 const PRACTICAL_RULE = `
@@ -25,9 +27,9 @@ const PRACTICAL_RULE = `
 export function buildNormalPrompt(p: PromptPayload): string {
   const stateSummary = buildStateSummary(p.emotion, p.closenessNote)
 
-  // Profile 層 + contextualMem（過去トピックの自然な触れ）のみ。
+  // Profile 層 + contextualMem（過去トピックの自然な触れ）+ 作業メモ。
   // coreMemCtx はここでは入れない（serious 側でのみ挿入）
-  const layers = [p.profileCtx, p.contextualMem ?? '']
+  const layers = [p.profileCtx, p.contextualMem ?? '', p.workCtx ?? '']
     .filter(Boolean)
     .join('')
 
@@ -40,8 +42,8 @@ ${layers}${p.modeInstruction}${p.responseMode === 'practical_help' ? PRACTICAL_R
 
 // serious モード用プロンプト（Identity / State / Profile / Memories / Rules・受け止め優先）
 export function buildSeriousPrompt(p: PromptPayload): string {
-  // Profile 層は全ルート、Memories 層は serious のみ
-  const layers = [p.profileCtx, p.coreMemCtx].filter(Boolean).join('')
+  // Profile 層は全ルート、Memories 層は serious のみ。作業メモは仕事起因の深刻な話で効く
+  const layers = [p.profileCtx, p.coreMemCtx, p.workCtx ?? ''].filter(Boolean).join('')
 
   return `${LUNARIA_CORE_IDENTITY}
 

@@ -24,7 +24,7 @@ import { parseAssistantReply, stringifyAssistantMessage } from '../../../lib/lun
 import type { AssistantReply } from '../../../lib/lunaria/assistant-reply'
 import { buildGameHandoffResponseHint, getGameHandoffNextStep, withGameHandoffNextStep } from '../../../lib/lunaria/game-handoff'
 import { getAuthenticatedUserId } from '../_auth'
-import { hasWorkSignal } from '../../../lib/lunaria/work-items'
+import { hasWorkSignal, getWorkContext } from '../../../lib/lunaria/work-items'
 import { trackEvent } from '../../../lib/track'
 
 const gemini = new OpenAI({
@@ -159,7 +159,7 @@ export async function POST(req: NextRequest) {
     const route = calcRoute(userMessage, prevScores, prevHeavy, lastSeriousAt)
 
     // 3. 感情・親密度・話題転換を並列取得
-    const [emotion, affinity, morningMsg, topicResult, coreMemCtx, profile, pendingUpdates, userName] = await Promise.all([
+    const [emotion, affinity, morningMsg, topicResult, coreMemCtx, profile, pendingUpdates, userName, workCtx] = await Promise.all([
       getEmotion(userId),
       getAffinity(userId),
       history.length === 0 ? getMorningOpening(userId) : Promise.resolve(null),
@@ -168,6 +168,7 @@ export async function POST(req: NextRequest) {
       getProfile(userId),
       getPendingUpdates(userId),
       getUserName(userId),
+      getWorkContext(userId),
     ])
 
     // 関連する過去記憶を条件付きで取得
@@ -254,6 +255,7 @@ export async function POST(req: NextRequest) {
       emotion, closenessNote, coreMemCtx,
       contextualMem: contextualMem ?? null,
       modeInstruction, profileCtx, responseMode,
+      workCtx,
     }
     const systemWithContext = route.routeType === 'claude_serious'
       ? buildSeriousPrompt(promptPayload)

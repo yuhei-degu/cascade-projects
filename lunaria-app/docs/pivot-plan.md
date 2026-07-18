@@ -55,6 +55,14 @@ evalの実測で、状態受け止め系(U1/N9)が現状の最低スコアであ
 | eval基盤(eval-luna.mts) | 助言の具体性テストへシナリオ拡張 |
 | conversation-move.ts | 助言モードでも質問過多を構造的に抑制 |
 
+## 実装状況（2026-07-18時点）
+
+- Phase 0〜3: **実装完了・push済み**（コミット: 1c88d36 / c1be4de / 3a95053 / c34fa1c / 0096d6d + 注入）
+- 注入も完了: 会話プロンプトに直近3日の作業メモ+複数日stuck検出を差し込み（normal/serious両方）
+- eval: 抽出10/10・明日の一手3/3・週次レビュー2/2（logs/eval/ 参照。evalで実バグ2件検出→修正済み: maxOutputTokens切断・「お疲れ様」キャラ崩れ）
+- 未実施（手作業）: ①Supabaseへmigration 025〜027適用（`lunaria/SUPABASE_025_027_APPLY_RUNBOOK.md`）②Vercelの`NEXT_PUBLIC_SHOW_PLAYFUL`方針決定とデプロイ
+- 適用が済んだら「最初の審判」（2週間毎晩使う）を開始できる
+
 ## リスクと検証
 
 - 最初の審判: **開発者自身が2週間毎晩使い続けるか**。続かなければ設計が間違っている
