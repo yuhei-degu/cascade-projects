@@ -99,7 +99,8 @@ const scenarios: Scenario[] = [
       { role: 'user', content: '昼は営業資料つくって、夕方のミーティングで値段は2980円でいくって決めた。あと請求書出すのがまだ残ってる' },
       { role: 'ai', content: '決まったんだ！値段決めるのが一番重いもんね' },
     ],
-    requiredKinds: ['did', 'decided'],
+    // 「つくって(=作った)」は done とも読めるので kind は decided だけ縛る
+    requiredKinds: ['decided'],
     expectContentIncludes: ['資料', '2980'],
   },
   {

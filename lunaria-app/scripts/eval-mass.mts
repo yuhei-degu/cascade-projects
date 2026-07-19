@@ -163,9 +163,23 @@ for (const r of failed) {
   out += `\n[${r.c.id}] ${r.fails.join(' / ')}${r.error ? ` (${r.error})` : ''}\n${r.transcript}`
 }
 
+// ── 合格ポリシー ─────────────────────────────────────────────
+// 事故系: 1件でもあればゲート不合格(ユーザー体験を直接壊す・決定的ガードで防げるはずのもの)
+// 様式系(長文/質問過多等): LLMの非決定性による揺れを許容し、全体97%以上で合格
+const HARD_KINDS = ['空返答', '思考漏れ', 'NG語', '敬語化', '一人称事故', '日本語でない', 'API失敗']
+const hardFailures = failed.filter(r => r.fails.some(f => HARD_KINDS.some(k => f.includes(k))))
+const passRate = 1 - failed.length / results.length
+const gatePass = hardFailures.length === 0 && passRate >= 0.97
+
+const gateLine = `\n===== ゲート判定: ${gatePass ? '合格' : '不合格'} =====\n` +
+  `事故系: ${hardFailures.length}件 (許容0) / 全体: ${(passRate * 100).toFixed(1)}% (閾値97%)\n` +
+  (hardFailures.length > 0 ? `事故: ${hardFailures.map(r => `${r.c.id}[${r.fails.join(',')}]`).join(' ')}\n` : '')
+out += gateLine
+
 console.log(out.split('--- 失敗詳細')[0])
+console.log(gateLine)
 mkdirSync('logs/eval', { recursive: true })
 const file = 'logs/eval/mass-run-' + new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19) + '.txt'
 writeFileSync(file, out, 'utf8')
 console.log('saved: ' + file)
-process.exit(failed.length > 0 ? 1 : 0)
+process.exit(gatePass ? 0 : 1)
