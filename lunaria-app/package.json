@@ -23,6 +23,8 @@
     "eval:extraction": "npx tsx scripts/eval-extraction.mts",
     "eval:next-step": "npx tsx scripts/eval-next-step.mts",
     "eval:weekly": "npx tsx scripts/eval-weekly-review.mts",
+    "pivot:check": "npx tsx scripts/migration-check.mts",
+    "pivot:metrics": "npx tsx scripts/pivot-metrics.mts",
     "gacha:report": "node scripts/gacha-report.js",
     "gacha:smoke": "node scripts/gacha-smoke.js",
     "gacha:verify": "node scripts/gacha-verify.js",

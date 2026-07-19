@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '../../../lib/supabase'
+import { trackEvent } from '../../../lib/track'
 import { getAuthenticatedUserId } from '../_auth'
 import { WORK_ITEM_KINDS } from '../../../lib/lunaria/types'
 import type { WorkItemKind } from '../../../lib/lunaria/types'
@@ -46,6 +47,8 @@ export async function GET(req: NextRequest) {
   const auth = await getAuthenticatedUserId()
   if ('response' in auth) return auth.response
   const { userId } = auth
+
+  void trackEvent(supabaseAdmin, userId, 'work_view')
 
   const date = req.nextUrl.searchParams.get('date')
   const days = clampDays(req.nextUrl.searchParams.get('days'))
@@ -172,6 +175,9 @@ export async function PATCH(req: NextRequest) {
     console.error('[work-items] update failed', updateError)
     return NextResponse.json({ ok: false, error: 'work_item_update_failed' }, { status: 500 })
   }
+
+  // 修正率 = 抽出精度の実地KPI(pivot-plan: 壊れた管理情報は信頼を殺す)
+  void trackEvent(supabaseAdmin, userId, `work_item_${action}`)
 
   return NextResponse.json({ ok: true, item: updated })
 }
