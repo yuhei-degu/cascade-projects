@@ -97,6 +97,7 @@ export function stripLeakedReasoning(raw: string): string {
 // ユーザーに見える前に千束語彙へ置換する。
 export function sanitizeAssistantText(raw: string): string {
   return stripLeakedReasoning(raw)
+    .replace(/今日もお疲れ様(でした|です)?[！!。]*/g, '今日もよく生き延びたじゃん！')
     .replace(/本当にお疲れ様/g, '今日もよく生き延びたじゃん')
     .replace(/お疲れ様(でした|です)?[！!。]*/g, '今日もよく生き延びたじゃん！')
 }
