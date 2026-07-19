@@ -39,6 +39,37 @@ export type AssistantEmotion = (typeof ASSISTANT_EMOTIONS)[number]
 export type AssistantVoiceTone = (typeof ASSISTANT_VOICE_TONES)[number]
 export type AssistantReply = z.infer<typeof AssistantReplySchema>
 
+// ── 思考プロセス漏れの後処理ガード ──────────────────────────
+// gemini-2.5-flash は稀に思考(「思考プロセス:」「これでいこう。」等)を本文に
+// 混ぜて返す(eval P3/edge-v2 で実測)。プロンプト禁止だけでは抑止できないため、
+// メタ出力を検出したら終端マーカー以降の本文だけを取り出す。
+const REASONING_LEAK_RE = /思考プロセス|回答の方針|最終チェック|構成案[:：]|最終的な返答/
+const REASONING_END_MARKERS = ['最終的な返答：', '最終的な返答:', 'よし、これでいこう。', 'これでいこう。', '完璧だ。', 'これで完璧だ。']
+
+export function stripLeakedReasoning(raw: string): string {
+  const text = raw.trim()
+  if (!REASONING_LEAK_RE.test(text)) return raw
+
+  let idx = -1
+  let markerLen = 0
+  for (const marker of REASONING_END_MARKERS) {
+    const i = text.lastIndexOf(marker)
+    if (i > idx) {
+      idx = i
+      markerLen = marker.length
+    }
+  }
+  if (idx >= 0) {
+    const body = text.slice(idx + markerLen).trim()
+    if (body) return body
+  }
+
+  // 終端マーカーが見つからない場合は最後の段落を本文とみなす
+  const paragraphs = text.split(/\n{2,}/).map(p => p.trim()).filter(Boolean)
+  const last = paragraphs[paragraphs.length - 1]
+  return last && !REASONING_LEAK_RE.test(last) ? last : text
+}
+
 export function parseAssistantReply(raw: unknown): AssistantReply {
   if (typeof raw !== 'string') {
     const result = AssistantReplySchema.safeParse(raw)

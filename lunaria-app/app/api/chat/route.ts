@@ -20,7 +20,7 @@ import { buildNormalPrompt, buildSeriousPrompt } from '../../../lib/lunaria/prom
 import { buildConversationMoveNote } from '../../../lib/lunaria/conversation-move'
 import { tryGrantTicketByScore } from '../../../lib/lunaria/gacha'
 import { getJstDateString } from '../../../lib/lunaria/date'
-import { parseAssistantReply, stringifyAssistantMessage } from '../../../lib/lunaria/assistant-reply'
+import { parseAssistantReply, stringifyAssistantMessage, stripLeakedReasoning } from '../../../lib/lunaria/assistant-reply'
 import type { AssistantReply } from '../../../lib/lunaria/assistant-reply'
 import { buildGameHandoffResponseHint, getGameHandoffNextStep, withGameHandoffNextStep } from '../../../lib/lunaria/game-handoff'
 import { getAuthenticatedUserId } from '../_auth'
@@ -334,7 +334,7 @@ export async function POST(req: NextRequest) {
                 throw primaryErr
               }
             }
-            const structuredReply = withGameHandoffNextStep(parseAssistantReply(raw), gameHandoffNextStep)
+            const structuredReply = withGameHandoffNextStep(parseAssistantReply(stripLeakedReasoning(raw)), gameHandoffNextStep)
             assistantMeta = toAssistantMeta(structuredReply)
             reply = truncateAtSentence(stringifyAssistantMessage(structuredReply), 400)
             // 切り詰めが入った時だけクライアント側に最終形を上書きさせる

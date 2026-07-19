@@ -11,6 +11,7 @@ if (!process.env.GEMINI_API_KEY) { console.error('GEMINI_API_KEY not found'); pr
 const OpenAI = (await import('openai')).default
 const { LUNARIA_SYSTEM_PROMPT } = await import('../lib/prompt')
 const { buildConversationMoveNote } = await import('../lib/lunaria/conversation-move')
+const { stripLeakedReasoning } = await import('../lib/lunaria/assistant-reply')
 const client = new OpenAI({ apiKey: process.env.GEMINI_API_KEY, baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/' })
 
 type Turn = { role: 'user' | 'assistant'; content: string }
@@ -27,7 +28,8 @@ async function callLuna(u: string, history: Turn[]): Promise<string> {
   const res = await client.chat.completions.create({
     model: 'gemini-2.5-flash', max_tokens: 2000, messages: messages as never,
   })
-  return (res.choices[0]?.message?.content ?? '').trim()
+  // 本番(route.ts)と同じ思考漏れガードを通す
+  return stripLeakedReasoning((res.choices[0]?.message?.content ?? '').trim())
 }
 
 // 回帰5本(前回と同じ) + 新規10本(例文と被らない入力)
@@ -41,7 +43,7 @@ const scenarios: Scenario[] = [
   { id: 'N2', note: '新規: 怒りの慚痴', userTurns: ['上司に理不尽なこと言われてまじでムカつく'] },
   { id: 'N3', note: '新規: 新習慣の報告', userTurns: ['最近筋トレ始めたんだよね', '三日坊主になりそうで怖い'] },
   { id: 'N4', note: '新規: 仮定の雑談ふり', userTurns: ['宝くじ当たったらどうする:？'] },
-  { id: 'N5', note: '新規: 誕生日', userTurns: ['今日�W��生日なんだよね'] },
+  { id: 'N5', note: '新規: 誕生日', userTurns: ['今日�W��生日なんだよね'] },
   { id: 'N6', note: '新規: 叶わない願朒', userTurns: ['猫飼いたいんだけど賴貸だから無理なんだよな'] },
   { id: 'N7', note: '新規: ルナへの質問連発', userTurns: ['ルナの好きな食べ物は？', 'じゃあ好きな音楽は？'] },
   { id: 'N8', note: '新規: give要求', userTurns: ['なんか面白い話して'] },
