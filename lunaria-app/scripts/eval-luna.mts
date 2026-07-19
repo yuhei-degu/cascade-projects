@@ -11,7 +11,7 @@ if (!process.env.GEMINI_API_KEY) { console.error('GEMINI_API_KEY not found'); pr
 const OpenAI = (await import('openai')).default
 const { LUNARIA_SYSTEM_PROMPT } = await import('../lib/prompt')
 const { buildConversationMoveNote } = await import('../lib/lunaria/conversation-move')
-const { stripLeakedReasoning } = await import('../lib/lunaria/assistant-reply')
+const { sanitizeAssistantText } = await import('../lib/lunaria/assistant-reply')
 const client = new OpenAI({ apiKey: process.env.GEMINI_API_KEY, baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/' })
 
 type Turn = { role: 'user' | 'assistant'; content: string }
@@ -29,7 +29,7 @@ async function callLuna(u: string, history: Turn[]): Promise<string> {
     model: 'gemini-2.5-flash', max_tokens: 2000, messages: messages as never,
   })
   // 本番(route.ts)と同じ思考漏れガードを通す
-  return stripLeakedReasoning((res.choices[0]?.message?.content ?? '').trim())
+  return sanitizeAssistantText((res.choices[0]?.message?.content ?? '').trim())
 }
 
 // 回帰5本(前回と同じ) + 新規10本(例文と被らない入力)

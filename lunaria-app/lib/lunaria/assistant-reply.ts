@@ -43,12 +43,29 @@ export type AssistantReply = z.infer<typeof AssistantReplySchema>
 // gemini-2.5-flash は稀に思考(「思考プロセス:」「これでいこう。」等)を本文に
 // 混ぜて返す(eval P3/edge-v2 で実測)。プロンプト禁止だけでは抑止できないため、
 // メタ出力を検出したら終端マーカー以降の本文だけを取り出す。
-const REASONING_LEAK_RE = /思考プロセス|回答の方針|最終チェック|構成案[:：]|最終的な返答/
-const REASONING_END_MARKERS = ['最終的な返答：', '最終的な返答:', 'よし、これでいこう。', 'これでいこう。', '完璧だ。', 'これで完璧だ。']
+const REASONING_LEAK_RE = /思考プロセス|回答の方針|回答案|構成案|最終チェック|最終案|最終的な返答|これで返信します|返答を作成|承知いたしました|として返答します|^考え中|^PH:|^WILCO/m
+const REASONING_END_MARKERS = [
+  '最終的な返答：', '最終的な返答:', '最終案：', '最終案:',
+  'よし、これでいこう。', 'これでいこう。', '完璧だ。', 'これで完璧だ。',
+  'これで返信します。', 'この方針で返答を作成する。', '返答を作成する。',
+]
 
 export function stripLeakedReasoning(raw: string): string {
-  const text = raw.trim()
+  let text = raw.trim()
+
+  // 「引用＋同文リピート」形式（『「X」X』）は引用側を落とす
+  const dup = text.match(/^「([\s\S]{10,})」\s*([\s\S]+)$/)
+  if (dup && dup[1].trim() === dup[2].trim()) return dup[1].trim()
+
   if (!REASONING_LEAK_RE.test(text)) return raw
+
+  // 水平線区切り（前置き\n---\n本文）は最後の区切り以降を本文とみなす
+  const hrParts = text.split(/\n-{3,}\n/)
+  if (hrParts.length > 1) {
+    const tail = hrParts[hrParts.length - 1].trim()
+    if (tail && !REASONING_LEAK_RE.test(tail)) return tail
+    text = tail || text
+  }
 
   let idx = -1
   let markerLen = 0
@@ -61,13 +78,27 @@ export function stripLeakedReasoning(raw: string): string {
   }
   if (idx >= 0) {
     const body = text.slice(idx + markerLen).trim()
-    if (body) return body
+    // マーカー直後が「引用＋リピート」なら本文1個分に畳む
+    if (body) {
+      const dup2 = body.match(/^「([\s\S]{6,})」\s*([\s\S]+)$/)
+      if (dup2 && dup2[1].trim() === dup2[2].trim()) return dup2[1].trim()
+      return body
+    }
   }
 
   // 終端マーカーが見つからない場合は最後の段落を本文とみなす
   const paragraphs = text.split(/\n{2,}/).map(p => p.trim()).filter(Boolean)
   const last = paragraphs[paragraphs.length - 1]
   return last && !REASONING_LEAK_RE.test(last) ? last : text
+}
+
+// キャラ崩れの決定的ガード:
+// 「お疲れ様」はプロンプト禁止+代替語彙を与えても間欠的に漏れる(eval実測で3run/5run)。
+// ユーザーに見える前に千束語彙へ置換する。
+export function sanitizeAssistantText(raw: string): string {
+  return stripLeakedReasoning(raw)
+    .replace(/本当にお疲れ様/g, '今日もよく生き延びたじゃん')
+    .replace(/お疲れ様(でした|です)?[！!。]*/g, '今日もよく生き延びたじゃん！')
 }
 
 export function parseAssistantReply(raw: unknown): AssistantReply {
