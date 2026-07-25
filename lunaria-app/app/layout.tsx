@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Shippori_Mincho } from 'next/font/google'
 import './globals.css'
+import DbStatusBanner from '@/components/DbStatusBanner'
 
 const shipporiMincho = Shippori_Mincho({
   weight: ['500', '600', '700'],
@@ -37,7 +38,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ja" className={shipporiMincho.variable}>
-      <body>{children}</body>
+      <body>
+        <DbStatusBanner />
+        {children}
+      </body>
     </html>
   )
 }
