@@ -29,6 +29,7 @@
     "gacha:smoke": "node scripts/gacha-smoke.js",
     "gacha:verify": "node scripts/gacha-verify.js",
     "gacha:sql-pack": "node scripts/gacha-sql-pack.js",
+    "sql:pack-all": "node scripts/sql-pack-all.mjs",
     "supabase:verify": "node scripts/supabase-verify.js",
     "character:sql-pack": "node scripts/character-sql-pack.js",
     "character:verify": "node scripts/character-verify.js"
