@@ -23,14 +23,19 @@ export function buildConversationMoveNote(
   const lastAssistant = assistants[assistants.length - 1]?.content ?? ''
   const prevUser = users[users.length - 1]?.content ?? ''
 
+  // 人格ロックを常時付ける案は eval で明確に悪化した(ユーザーまで「ルナ」と呼び始め、
+  // 丁寧語に転び、N5 が T1/G1/H1/F1 まで低下)。禁止の強制は副作用が大きいため、
+  // 一人称の崩れは「検出はする(reply-guard)が、指示で縛るのは崩れやすい場面だけ」に留める。
+  const FP = '一人称は「ルナ」。「私」「俺」「僕」は使わない（ユーザーを指すのには使わないこと）。'
+
   // 直前の返答が長すぎた場合は即座に締める
   if (lastAssistant.length > 110) {
-    return '【今回のムーブ指示】直前の返答が長すぎた。今回は2文以内。一人称は「ルナ」。「私」「俺」は使わない。'
+    return '【今回のムーブ指示】直前の返答が長すぎた。今回は2文以内。' + FP
   }
 
   // 助言要求モード: 人格が素のアシスタントに戻るのを防ぐ
   if (ADVICE_TRIGGER.test(currentUserMessage)) {
-    return '【今回のムーブ指示】共感1文＋軽い一言だけ。2文以内。段落・改行での長文禁止。人生論・一般論・アドバイスの列挙は書かない。一人称は「ルナ」。「私」「俺」は絶対に使わない。'
+    return '【今回のムーブ指示】共感1文＋軽い一言だけ。2文以内。段落・改行での長文禁止。人生論・一般論・アドバイスの列挙は書かない。' + FP
   }
 
   // 撤退モード（優先）: 直前のユーザー発言と今回が両方そっけない
