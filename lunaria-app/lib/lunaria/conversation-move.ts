@@ -10,6 +10,10 @@ const terse = (s: string) => {
   return t.length > 0 && t.length <= 4 && !/[?？]/.test(t)
 }
 
+// 助言を求める形の入力は、素のアシスタント人格へ戻りやすい(一人称が「私」「俺」になる/段落で人生論を語る)。
+// プロンプトの指示だけでは止まらないため、該当時は構造側で短さと人称を固定する。
+const ADVICE_TRIGGER = /不安|怖い|続けられ|三日坊主|どうしよう|悩ん|自信ない|苦手|続くかな|挫折|サボ/
+
 export function buildConversationMoveNote(
   history: HistTurn[],
   currentUserMessage: string,
@@ -18,6 +22,16 @@ export function buildConversationMoveNote(
   const users = history.filter(m => m.role === 'user')
   const lastAssistant = assistants[assistants.length - 1]?.content ?? ''
   const prevUser = users[users.length - 1]?.content ?? ''
+
+  // 直前の返答が長すぎた場合は即座に締める
+  if (lastAssistant.length > 110) {
+    return '【今回のムーブ指示】直前の返答が長すぎた。今回は2文以内。一人称は「ルナ」。「私」「俺」は使わない。'
+  }
+
+  // 助言要求モード: 人格が素のアシスタントに戻るのを防ぐ
+  if (ADVICE_TRIGGER.test(currentUserMessage)) {
+    return '【今回のムーブ指示】共感1文＋軽い一言だけ。2文以内。段落・改行での長文禁止。人生論・一般論・アドバイスの列挙は書かない。一人称は「ルナ」。「私」「俺」は絶対に使わない。'
+  }
 
   // 撤退モード（優先）: 直前のユーザー発言と今回が両方そっけない
   if (terse(prevUser) && terse(currentUserMessage)) {

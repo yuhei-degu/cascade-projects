@@ -55,8 +55,10 @@ const NG = ['お疲れ様', 'わかるわかる', 'すごくわかるよ']
 function check(reply: string): string[] {
   const flags: string[] = []
   for (const w of NG) if (reply.includes(w)) flags.push('NG語:' + w)
-  const sentences = reply.split(/[。！!？?…\n]+/).filter(s => s.trim()).length
+  // 「！」「？」は口語の勢いであって文の区切りではないため、句点と実長で判定する
+  const sentences = reply.split(/[。\n]+/).filter(s => s.trim()).length
   if (sentences > 3) flags.push('4文以上(' + sentences + ')')
+  if (reply.length > 110) flags.push('長敧(' + reply.length + '字)')
   const q = (reply.match(/[？?]/g) || []).length
   if (q >= 2) flags.push('質問' + q)
   return flags
@@ -96,7 +98,9 @@ for (const sc of scenarios) {
     const flags = check(reply)
     block += 'ルナ: ' + reply + (flags.length ? '\n   ⚠ ' + flags.join(' / ') : '') + '\n'
   }
-  const j = await judge(block) as { tempo: number; give: number; hook: number; distance: number; fun: number; comment: string } | null
+  // 自作フラグが採点を汚染しないよう、ジャッジには注釈を除いた記録を渡す
+  const cleanBlock = block.split('\n').filter(l => !l.trim().startsWith('⚠')).join('\n')
+  const j = await judge(cleanBlock) as { tempo: number; give: number; hook: number; distance: number; fun: number; comment: string } | null
   if (j) {
     judged++
     sums.tempo += j.tempo; sums.give += j.give; sums.hook += j.hook; sums.distance += j.distance; sums.fun += j.fun
