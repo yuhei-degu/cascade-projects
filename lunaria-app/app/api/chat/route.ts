@@ -266,6 +266,8 @@ export async function POST(req: NextRequest) {
     const llmMsgs: OpenAI.Chat.ChatCompletionMessageParam[] = [
       { role: 'system', content: systemWithContext },
       ...(gameHandoffResponseHint ? [{ role: 'system' as const, content: gameHandoffResponseHint }] : []),
+      // 現在日時を渡さないと、日付や時刻を聞かれたときに堂々と作話する(eval robust R3で実測)
+      { role: 'system' as const, content: '【現在日時】' + new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo', dateStyle: 'full', timeStyle: 'short' }) + ' — 日付や時刻を聞かれたらこれを使う。一方で最新ニュースや外部の出来事は知らないので、知ったかぶりせず知らないと言うこと。' },
       ...(conversationMoveNote ? [{ role: 'system' as const, content: conversationMoveNote }] : []),
       ...history.slice(-12).map((m: any) => ({
         role: m.role as 'user' | 'assistant',
