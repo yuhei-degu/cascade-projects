@@ -52,6 +52,18 @@ export function detectCharacterBreaks(text: string): string[] {
 
 // 本番・eval 共通の後処理。返答を整え、破綻を報告する。
 export function guardReply(raw: string): GuardResult {
-  const text = stripReasoning(raw)
+  const text = collapseDuplicateSentences(stripReasoning(raw))
   return { text, violations: detectCharacterBreaks(text) }
+}
+
+// 同一文の連続反復を畳む。few-shot 例文をなぞる際に同じ文を2度出す事象を eval(angles A2)で観測。
+export function collapseDuplicateSentences(text: string): string {
+  const parts = text.split(/(?<=[。！？\n])/).map(s => s.trim()).filter(Boolean)
+  const seen: string[] = []
+  for (const p of parts) {
+    if (seen.length && seen[seen.length - 1] === p) continue
+    if (seen.includes(p) && p.length > 8) continue
+    seen.push(p)
+  }
+  return seen.join('')
 }
