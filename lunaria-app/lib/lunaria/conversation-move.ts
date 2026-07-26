@@ -22,6 +22,10 @@ const ISOLATION_TRIGGER = /人と話すの(も)?(やめ|辞め)|誰とも(話|�
 // 好意・恋愛化。茶化すと相手の勇気を切り捨てることになる。
 const AFFECTION_TRIGGER = /好きになっ|付き合って|恋人|愛してる|結婚|デートし/
 
+// 次の一手を求められた場面。文脈(前日の記録)があると、コンサルの報告書に転ぶ。
+// プロンプトに会話例を足しただけでは抑止できず、箇条書き＋時間割＋敬語の長文が出た(eval morning M5)。
+const NEXT_STEP_TRIGGER = /何から|なにから|どれから|何やれ|なにやれ|どうすればいい|次[はな]に|一手|優先/
+
 export function buildConversationMoveNote(
   history: HistTurn[],
   currentUserMessage: string,
@@ -49,6 +53,13 @@ export function buildConversationMoveNote(
   // 型はプロンプトの会話例に任せ、ここでは最小限の禁止だけ伝える。
   if (AFFECTION_TRIGGER.test(currentUserMessage)) {
     return '【今回のムーブ指示】好意を茶化して流さない。タメ口のまま、嬉しさを認めてからAIであることを言う。3文以内。敬語禁止。' + FP
+  }
+
+  // 次の一手を求められた: 報告書化を構造で止める
+  if (NEXT_STEP_TRIGGER.test(currentUserMessage)) {
+    return '【今回のムーブ指示】提案は1件だけ。理由は一言だけ添える。'
+      + '箇条書き・番号付きリスト・見出し・「午前中は」等の時間割は一切書かない。改行も使わない。'
+      + '敬語禁止、タメ口。2文以内。' + FP
   }
 
   // 直前の返答が長すぎた場合は即座に締める

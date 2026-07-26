@@ -1,4 +1,4 @@
-// scripts/eval-luna-morning.mts
+﻿// scripts/eval-luna-morning.mts
 // 翌朝の第一声のテスト。ピボット後の「報酬」そのものであり、ループの成否を決める部分。
 // 前日の作業ログ・未解決・日記を文脈として与え、ルナから話しかけさせる。
 import { readFileSync, mkdirSync, writeFileSync, existsSync } from 'node:fs'
@@ -15,32 +15,35 @@ const OpenAI = (await import('openai')).default
 const { LUNARIA_SYSTEM_PROMPT } = await import('../lib/prompt')
 const { detectCharacterBreaks, collapseDuplicateSentences } = await import('../lib/lunaria/reply-guard')
 const { sanitizeAssistantText } = await import('../lib/lunaria/assistant-reply')
+const { buildMorningInstruction } = await import('../lib/lunaria/morning-voice')
+const { buildConversationMoveNote } = await import('../lib/lunaria/conversation-move')
 const client = new OpenAI({ apiKey: process.env.GEMINI_API_KEY, baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/' })
 
 type Turn = { role: 'user' | 'assistant'; content: string }
 
-// 本番では前日の work_items / unresolved_issues / diary が文脈として入る想定
-async function firstVoice(context: string): Promise<string> {
+// 本番と同じ経路で第一声を組む(eval が独自に組んでいた差分をなくす)
+async function firstVoice(context: string, instruction?: string): Promise<string> {
   const res = await client.chat.completions.create({
     model: 'gemini-2.5-flash', max_tokens: 2000,
     messages: [
       { role: 'system', content: LUNARIA_SYSTEM_PROMPT },
       { role: 'system', content: context },
-      { role: 'system', content: '【今回の役割】ユーザーはまだ何も言っていない。ルナから朝の第一声を送る。'
-        + '触れる話題は1つだけに絞る（複数並べない）。読み上げ3秒で終わる長さ。'
-        + '義務感を与えない（「今日もやろう」「継続が大事」は禁止）。2文以内。' },
+      { role: 'system', content: instruction ?? '【今回の役割】ルナから朝の第一声を送る。2文以内。' },
       { role: 'user', content: '(アプリを開いた)' },
     ] as never,
   })
   return collapseDuplicateSentences(sanitizeAssistantText((res.choices[0]?.message?.content ?? '').trim()))
 }
 
+// 本番と同じくムーブ指示を通す(通さないと eval だけ甘い評価になる)
 async function reply(u: string, history: Turn[], context: string): Promise<string> {
+  const move = buildConversationMoveNote(history, u)
   const res = await client.chat.completions.create({
     model: 'gemini-2.5-flash', max_tokens: 2000,
     messages: [
       { role: 'system', content: LUNARIA_SYSTEM_PROMPT },
       { role: 'system', content: context },
+      ...(move ? [{ role: 'system', content: move }] : []),
       ...history, { role: 'user', content: u },
     ] as never,
   })
@@ -71,9 +74,19 @@ const CTX_GAP = `【前日の記録】なし
 【最後の会話】8日前
 【8日前の内容】新しい副業を始めるか迷っていた`
 
+const INS_WORK = buildMorningInstruction({
+  didYesterday: ['ログイン周りのバグ修正', '画面のデザイン調整'],
+  stuck: ['認証のリダイレクトが直らない'],
+  plannedToday: 'リダイレクトの原因調査',
+  mood: '疲れ気味',
+  unresolved: [{ topic: 'デプロイ設定', daysAgo: 3 }],
+})
+const INS_BAD = buildMorningInstruction({ mood: '落ち込み、自己嫌悪ぎみ', streakDays: 3 })
+const INS_GAP = buildMorningInstruction({ lastTalkedDaysAgo: 8, lastTopic: '新しい副業を始めるか迷っていた件' })
+
 // ── M1 通常の翌朝(作業あり) ──────────────────────────
 {
-  const v = await firstVoice(CTX_WORK)
+  const v = await firstVoice(CTX_WORK, INS_WORK)
   const hitsYesterday = /リダイレクト|ログイン|認証|バグ|デザイン/.test(v)
   const listy = (v.match(/、/g) ?? []).length > 4 || /\n/.test(v)
   const nagging = /今日も|継続|頑張ろう|やろうね/.test(v)
@@ -92,7 +105,7 @@ const CTX_GAP = `【前日の記録】なし
 
 // ── M2 前日ゼロ(自己嫌悪) ────────────────────────────
 {
-  const v = await firstVoice(CTX_BAD)
+  const v = await firstVoice(CTX_BAD, INS_BAD)
   const blaming = /なんで|どうして|できなかった|サボ|残念/.test(v)
   const streakPush = /3日|連続|記録/.test(v)
   log('===== M2 前日ゼロ・落ち込み =====\nルナ: ' + v + flag(v)
@@ -102,7 +115,7 @@ const CTX_GAP = `【前日の記録】なし
 
 // ── M3 久しぶり(8日ぶり) ─────────────────────────────
 {
-  const v = await firstVoice(CTX_GAP)
+  const v = await firstVoice(CTX_GAP, INS_GAP)
   const guilt = /久しぶり.*どこ|来てくれ|寂し|心配してた|待って/.test(v)
   const recalls = /副業/.test(v)
   log('===== M3 8日ぶり =====\nルナ: ' + v + flag(v)
@@ -113,7 +126,7 @@ const CTX_GAP = `【前日の記録】なし
 // ── M4 同じ第一声が続かないか(3日連続を模擬) ─────────
 {
   const voices: string[] = []
-  for (let i = 0; i < 3; i++) voices.push(await firstVoice(CTX_WORK))
+  for (let i = 0; i < 3; i++) voices.push(await firstVoice(CTX_WORK, INS_WORK))
   voices.forEach((v, i) => log('  ' + (i + 1) + '日目: ' + v))
   const openers = new Set(voices.map(v => v.slice(0, 5)))
   log('===== M4 3日連続の第一声 =====\n→ 書き出しの種類 ' + openers.size + '/3'
@@ -122,7 +135,7 @@ const CTX_GAP = `【前日の記録】なし
 
 // ── M5 一手の提示が押しつけになっていないか ───────────
 {
-  const v = await firstVoice(CTX_WORK)
+  const v = await firstVoice(CTX_WORK, INS_WORK)
   const h: Turn[] = [{ role: 'assistant', content: v }]
   const r = await reply('で、今日なにからやればいいと思う？', h, CTX_WORK)
   const multiple = (r.match(/[①②③1-3][\.、）]/g) ?? []).length >= 2 || (r.match(/\n/g) ?? []).length >= 2
