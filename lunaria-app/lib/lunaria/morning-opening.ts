@@ -7,7 +7,7 @@
 import OpenAI from 'openai'
 import { supabaseAdmin } from '../supabase'
 import { LUNARIA_SYSTEM_PROMPT } from '../prompt'
-import { buildMorningInstruction, pickHook, type MorningContext } from './morning-voice'
+import { buildMorningInstruction, buildLetterInstruction, pickHook, type MorningContext, type LetterContext } from './morning-voice'
 import { sanitizeAssistantText } from './assistant-reply'
 import { collapseDuplicateSentences, detectCharacterBreaks } from './reply-guard'
 
@@ -106,5 +106,48 @@ export async function generateMorningOpening(userId: string): Promise<string | n
   const raw = (res.choices[0]?.message?.content ?? '').trim()
   const text = collapseDuplicateSentences(sanitizeAssistantText(raw))
   if (!text || text.length > 140 || detectCharacterBreaks(text).length > 0) return null
+  return text
+}
+
+// ── 実験1: 朝の手紙 ─────────────────────────────────
+// 第一声(2文)と同じ文脈から、5〜8行の手紙を生成する。
+// 実験の間は第一声と並存させ、結果で片方を捨てる。
+export async function generateMorningLetter(userId: string): Promise<string | null> {
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) return null
+
+  const base = await collectContext(userId)
+  const ctx: LetterContext = { ...base }
+
+  // ルナ側の一言の種: 直近1週間の作業以外の話題を拾う(無ければ固定の好みで書く)
+  try {
+    const ex = await supabaseAdmin
+      .from('lunaria_extractions')
+      .select('next_topics')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(5)
+    const topics = ((ex.data ?? []) as { next_topics?: unknown }[])
+      .flatMap(r => Array.isArray(r.next_topics) ? r.next_topics : [])
+      .filter((t): t is string => typeof t === 'string' && t.length > 1)
+    if (topics.length) ctx.userTopics = topics
+  } catch { /* 種がなくても書ける */ }
+
+  const client = new OpenAI({ apiKey, baseURL: 'https://generativelanguage.googleapis.com/v1beta/openai/' })
+  const res = await client.chat.completions.create({
+    model: 'gemini-2.5-flash',
+    max_tokens: 2500,
+    messages: [
+      { role: 'system', content: LUNARIA_SYSTEM_PROMPT },
+      { role: 'system', content: contextText(ctx) },
+      { role: 'system', content: buildLetterInstruction(ctx) },
+      { role: 'user', content: '(朝、アプリを開いた)' },
+    ],
+  })
+
+  const raw = (res.choices[0]?.message?.content ?? '').trim()
+  const text = collapseDuplicateSentences(sanitizeAssistantText(raw))
+  // 手紙は改行を持つので、長さの上限は第一声より緩める。破綻は捨てる
+  if (!text || text.length > 420 || detectCharacterBreaks(text).length > 0) return null
   return text
 }

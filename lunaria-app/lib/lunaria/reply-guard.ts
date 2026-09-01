@@ -59,13 +59,18 @@ export function guardReply(raw: string): GuardResult {
 }
 
 // 同一文の連続反復を畳む。few-shot 例文をなぞる際に同じ文を2度出す事象を eval(angles A2)で観測。
+// 改行は保持する(以前は join('') で潰しており、手紙などの複数行返答を1段落にしていた)。
 export function collapseDuplicateSentences(text: string): string {
-  const parts = text.split(/(?<=[。！？\n])/).map(s => s.trim()).filter(Boolean)
+  const parts = text.split(/(?<=[。！？])|(?=\n)/).filter(p => p.length > 0)
   const seen: string[] = []
-  for (const p of parts) {
+  const kept: string[] = []
+  for (const raw of parts) {
+    const p = raw.trim()
+    if (!p) { kept.push(raw); continue }
     if (seen.length && seen[seen.length - 1] === p) continue
     if (seen.includes(p) && p.length > 8) continue
     seen.push(p)
+    kept.push(raw)
   }
-  return seen.join('')
+  return kept.join('').replace(/\n{3,}/g, '\n\n').trim()
 }

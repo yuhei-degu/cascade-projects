@@ -46,3 +46,45 @@ export function buildMorningInstruction(ctx: MorningContext): string {
   lines.push('2文以内。タメ口。「今日も頑張ろう」「継続が大事」の類は禁止（義務感を与えない）。')
   return lines.join('\n')
 }
+
+// ── 手紙(実験1: 交換日記) ─────────────────────────────
+// 第一声(2文)ではなく、朝に届く手紙(5〜8行)。3部構成を指示で固定する。
+// 構成をモデルに任せると一般論の激励文になる(eval morning で実測)。
+export interface LetterContext extends MorningContext {
+  userTopics?: string[]   // ユーザーが過去に話した話題(ルナ側の一言の種にする)
+  userName?: string
+}
+
+export function buildLetterInstruction(ctx: LetterContext): string {
+  const hook = pickHook(ctx)
+  const step = ctx.plannedToday ?? ctx.stuck?.[0] ?? null
+  const seed = ctx.userTopics?.length
+    ? ctx.userTopics[Math.floor(Math.random() * Math.min(ctx.userTopics.length, 5))]
+    : null
+
+  const lines: string[] = [
+    '【今回の役割】朝、ユーザーが開いたときに届いている「ルナからの手紙」を書く。チャットの返事ではない。',
+    '構成は次の3つだけ。順番も固定。それぞれ1〜3文。全体で5〜8行、改行で区切る。',
+  ]
+  // 「明日やる」と言っていた件を「昨日やったこと」と書いてしまう誤りが出たため、種類ごとに言い方を固定する
+  const hookLine = !hook
+    ? '拾える記録がないので、昨日について推測で書かず「聞かせて」と短く書く。'
+    : hook.kind === 'planned'
+      ? '「' + hook.text + '」は昨日「今日やる」と言っていた件。まだやっていない前提で、覚えていたことが伝わる一言にする。'
+      : hook.kind === 'stuck'
+        ? '「' + hook.text + '」で詰まっていた。急かさず「その後どう？」の温度で。'
+        : hook.kind === 'gap'
+          ? '久しぶりなので責めない。前に話していた「' + hook.text + '」にだけ軽く触れる。'
+          : '「' + hook.text + '」だけに触れる。他の出来事は並べない。'
+  lines.push('1) 昨日のこと: ' + hookLine)
+  lines.push('2) ルナの側の一言: ルナ自身の小さな出来事や気になっていることを1つ。'
+    + (seed ? '種は「' + seed + '」(ユーザーが前に話した話題)。それを見た・気になった・試した、の形で。' : '種は雨音・海鮮の写真・雑学・猫動画のどれか。')
+    + '実体験の捏造は避け、「見た」「気になった」の範囲にする。')
+  lines.push('3) 今日の一手: ' + (step
+    ? '「' + step + '」を1件だけ。理由は一言。'
+    : '一手を無理に作らない。「今日はルナに一言だけ聞かせて」で締める。'))
+  lines.push('禁止: 箇条書き・番号・見出し・敬語・「頑張ろう」「継続」・3件以上の提案・天気の話でのごまかし。')
+  lines.push('一人称は「ルナ」。宛名は' + (ctx.userName ? '「' + ctx.userName + '」' : '不要') + '。署名は「ルナ」で終える。')
+  if (ctx.mood?.match(/落ち込|自己嫌悪|疲れ/)) lines.push('前日の状態が良くない。一手は軽くし、励ましで押さない。')
+  return lines.join('\n')
+}
