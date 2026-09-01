@@ -5,6 +5,7 @@ import { calcRoute, getProbeTemplate } from '../../../lib/lunaria/routing'
 import { applySleepDecay, updateEmotion, getEmotion } from '../../../lib/lunaria/emotion'
 import { getAffinity } from '../../../lib/lunaria/affinity'
 import { getMorningOpening } from '../../../lib/lunaria/diary'
+import { generateMorningOpening } from '../../../lib/lunaria/morning-opening'
 import {
   extractTurnTopic, decideConversationMode,
   getShiftCandidates, updateCoverage, buildModeInstruction, detectResponseMode,
@@ -162,7 +163,10 @@ export async function POST(req: NextRequest) {
     const [emotion, affinity, morningMsg, topicResult, coreMemCtx, profile, pendingUpdates, userName, workCtx] = await Promise.all([
       getEmotion(userId),
       getAffinity(userId),
-      history.length === 0 ? getMorningOpening(userId) : Promise.resolve(null),
+      // 第一声: キャラ経路で生成し、破綻・文脈なしのときだけ旧テンプレへ落とす
+      history.length === 0
+        ? generateMorningOpening(userId).catch(() => null).then(v => v ?? getMorningOpening(userId))
+        : Promise.resolve(null),
       extractTurnTopic(userMessage, history.slice(-4)),
       getCoreMemoryContext(userId),
       getProfile(userId),
